@@ -69,8 +69,16 @@ export function AIAdStudio() {
     const features = product?.features?.slice(0, 3).join(', ') || '';
     const description = product?.description?.substring(0, 100) || '';
     
-    // Enhanced prompt for image-to-image: references the input image while adding style and features
-    return `Transform the provided product image into a professional ${styleObj?.name.toLowerCase()} style advertisement for ${productName} by ${companyName}. ${features ? `Key features: ${features}.` : ''} ${description ? `Product description: ${description}.` : ''} ${formatObj?.name} format, high-end studio photography, cinematic lighting, commercial advertising quality. Maintain product authenticity while enhancing with ${styleObj?.name.toLowerCase()} aesthetic.`;
+    // Enhanced prompt for image-to-image with NO TEXT policy
+    return `Transform the provided product image into a professional ${styleObj?.name.toLowerCase()} style advertisement for ${productName} by ${companyName}. ${features ? `Key features: ${features}.` : ''} ${description ? `Product description: ${description}.` : ''} ${formatObj?.name} format.
+
+NO TEXT: Do not render any artificial text, slogans, or branding on the image. The image must contain only the product and the aesthetic environment.
+
+Visual Focus: High-end studio photography, cinematic lighting, commercial advertising quality.
+
+Composition: Maintain product authenticity, minimalist luxury background.
+
+Negative Prompt: Exclude any generated text, misspellings, or fictional branding.`;
   };
 
   // Convert image URL to base64 for Puter.js
