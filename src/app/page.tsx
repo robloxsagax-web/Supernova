@@ -7,6 +7,7 @@ import { ProductPreview } from '@/components/ProductPreview';
 import { ScriptPreview } from '@/components/ScriptPreview';
 import { VideoPlayer } from '@/components/VideoPlayer';
 import { Loader } from '@/components/Loader';
+import { AIAdStudio } from '@/components/AIAdStudio';
 
 const loadingMessages: Record<'url' | 'product' | 'script' | 'video', string> = {
   url: 'Analyzing product page...',
@@ -16,15 +17,15 @@ const loadingMessages: Record<'url' | 'product' | 'script' | 'video', string> = 
 };
 
 export default function Home() {
-  const { step, isLoading, error } = useStore();
+  const { step, isLoading, error, product } = useStore();
 
   return (
     <main className="container mx-auto py-8 px-4 min-h-screen">
       <div className="max-w-4xl mx-auto space-y-8">
         <div className="text-center space-y-4">
-          <h1 className="text-4xl font-bold tracking-tight">AI Video Ad Generator</h1>
+          <h1 className="text-4xl font-bold tracking-tight">AI Ad Studio</h1>
           <p className="text-xl text-muted-foreground">
-            Transform any product page into a compelling video ad in minutes
+            Transform any product page into stunning video ads and creative assets
           </p>
         </div>
 
@@ -40,7 +41,12 @@ export default function Home() {
           <Loader message={loadingMessages[step]} />
         ) : (
           <>
-            {step === 'url' && <UrlInputForm />}
+            {step === 'url' && (
+              <div className="space-y-8">
+                <AIAdStudio />
+                <UrlInputForm />
+              </div>
+            )}
             {step === 'product' && <ProductPreview />}
             {step === 'script' && <ScriptPreview />}
             {step === 'video' && <VideoPlayer />}
