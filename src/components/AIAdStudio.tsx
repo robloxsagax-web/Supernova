@@ -131,6 +131,8 @@ Negative Prompt: Exclude any generated text, misspellings, or fictional branding
         model: 'gpt-image-1-mini',
         quality: 'low',
         ratio: formatObj?.ratio,
+        // Negative prompt to prevent text hallucination
+        negative_prompt: 'text, words, letters, gibberish, branding, slogan, logo, watermark, signature, caption',
       };
       
       // Use base64 if available, otherwise fallback to URL
