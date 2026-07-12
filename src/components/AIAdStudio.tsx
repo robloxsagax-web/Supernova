@@ -70,6 +70,24 @@ export function AIAdStudio() {
     return `Professional ad for ${productName} by ${companyName}, ${styleObj?.prompt}, ${formatObj?.name} format, high-end studio photography, cinematic lighting, commercial quality`;
   };
 
+  // Convert image URL to base64 for Puter.js
+  const imageToBase64 = async (url: string): Promise<string | null> => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    } catch (error) {
+      console.error('Failed to convert image to base64:', error);
+      return null;
+    }
+  };
+
   // Generate poster using image-to-image
   const generatePoster = async (): Promise<string | null> => {
     if (!product?.image) {
@@ -89,12 +107,31 @@ export function AIAdStudio() {
       console.log('Generating poster with prompt:', prompt);
       console.log('Using input image:', product.image);
       
-      const result = await (window as any).puter.ai.txt2img(prompt, {
+      // Convert image to base64 for reliable image-to-image
+      setStatusMessage('Processing product image...');
+      const base64Image = await imageToBase64(product.image);
+      
+      if (!base64Image) {
+        setStatusMessage('Failed to process image. Trying direct URL...');
+        // Fallback to direct URL if base64 conversion fails
+      }
+      
+      const generationOptions: any = {
         model: 'gpt-image-1-mini',
         quality: 'low',
         ratio: formatObj?.ratio,
-        input_image: product.image, // Image-to-image using scraped product image
-      });
+      };
+      
+      // Use base64 if available, otherwise fallback to URL
+      if (base64Image) {
+        generationOptions.input_image = base64Image;
+      } else {
+        generationOptions.input_image = product.image;
+      }
+      
+      setStatusMessage('Generating poster...');
+      
+      const result = await (window as any).puter.ai.txt2img(prompt, generationOptions);
 
       console.log('Generation result:', result);
 
