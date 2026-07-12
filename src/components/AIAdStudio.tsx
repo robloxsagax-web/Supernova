@@ -92,15 +92,24 @@ export function AIAdStudio() {
         return null;
       }
 
-      const width = format === '16:9' ? 1920 : 1080;
-      const height = format === '9:16' ? 1920 : format === '4:5' ? 1350 : 1080;
+      // Map format to OpenAI ratio
+      // OpenAI supports: 1024x1024 (square), 1536x1024 (portrait 3:2), 1024x1536 (portrait 2:3)
+      // We map: 1:1 -> square, 9:16 -> portrait 2:3, 4:5 -> portrait, 16:9 -> landscape 3:2
+      const ratioMap: Record<ImageFormat, { w: number; h: number }> = {
+        '1:1': { w: 1, h: 1 },
+        '9:16': { w: 2, h: 3 },
+        '4:5': { w: 4, h: 5 },
+        '16:9': { w: 16, h: 9 },
+      };
+      const ratio = ratioMap[format];
 
       console.log('Generating image with prompt:', prompt);
+      console.log('Using ratio:', ratio);
       
       const result = await (window as any).puter.ai.txt2img(prompt, {
-        model: 'black-forest-labs/flux-2-klein-9b-base',
-        width,
-        height,
+        model: 'gpt-image-1-mini', // OpenAI default model
+        quality: 'low',
+        ratio: ratio,
       });
 
       console.log('Generation result:', result);
