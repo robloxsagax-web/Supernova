@@ -62,6 +62,26 @@ FORMAT: Raw script lines only, separated by newlines. NO brackets. NO labels. NO
 Start now - the product name "${product.title}" is your hook:`;
   }
 
+  if (duration <= 45) {
+    return `You are a world-class Direct Response Copywriter. Write a high-impact 45-second video ad with exactly 10 distinct scenes.
+
+PRODUCT INFO:
+${productInfo}
+
+RULES:
+- Hook with the product name in first 2 seconds
+- 110-135 words TOTAL, exactly 10 distinct scenes
+- SHORT punchy sentences. No fluff.
+- 11-13 words per scene
+- Each line = one clear BENEFIT, not a feature
+- End with powerful, urgent CTA
+- TikTok/Reels energy: aggressive and direct
+
+FORMAT: Raw script lines only, separated by newlines. NO brackets. NO labels. NO quotes. NO stage directions.
+
+Start now - the product name "${product.title}" is your hook:`;
+  }
+
   // 60 seconds
   return `You are a world-class Direct Response Copywriter. Write a massive 60-second commercial with 12-15 fast-paced scenes.
 
@@ -131,6 +151,29 @@ STRUCTURE:
 4. Value: Leave viewer with useful insight or feel-good moment (4 seconds)
 
 FORMAT: Raw script lines only, separated by newlines. NO brackets. NO labels. NO quotes. NO hard selling. NO aggressive CTAs.
+
+Start now:`;
+  }
+
+  if (duration <= 45) {
+    return `You are a TikTok storytelling expert. Write an engaging 45-second b-roll narrative with authentic product integration.
+
+PRODUCT INFO:
+${productInfo}
+
+STYLE:
+- Deep, organic storytelling that builds genuine connection
+- Product woven in naturally, like a genuine friend recommendation
+- Educational or inspirational value throughout
+- 110-135 words TOTAL
+
+STRUCTURE:
+1. Hook: Powerful relatable opening (4 seconds) - grab attention with a question or relatable pain point
+2. Build: Create curiosity and provide value (25 seconds) - build narrative around problem/solution
+3. Product: Hero moment (10 seconds) - show product solving the problem naturally
+4. Takeaway: Inspiring or actionable insight (6 seconds) - leave viewer with useful tip
+
+FORMAT: Raw script lines only, separated by newlines. NO brackets. NO labels. NO quotes. NO aggressive selling. NO pushy CTAs.
 
 Start now:`;
   }
@@ -214,7 +257,7 @@ export async function POST(request: Request) {
     const systemPrompt = getSystemPrompt(type);
     
     // Adjust max_tokens based on duration
-    const maxTokens = duration <= 15 ? 300 : duration <= 30 ? 500 : 1000;
+    const maxTokens = duration <= 15 ? 300 : duration <= 30 ? 500 : duration <= 45 ? 750 : 1000;
 
     // Generate script using Groq's Llama model
     const response = await fetch(`${GROQ_API_URL}/chat/completions`, {

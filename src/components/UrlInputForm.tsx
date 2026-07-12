@@ -151,16 +151,30 @@ export function UrlInputForm() {
             
             {/* Duration */}
             <div className="space-y-2">
-              <label className="text-sm font-medium">Duration</label>
-              <select
-                value={duration}
-                onChange={(e) => setDuration(Number(e.target.value) as VideoDuration)}
-                className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm"
-              >
-                <option value={15}>15 seconds</option>
-                <option value={30}>30 seconds</option>
-                <option value={60}>60 seconds</option>
-              </select>
+              <label className="text-sm font-medium text-white">Duration</label>
+              <div className="relative">
+                <div 
+                  className="absolute inset-0 bg-purple-600 rounded-lg transition-all duration-300"
+                  style={{
+                    width: '25%',
+                    left: duration === 15 ? '0%' : duration === 30 ? '25%' : duration === 45 ? '50%' : '75%',
+                  }}
+                />
+                <div className="relative grid grid-cols-4 gap-1 p-1 bg-gray-800/50 rounded-lg border border-gray-700">
+                  {([15, 30, 45, 60] as VideoDuration[]).map((d) => (
+                    <button
+                      key={d}
+                      type="button"
+                      onClick={() => setDuration(d)}
+                      className={`px-3 py-2 rounded-md text-sm font-medium transition-all ${
+                        duration === d ? 'text-white' : 'text-gray-400'
+                      }`}
+                    >
+                      {d}s
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
 

@@ -1,7 +1,7 @@
 export type Step = 'url' | 'product' | 'script' | 'video';
 
 export type VideoRatio = '9:16' | '16:9';
-export type VideoDuration = 15 | 30 | 60;
+export type VideoDuration = 15 | 30 | 45 | 60;
 
 // Brand color palette presets
 export type BrandPaletteId = 
