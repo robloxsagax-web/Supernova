@@ -354,7 +354,12 @@ export function AIAdStudio() {
               className="grid grid-cols-2 md:grid-cols-3 gap-4"
               id="ad-image-container"
             >
-              {localImages.map((image, index) => (
+              {localImages.map((image, index) => {
+                // Calculate aspect ratio class based on format
+                const aspectClass = image.format === '16:9' ? 'aspect-video' : 
+                                  image.format === '1:1' ? 'aspect-square' : 
+                                  'aspect-[3/4]';
+                return (
                 <div
                   key={image.id}
                   className="relative group rounded-xl overflow-hidden border-2 border-purple-200 dark:border-purple-800 hover:border-purple-500 transition-all shadow-lg"
@@ -362,7 +367,7 @@ export function AIAdStudio() {
                   <img
                     src={image.url}
                     alt={`Generated ad ${index + 1}`}
-                    className="w-full aspect-square object-cover"
+                    className={`w-full ${aspectClass} object-contain bg-gray-100 dark:bg-gray-800`}
                     loading="lazy"
                   />
                   
@@ -381,7 +386,8 @@ export function AIAdStudio() {
                     </span>
                   </div>
                 </div>
-              ))}
+              );
+              })}
             </div>
           </div>
         )}
