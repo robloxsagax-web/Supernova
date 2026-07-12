@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { useStore } from '@/lib/store';
-import { Sparkles, Download, Loader2, Image as ImageIcon } from 'lucide-react';
+import { Sparkles, Download, Loader2, Image as ImageIcon, AlertCircle } from 'lucide-react';
 
 type AdStyle = 'bold' | 'luxury' | 'minimal' | 'vibrant' | 'elegant' | 'modern';
 type ImageFormat = '1:1' | '9:16' | '4:5' | '16:9';
@@ -54,7 +54,26 @@ export function AIAdStudio() {
   const [selectedFormat, setSelectedFormat] = useState<ImageFormat>('9:16');
   const [isGenerating, setIsGenerating] = useState(false);
   const [localImages, setLocalImages] = useState<GeneratedImage[]>([]);
+  const [puterReady, setPuterReady] = useState(false);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Check if Puter.js is loaded
+  useEffect(() => {
+    const checkPuter = () => {
+      if ((window as any).puter && (window as any).puter.ai) {
+        setPuterReady(true);
+        setStatusMessage(null);
+      } else {
+        setPuterReady(false);
+        setStatusMessage('Loading AI service...');
+        setTimeout(checkPuter, 1000);
+      }
+    };
+    
+    const timer = setTimeout(checkPuter, 2000);
+    return () => clearTimeout(timer);
+  }, []);
 
   const buildPrompt = (): string => {
     const productTitle = product?.title || 'trendy product';
@@ -67,33 +86,38 @@ export function AIAdStudio() {
     const prompt = buildPrompt();
     
     try {
-      // Check if Puter.js is available
-      if (!(window as any).puter || !(window as any).puter.ai) {
-        console.error('Puter.js not loaded');
+      if (!(window as any).puter?.ai) {
+        console.error('Puter.js AI not loaded');
+        setStatusMessage('AI service not ready. Please wait...');
         return null;
       }
 
       const width = format === '16:9' ? 1920 : 1080;
-      const height = format === '9:16' ? 1920 : format === '4:5' ? 1350 : format === '16:9' ? 1080 : 1080;
+      const height = format === '9:16' ? 1920 : format === '4:5' ? 1350 : 1080;
 
-      const imageElement = await (window as any).puter.ai.txt2img(prompt, {
+      console.log('Generating image with prompt:', prompt);
+      
+      const result = await (window as any).puter.ai.txt2img(prompt, {
         model: 'black-forest-labs/flux-2-klein-9b-base',
         width,
         height,
       });
 
-      if (imageElement) {
-        // Puter.js returns an img element with src
-        if (imageElement.src) return imageElement.src;
-        if (imageElement instanceof HTMLImageElement) return imageElement.src;
-        if (imageElement instanceof HTMLCanvasElement) {
-          return imageElement.toDataURL('image/png');
-        }
-      }
+      console.log('Generation result:', result);
+
+      if (!result) return null;
+
+      // Puter.js returns an HTMLImageElement with src property
+      if (result.src) return result.src;
+      if (result instanceof HTMLImageElement) return result.src;
+      if (result instanceof HTMLCanvasElement) return result.toDataURL('image/png');
+      if (result.image?.src) return result.image.src;
       
+      console.error('Unknown result format:', result);
       return null;
     } catch (error) {
       console.error('Image generation failed:', error);
+      setStatusMessage(`Generation failed: ${error}`);
       return null;
     }
   };
@@ -102,6 +126,7 @@ export function AIAdStudio() {
     if (isGenerating) return;
     
     setIsGenerating(true);
+    setStatusMessage(null);
     
     try {
       const imageUrl = await generateImage(selectedStyle, selectedFormat);
@@ -114,9 +139,13 @@ export function AIAdStudio() {
         };
         setLocalImages(prev => [newImage, ...prev]);
         addAdImage(imageUrl);
+        setStatusMessage('Image generated successfully!');
+      } else {
+        setStatusMessage('Failed to generate image. Please try again.');
       }
-    } catch (error) {
-      console.error('Generation failed:', error);
+    } catch (err) {
+      console.error('Generation failed:', err);
+      setStatusMessage('Generation failed. Please try again.');
     } finally {
       setIsGenerating(false);
     }
@@ -126,6 +155,7 @@ export function AIAdStudio() {
     if (isGenerating) return;
     
     setIsGenerating(true);
+    setStatusMessage('Generating 6 styles...');
     
     for (let i = 0; i < AD_STYLES.length; i++) {
       const style = AD_STYLES[i].id;
@@ -140,11 +170,11 @@ export function AIAdStudio() {
         setLocalImages(prev => [...prev, newImage]);
         addAdImage(imageUrl);
       }
-      // Small delay between generations
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise(resolve => setTimeout(resolve, 1000));
     }
     
     setIsGenerating(false);
+    setStatusMessage('All images generated!');
   };
 
   const handleDownload = async (image: GeneratedImage, index: number) => {
@@ -183,6 +213,33 @@ export function AIAdStudio() {
       </CardHeader>
       
       <CardContent className="space-y-6">
+        {/* Status Banner */}
+        {statusMessage && (
+          <div className={`flex items-center gap-2 p-3 rounded-lg ${
+            statusMessage.includes('failed') || statusMessage.includes('Failed')
+              ? 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800'
+              : 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800'
+          }`}>
+            {statusMessage.includes('failed') || statusMessage.includes('Failed') ? (
+              <AlertCircle className="w-5 h-5 text-red-600" />
+            ) : (
+              <Sparkles className="w-5 h-5 text-green-600" />
+            )}
+            <span className={`text-sm ${
+              statusMessage.includes('failed') || statusMessage.includes('Failed')
+                ? 'text-red-700 dark:text-red-300'
+                : 'text-green-700 dark:text-green-300'
+            }`}>{statusMessage}</span>
+          </div>
+        )}
+
+        {!puterReady && !statusMessage && (
+          <div className="flex items-center gap-2 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+            <Loader2 className="w-5 h-5 animate-spin text-yellow-600" />
+            <span className="text-sm text-yellow-700 dark:text-yellow-300">Loading AI service...</span>
+          </div>
+        )}
+
         {/* Style Selector */}
         <div className="space-y-3">
           <label className="text-sm font-medium">Select Style</label>
@@ -191,12 +248,12 @@ export function AIAdStudio() {
               <button
                 key={style.id}
                 onClick={() => setSelectedStyle(style.id)}
-                disabled={isGenerating}
+                disabled={isGenerating || !puterReady}
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
                   selectedStyle === style.id
-                    ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/25'
-                    : 'bg-white dark:bg-gray-800 hover:bg-purple-100 dark:hover:bg-purple-900/30 border border-purple-200 dark:border-purple-800'
-                }`}
+                    ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg'
+                    : 'bg-white dark:bg-gray-800 hover:bg-purple-100 border border-purple-200 dark:border-purple-800'
+                } ${!puterReady || isGenerating ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 {style.emoji} {style.name}
               </button>
@@ -212,12 +269,12 @@ export function AIAdStudio() {
               <button
                 key={format.id}
                 onClick={() => setSelectedFormat(format.id)}
-                disabled={isGenerating}
+                disabled={isGenerating || !puterReady}
                 className={`p-3 rounded-lg border-2 text-center transition-all ${
                   selectedFormat === format.id
-                    ? 'border-purple-500 bg-purple-100 dark:bg-purple-900/30 shadow-lg'
-                    : 'border-purple-200 dark:border-purple-800 hover:border-purple-400 dark:hover:border-purple-600 bg-white dark:bg-gray-800'
-                }`}
+                    ? 'border-purple-500 bg-purple-100 dark:bg-purple-900/30'
+                    : 'border-purple-200 dark:border-purple-800 hover:border-purple-400 bg-white dark:bg-gray-800'
+                } ${!puterReady || isGenerating ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 <div className="text-2xl mb-1">{format.emoji}</div>
                 <div className="text-xs font-bold">{format.name}</div>
@@ -231,39 +288,24 @@ export function AIAdStudio() {
         <div className="space-y-3">
           <label className="text-sm font-medium">Quick Platforms</label>
           <div className="flex gap-2">
-            <button
-              onClick={() => handlePlatformClick('9:16')}
-              disabled={isGenerating}
-              className={`flex-1 py-3 px-4 rounded-xl border-2 font-medium transition-all ${
-                selectedFormat === '9:16'
-                  ? 'border-purple-500 bg-gradient-to-r from-purple-500 to-pink-500 text-white'
-                  : 'border-purple-200 dark:border-purple-800 hover:border-purple-400 bg-white dark:bg-gray-800'
-              }`}
-            >
-              🎬 TikTok/Reels
-            </button>
-            <button
-              onClick={() => handlePlatformClick('1:1')}
-              disabled={isGenerating}
-              className={`flex-1 py-3 px-4 rounded-xl border-2 font-medium transition-all ${
-                selectedFormat === '1:1'
-                  ? 'border-purple-500 bg-gradient-to-r from-purple-500 to-pink-500 text-white'
-                  : 'border-purple-200 dark:border-purple-800 hover:border-purple-400 bg-white dark:bg-gray-800'
-              }`}
-            >
-              📱 Instagram
-            </button>
-            <button
-              onClick={() => handlePlatformClick('16:9')}
-              disabled={isGenerating}
-              className={`flex-1 py-3 px-4 rounded-xl border-2 font-medium transition-all ${
-                selectedFormat === '16:9'
-                  ? 'border-purple-500 bg-gradient-to-r from-purple-500 to-pink-500 text-white'
-                  : 'border-purple-200 dark:border-purple-800 hover:border-purple-400 bg-white dark:bg-gray-800'
-              }`}
-            >
-              🖥️ YouTube
-            </button>
+            {[
+              { format: '9:16' as ImageFormat, emoji: '🎬', name: 'TikTok/Reels' },
+              { format: '1:1' as ImageFormat, emoji: '📱', name: 'Instagram' },
+              { format: '16:9' as ImageFormat, emoji: '🖥️', name: 'YouTube' },
+            ].map((platform) => (
+              <button
+                key={platform.name}
+                onClick={() => handlePlatformClick(platform.format)}
+                disabled={isGenerating || !puterReady}
+                className={`flex-1 py-3 px-2 rounded-xl border-2 font-medium text-sm transition-all ${
+                  selectedFormat === platform.format
+                    ? 'border-purple-500 bg-gradient-to-r from-purple-500 to-pink-500 text-white'
+                    : 'border-purple-200 dark:border-purple-800 hover:border-purple-400 bg-white dark:bg-gray-800'
+                } ${!puterReady || isGenerating ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                {platform.emoji} {platform.name}
+              </button>
+            ))}
           </div>
         </div>
 
@@ -271,29 +313,29 @@ export function AIAdStudio() {
         <div className="flex gap-3">
           <Button
             onClick={handleGenerate}
-            disabled={isGenerating}
-            className="flex-1 h-12 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-lg shadow-purple-500/25"
+            disabled={isGenerating || !puterReady}
+            className="flex-1 h-12 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-lg"
           >
             {isGenerating ? (
               <Loader2 className="w-5 h-5 mr-2 animate-spin" />
             ) : (
               <Sparkles className="w-5 h-5 mr-2" />
             )}
-            Generate {selectedFormat} Poster
+            Generate {selectedFormat}
           </Button>
           
           <Button
             onClick={handleGenerateAllStyles}
-            disabled={isGenerating}
+            disabled={isGenerating || !puterReady}
             variant="outline"
-            className="h-12 px-6 border-2 border-purple-300 dark:border-purple-700"
+            className="h-12 px-4 border-2 border-purple-300 dark:border-purple-700"
           >
             {isGenerating ? (
               <Loader2 className="w-5 h-5 animate-spin" />
             ) : (
               <ImageIcon className="w-5 h-5 mr-2" />
             )}
-            All Styles (6x)
+            All 6x
           </Button>
         </div>
 
@@ -303,7 +345,7 @@ export function AIAdStudio() {
             <div className="flex items-center justify-between">
               <h4 className="font-bold flex items-center gap-2">
                 <ImageIcon className="w-4 h-4" />
-                Generated Ad Creatives ({localImages.length})
+                Generated ({localImages.length})
               </h4>
             </div>
             
@@ -324,7 +366,6 @@ export function AIAdStudio() {
                     loading="lazy"
                   />
                   
-                  {/* Hover overlay */}
                   <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                     <button
                       onClick={() => handleDownload(image, index)}
@@ -334,7 +375,6 @@ export function AIAdStudio() {
                     </button>
                   </div>
                   
-                  {/* Labels */}
                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3">
                     <span className="text-white text-sm font-bold">
                       {AD_STYLES.find(s => s.id === image.style)?.emoji} {image.style} • {image.format}
@@ -354,7 +394,7 @@ export function AIAdStudio() {
               Select style & format, then click Generate
             </p>
             <p className="text-xs text-purple-500 mt-1">
-              Powered by Puter.js AI • No API keys required
+              Powered by Puter.js AI
             </p>
           </div>
         )}
