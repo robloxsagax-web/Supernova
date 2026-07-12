@@ -66,8 +66,11 @@ export function AIAdStudio() {
     const companyName = product?.company_name || 'Exclusive Brand';
     const styleObj = AD_STYLES.find(s => s.id === selectedStyle);
     const formatObj = FORMATS.find(f => f.id === selectedFormat);
+    const features = product?.features?.slice(0, 3).join(', ') || '';
+    const description = product?.description?.substring(0, 100) || '';
     
-    return `Professional ad for ${productName} by ${companyName}, ${styleObj?.prompt}, ${formatObj?.name} format, high-end studio photography, cinematic lighting, commercial quality`;
+    // Enhanced prompt for image-to-image: references the input image while adding style and features
+    return `Transform the provided product image into a professional ${styleObj?.name.toLowerCase()} style advertisement for ${productName} by ${companyName}. ${features ? `Key features: ${features}.` : ''} ${description ? `Product description: ${description}.` : ''} ${formatObj?.name} format, high-end studio photography, cinematic lighting, commercial advertising quality. Maintain product authenticity while enhancing with ${styleObj?.name.toLowerCase()} aesthetic.`;
   };
 
   // Convert image URL to base64 for Puter.js
