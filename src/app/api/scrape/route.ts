@@ -234,6 +234,7 @@ function parseProductMarkdown(markdown: string, originalUrl: string): Product {
 
   return {
     title,
+    company_name: extractCompanyName(originalUrl),
     image: images[0],
     images: images.slice(1, 6),
     price: price || 'Price not available',
@@ -241,6 +242,39 @@ function parseProductMarkdown(markdown: string, originalUrl: string): Product {
     features: features.length > 0 ? features.slice(0, 5) : ['High quality product'],
     url: originalUrl,
   };
+}
+
+function extractCompanyName(url: string): string {
+  try {
+    const hostname = new URL(url).hostname;
+    // Remove common prefixes and TLD
+    let name = hostname
+      .replace(/^www\./, '')
+      .replace(/\.(com|org|net|io|co)$/, '')
+      .replace(/-/g, ' ');
+    
+    // Capitalize first letter of each word
+    name = name.split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+    
+    // Special cases
+    const specialCases: Record<string, string> = {
+      'amazon': 'Amazon',
+      'shopify': 'Shopify',
+      'etsy': 'Etsy',
+      'walmart': 'Walmart',
+      'target': 'Target',
+      'best buy': 'Best Buy',
+      'macys': "Macy's",
+      'nordstrom': 'Nordstrom',
+    };
+    
+    const lowerName = name.toLowerCase();
+    return specialCases[lowerName] || name;
+  } catch {
+    return 'Unknown Brand';
+  }
 }
 
 function isHighQualityImage(url: string): boolean {

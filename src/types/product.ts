@@ -148,6 +148,7 @@ export interface VideoSettings {
 
 export interface Product {
   title: string;
+  company_name: string;
   image: string;
   images: string[];
   price?: string;

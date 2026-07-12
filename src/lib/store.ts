@@ -49,6 +49,7 @@ const initialState: AppState & {
   generationType: GenerationType;
   bRollConfig: BRollConfig | null;
   productImages: string[];
+  adImages: string[];
 } = {
   step: 'url' as Step,
   product: null,
@@ -58,6 +59,7 @@ const initialState: AppState & {
   generationType: 'ad' as GenerationType,
   bRollConfig: null,
   productImages: [],
+  adImages: [],
   isLoading: false,
   error: null,
 };
@@ -66,6 +68,7 @@ export const useStore = create<AppState & {
   generationType: GenerationType;
   bRollConfig: BRollConfig | null;
   productImages: string[];
+  adImages: string[];
   setStep: (step: Step) => void;
   setProduct: (product: Product) => void;
   setScript: (script: string) => void;
@@ -74,6 +77,8 @@ export const useStore = create<AppState & {
   setGenerationType: (type: GenerationType) => void;
   setBRollConfig: (config: BRollConfig | null) => void;
   setProductImages: (images: string[]) => void;
+  setAdImages: (images: string[]) => void;
+  addAdImage: (image: string) => void;
   setLoading: (isLoading: boolean) => void;
   setError: (error: string | null) => void;
   reset: () => void;
@@ -87,6 +92,8 @@ export const useStore = create<AppState & {
   setGenerationType: (type) => set({ generationType: type }),
   setBRollConfig: (config) => set({ bRollConfig: config }),
   setProductImages: (images) => set({ productImages: images }),
+  setAdImages: (images) => set({ adImages: images }),
+  addAdImage: (image) => set((state) => ({ adImages: [...state.adImages, image] })),
   setLoading: (isLoading) => set({ isLoading }),
   setError: (error) => set({ error }),
   reset: () => set(initialState),

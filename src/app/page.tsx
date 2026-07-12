@@ -41,15 +41,15 @@ export default function Home() {
           <Loader message={loadingMessages[step]} />
         ) : (
           <>
-            {step === 'url' && (
-              <div className="space-y-8">
-                <AIAdStudio />
-                <UrlInputForm />
-              </div>
-            )}
+            {step === 'url' && <UrlInputForm />}
             {step === 'product' && <ProductPreview />}
             {step === 'script' && <ScriptPreview />}
-            {step === 'video' && <VideoPlayer />}
+            {step === 'video' && (
+              <div className="space-y-8">
+                <VideoPlayer />
+                <AIAdStudio />
+              </div>
+            )}
           </>
         )}
       </div>
