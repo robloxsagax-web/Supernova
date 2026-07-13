@@ -266,7 +266,7 @@ export async function POST(request: Request) {
 
     // Generate script using Alibaba Cloud Qwen model
     const completion = await client.chat.completions.create({
-      model: 'Qwen-Turbo',
+      model: 'qwen-turbo',
       messages: [
         {
           role: 'system',
