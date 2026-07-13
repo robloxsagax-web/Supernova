@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
+import OpenAI from 'openai';
 import { Product } from '@/types/product';
-
-const GROQ_API_URL = 'https://api.groq.com/openai/v1';
 
 type GenerationType = 'ad' | 'b-roll';
 
@@ -243,14 +242,20 @@ export async function POST(request: Request) {
       );
     }
 
-    // Get Groq API key
-    const groqApiKey = process.env.GROQ_API_KEY;
-    if (!groqApiKey) {
+    // Get OpenAI API key for Alibaba Cloud Qwen
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) {
       return NextResponse.json(
-        { error: 'GROQ_API_KEY environment variable is not set' },
+        { error: 'OPENAI_API_KEY environment variable is not set' },
         { status: 500 }
       );
     }
+
+    // Initialize OpenAI client with Alibaba Cloud Qwen base URL
+    const client = new OpenAI({
+      baseURL: 'https://dashscope-intl.aliyuncs.com/compatible-mode/v1',
+      apiKey: apiKey,
+    });
 
     // Build dynamic prompt based on type and duration
     const prompt = buildScriptPrompt(product, duration, type);
@@ -259,37 +264,24 @@ export async function POST(request: Request) {
     // Adjust max_tokens based on duration
     const maxTokens = duration <= 15 ? 300 : duration <= 30 ? 500 : duration <= 45 ? 750 : 1000;
 
-    // Generate script using Groq's Llama model
-    const response = await fetch(`${GROQ_API_URL}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${groqApiKey}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        model: 'llama-3.1-8b-instant',
-        messages: [
-          {
-            role: 'system',
-            content: systemPrompt
-          },
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
-        temperature: 0.7,
-        max_tokens: maxTokens,
-      }),
+    // Generate script using Alibaba Cloud Qwen model
+    const completion = await client.chat.completions.create({
+      model: 'Qwen-Turbo',
+      messages: [
+        {
+          role: 'system',
+          content: systemPrompt
+        },
+        {
+          role: 'user',
+          content: prompt
+        }
+      ],
+      temperature: 0.7,
+      max_tokens: maxTokens,
     });
 
-    if (!response.ok) {
-      const errorData = await response.text();
-      throw new Error(`Groq API error: ${response.status} - ${errorData}`);
-    }
-
-    const data = await response.json();
-    const script = data.choices?.[0]?.message?.content;
+    const script = completion.choices?.[0]?.message?.content;
 
     if (!script) {
       throw new Error('Failed to generate script');
