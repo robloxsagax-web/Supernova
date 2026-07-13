@@ -242,7 +242,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // Get OpenAI API key for Alibaba Cloud Qwen
+    // Get OpenRouter API key
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
       return NextResponse.json(
@@ -251,9 +251,9 @@ export async function POST(request: Request) {
       );
     }
 
-    // Initialize OpenAI client with Alibaba Cloud Qwen base URL
+    // Initialize OpenAI client with OpenRouter base URL
     const client = new OpenAI({
-      baseURL: 'https://dashscope-intl.aliyuncs.com/compatible-mode/v1',
+      baseURL: 'https://openrouter.ai/api/v1',
       apiKey: apiKey,
     });
 
@@ -264,9 +264,9 @@ export async function POST(request: Request) {
     // Adjust max_tokens based on duration
     const maxTokens = duration <= 15 ? 300 : duration <= 30 ? 500 : duration <= 45 ? 750 : 1000;
 
-    // Generate script using Alibaba Cloud Qwen model
+    // Generate script using OpenRouter Qwen model
     const completion = await client.chat.completions.create({
-      model: 'qwen-turbo',
+      model: 'qwen/qwen-plus',
       messages: [
         {
           role: 'system',
