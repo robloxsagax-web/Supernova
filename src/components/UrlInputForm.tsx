@@ -1,9 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { useStore } from '@/lib/store';
 import { 
   VideoRatio, 
@@ -11,21 +11,22 @@ import {
   BrandPaletteId,
   BRAND_PALETTES
 } from '@/types/product';
+import { Sparkles } from 'lucide-react';
 
 type GenerationType = 'ad' | 'b-roll';
 
-const generationTypes: { type: GenerationType; label: string; subtext: string; icon: string }[] = [
+const generationTypes: { type: GenerationType; label: string; subtext: string; emoji: string }[] = [
   {
     type: 'ad',
-    label: '🚀 High-Conversion Ad',
+    label: 'High-Conversion Ad',
     subtext: 'Aggressive problem-solving sales hooks, optimized for paid social.',
-    icon: '🚀'
+    emoji: '🚀'
   },
   {
     type: 'b-roll',
-    label: '🎬 Organic B-Roll',
-    subtext: 'Aesthetic storytelling and educational narratives, optimized for viral Reels/Shorts.',
-    icon: '🎬'
+    label: 'Organic B-Roll',
+    subtext: 'Aesthetic storytelling and educational narratives, optimized for viral.',
+    emoji: '🎬'
   }
 ];
 
@@ -43,9 +44,7 @@ export function UrlInputForm() {
     setError(null);
 
     try {
-      // Save video settings with brand palette
       setVideoSettings({ ratio, duration, captionStyle: 'feature_badge', brandPalette });
-      // Save generation type to store
       setStoreGenerationType(generationType);
 
       const response = await fetch('/api/scrape', {
@@ -72,49 +71,66 @@ export function UrlInputForm() {
   const selectedType = generationTypes.find(t => t.type === generationType);
 
   return (
-    <Card className="w-full max-w-2xl mx-auto">
-      <CardHeader>
-        <CardTitle>Generate AI Video Ad</CardTitle>
-        <CardDescription>
-          Paste a product URL from Amazon or Shopify to generate a video ad
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-          
-          {/* Generation Type Selector - Premium Segment Control */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Content Style</label>
+    <motion.div
+      initial={{ y: 20, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      className="relative p-8 rounded-3xl glass overflow-hidden"
+    >
+      {/* Background Gradient */}
+      <div className="absolute inset-0 bg-gradient-to-br from-maroon/10 via-transparent to-peach/10" />
+      
+      {/* Glow Effects */}
+      <div className="absolute top-0 left-0 w-96 h-96 bg-gradient-to-br from-maroon/20 to-peach/20 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
+      <div className="absolute bottom-0 right-0 w-96 h-96 bg-gradient-to-br from-peach/20 to-maroon/20 rounded-full blur-3xl translate-x-1/2 translate-y-1/2" />
+
+      {/* Content */}
+      <div className="relative z-10">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.2, type: 'spring' }}
+            className="inline-flex items-center justify-center w-16 h-16 rounded-2xl gradient-primary mb-4 glow-maroon"
+          >
+            <Sparkles className="w-8 h-8 text-peach" />
+          </motion.div>
+          <h2 className="text-2xl font-bold text-foreground mb-2">
+            Generate AI Video Ad
+          </h2>
+          <p className="text-muted-foreground">
+            Paste a product URL from Amazon or Shopify to generate a video ad
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Generation Type Selector */}
+          <div className="space-y-3">
+            <label className="text-sm font-semibold text-foreground">Content Style</label>
             <div className="relative">
               {/* Sliding background */}
-              <div 
-                className="absolute inset-0 bg-primary/10 rounded-xl border border-primary/20 transition-all duration-300 ease-out"
-                style={{
-                  width: '50%',
-                  left: generationType === 'ad' ? '0%' : '50%',
-                }}
+              <motion.div
+                initial={false}
+                animate={{ x: generationType === 'ad' ? 0 : '100%' }}
+                transition={{ duration: 0.3, ease: 'easeInOut' }}
+                className="absolute inset-0 bg-gradient-to-br from-maroon/20 to-peach/20 rounded-xl border border-border"
+                style={{ width: '50%' }}
               />
-              <div className="relative grid grid-cols-2 gap-1 p-1 bg-muted/50 rounded-xl">
+              <div className="relative grid grid-cols-2 gap-2 p-1.5">
                 {generationTypes.map((item) => (
                   <button
                     key={item.type}
                     type="button"
                     onClick={() => setGenerationType(item.type)}
-                    className={`relative z-10 px-4 py-3 rounded-lg transition-all duration-300 ${
-                      generationType === item.type
-                        ? 'bg-background shadow-sm'
-                        : 'hover:bg-muted/50'
-                    }`}
+                    className="relative z-10 px-4 py-4 rounded-lg transition-all duration-300"
                   >
-                    <div className="text-center space-y-1">
-                      <p className={`text-sm font-semibold transition-colors ${
-                        generationType === item.type ? 'text-foreground' : 'text-muted-foreground'
-                      }`}>
-                        {item.icon} {item.label.split(' ').slice(1).join(' ')}
+                    <div className="text-center space-y-2">
+                      <p className="text-2xl">{item.emoji}</p>
+                      <p className="text-sm font-semibold text-foreground">
+                        {item.label}
                       </p>
-                      <p className={`text-[10px] leading-tight transition-colors ${
-                        generationType === item.type ? 'text-foreground/80' : 'text-muted-foreground/70'
-                      }`}>
+                      <p className="text-[10px] text-muted-foreground leading-tight">
                         {item.subtext}
                       </p>
                     </div>
@@ -125,24 +141,27 @@ export function UrlInputForm() {
           </div>
 
           {/* URL Input */}
-          <Input
-            type="url"
-            placeholder="https://www.amazon.com/product-url"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            required
-            className="w-full"
-          />
+          <div className="relative group">
+            <Input
+              type="url"
+              placeholder="https://www.amazon.com/product-url"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              required
+              className="w-full h-14 px-6 rounded-2xl bg-white/5 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-peach/50 focus:bg-white/10 transition-all duration-300"
+            />
+            <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-maroon/10 to-peach/10 opacity-0 group-focus-within:opacity-100 transition-opacity pointer-events-none" />
+          </div>
           
           {/* Video Settings */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Ratio */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Video Ratio</label>
+            <div className="space-y-3">
+              <label className="text-sm font-semibold text-foreground">Video Ratio</label>
               <select
                 value={ratio}
                 onChange={(e) => setRatio(e.target.value as VideoRatio)}
-                className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm"
+                className="w-full h-12 px-4 rounded-xl bg-white/5 border border-border text-foreground focus:outline-none focus:border-peach/50 transition-all duration-300"
               >
                 <option value="16:9">16:9 (Horizontal)</option>
                 <option value="9:16">9:16 (Vertical)</option>
@@ -150,25 +169,23 @@ export function UrlInputForm() {
             </div>
             
             {/* Duration */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-white">Duration</label>
+            <div className="space-y-3">
+              <label className="text-sm font-semibold text-foreground">Duration</label>
               <div className="relative">
-                <div 
-                  className="absolute inset-0 bg-purple-600 rounded-lg transition-all duration-300"
-                  style={{
-                    width: '25%',
-                    left: duration === 15 ? '0%' : duration === 30 ? '25%' : duration === 45 ? '50%' : '75%',
-                  }}
+                <motion.div
+                  initial={false}
+                  animate={{ x: duration === 15 ? '0%' : duration === 30 ? '25%' : duration === 45 ? '50%' : '75%' }}
+                  transition={{ duration: 0.3, ease: 'easeInOut' }}
+                  className="absolute top-0 bottom-0 rounded-xl gradient-primary"
+                  style={{ width: '25%' }}
                 />
-                <div className="relative grid grid-cols-4 gap-1 p-1 bg-gray-800/50 rounded-lg border border-gray-700">
+                <div className="relative grid grid-cols-4 gap-2 p-1.5">
                   {([15, 30, 45, 60] as VideoDuration[]).map((d) => (
                     <button
                       key={d}
                       type="button"
                       onClick={() => setDuration(d)}
-                      className={`px-3 py-2 rounded-md text-sm font-medium transition-all ${
-                        duration === d ? 'text-white' : 'text-gray-400'
-                      }`}
+                      className="px-3 py-2 rounded-lg text-sm font-semibold transition-all duration-300"
                     >
                       {d}s
                     </button>
@@ -179,58 +196,76 @@ export function UrlInputForm() {
           </div>
 
           {/* Brand Palette */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Brand Identity Color Palette</label>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <div className="space-y-3">
+            <label className="text-sm font-semibold text-foreground">Brand Identity Color Palette</label>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {(Object.keys(BRAND_PALETTES) as BrandPaletteId[]).map((paletteId) => {
                 const palette = BRAND_PALETTES[paletteId];
                 const isSelected = brandPalette === paletteId;
                 return (
-                  <button
+                  <motion.button
                     key={paletteId}
                     type="button"
                     onClick={() => setBrandPalette(paletteId)}
-                    className={`relative p-3 rounded-lg border-2 transition-all ${
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className={`relative p-4 rounded-xl border-2 transition-all duration-300 ${
                       isSelected 
-                        ? 'border-primary shadow-md scale-[1.02]' 
-                        : 'border-border hover:border-primary/50'
+                        ? 'border-peach shadow-lg glow-peach' 
+                        : 'border-border hover:border-peach/50 glass-hover'
                     }`}
                   >
                     {/* Color swatches */}
-                    <div className="flex gap-1 mb-2">
+                    <div className="flex gap-2 mb-3 justify-center">
                       <div 
-                        className="w-4 h-4 rounded-full" 
+                        className="w-6 h-6 rounded-full shadow-lg" 
                         style={{ backgroundColor: palette.primary }}
                       />
                       <div 
-                        className="w-4 h-4 rounded-full" 
+                        className="w-6 h-6 rounded-full shadow-lg" 
                         style={{ backgroundColor: palette.secondary }}
                       />
                     </div>
-                    <p className="text-xs font-medium text-center leading-tight">
+                    <p className="text-xs font-semibold text-center text-foreground">
                       {palette.name}
                     </p>
                     {isSelected && (
-                      <div className="absolute -top-1 -right-1 w-4 h-4 bg-primary rounded-full flex items-center justify-center">
-                        <span className="text-[10px] text-primary-foreground">✓</span>
-                      </div>
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="absolute -top-2 -right-2 w-6 h-6 rounded-full gradient-primary flex items-center justify-center shadow-lg"
+                      >
+                        <span className="text-[10px] text-background font-bold">✓</span>
+                      </motion.div>
                     )}
-                  </button>
+                  </motion.button>
                 );
               })}
             </div>
           </div>
 
-          <Button type="submit" className="w-full mt-2">
-            {selectedType?.type === 'b-roll' ? 'Generate B-Roll Video' : 'Generate Video Ad'}
-          </Button>
+          {/* Submit Button */}
+          <motion.div
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.99 }}
+          >
+            <Button 
+              type="submit" 
+              className="w-full h-14 rounded-2xl gradient-primary text-base font-semibold text-background hover:opacity-90 transition-all duration-300 shadow-lg glow-maroon"
+            >
+              <Sparkles className="w-5 h-5 mr-2" />
+              {selectedType?.type === 'b-roll' ? 'Generate B-Roll Video' : 'Generate Video Ad'}
+            </Button>
+          </motion.div>
         </form>
-      </CardContent>
-      <CardFooter className="flex justify-center">
-        <p className="text-xs text-muted-foreground text-center">
-          {selectedType?.icon} {ratio === '9:16' ? '📱' : '🖥️'} {ratio} • {duration}s • {selectedBrand.name}
-        </p>
-      </CardFooter>
-    </Card>
+
+        {/* Footer */}
+        <div className="mt-6 pt-6 border-t border-border text-center">
+          <p className="text-sm text-muted-foreground">
+            {selectedType?.emoji} {ratio === '9:16' ? '📱' : '🖥️'} {ratio} • {duration}s • {selectedBrand.name}
+          </p>
+        </div>
+      </div>
+    </motion.div>
   );
 } 

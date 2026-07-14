@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Supernova - The AI Marketing Agent",
-  description: "Turn any product into a complete marketing campaign with AI-powered video ads, images, and creative assets.",
+  description: "Turn any product into a complete marketing campaign with AI-powered video ads and creative assets",
 };
 
 export default function RootLayout({
