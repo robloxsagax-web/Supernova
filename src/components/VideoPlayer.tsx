@@ -71,7 +71,7 @@ function cleanScriptForVoiceover(rawScript: string): string {
 export function VideoPlayer() {
   // ALL HOOKS AT TOP LEVEL
   const store = useStore();
-  const { bRollConfig, productImages } = store;
+  const { bRollConfig, productImages, addAsset, createProject } = store;
   const { script, product, videoSettings, generationType } = store;
   
   const playerRef = useRef<HTMLDivElement>(null);
@@ -226,7 +226,12 @@ export function VideoPlayer() {
     setRecordedBlobUrl(downloadUrl);
     setIsDownloading(false);
     setDownloadProgress('');
-  }, [recordedBlobUrl]);
+    
+    // Add video asset to store
+    const timestamp = new Date().toISOString();
+    const assetName = `Video_${timestamp.replace(/[:.]/g, '-')}.mp4`;
+    addAsset('video', downloadUrl, assetName);
+  }, [recordedBlobUrl, addAsset]);
 
   /**
    * Trigger the actual file download and cleanup

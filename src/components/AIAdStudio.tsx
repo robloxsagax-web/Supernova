@@ -35,7 +35,7 @@ const FORMATS: { id: ImageFormat; name: string; description: string }[] = [
 ];
 
 export function AIAdStudio() {
-  const { product, addAdImage } = useStore();
+  const { product, addAdImage, addAsset } = useStore();
   const [selectedStyle, setSelectedStyle] = useState<AdStyle>('bold');
   const [selectedFormat, setSelectedFormat] = useState<ImageFormat>('9:16');
   const [isGenerating, setIsGenerating] = useState(false);
@@ -184,6 +184,10 @@ Negative Prompt: Exclude any generated text, misspellings, or fictional branding
         };
         setPosters(prev => [newPoster, ...prev]);
         addAdImage(imageUrl);
+        // Add image asset to store for dashboard
+        const timestamp = new Date().toISOString();
+        const assetName = `Image_${timestamp.replace(/[.:]/g, '-')}.png`;
+        addAsset('image', imageUrl, assetName);
         setStatusMessage('Poster generated successfully!');
       } else {
         setStatusMessage('Failed to generate poster. Please try again.');

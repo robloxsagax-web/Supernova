@@ -1,10 +1,12 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import { AppState, Product, VideoSettings } from '@/types/product';
 
 type Step = 'url' | 'product' | 'script' | 'video';
 type GenerationType = 'ad' | 'b-roll';
+type AssetType = 'image' | 'video' | 'script';
+type ActivityType = 'campaign_created' | 'image_generated' | 'video_generated' | 'script_generated' | 'asset_deleted' | 'project_renamed';
 
-// B-Roll configuration types
 export interface BRollClip {
   id: number;
   url: string;
@@ -17,25 +19,33 @@ export interface BRollConfig {
   bRollImages?: string[];
   keywords: string[];
   totalDuration: number;
-  clipDuration?: number;
-  alternationEnabled?: boolean;
-  framesPerContent?: number;
-  centerPosition?: string;
-  centerSize?: number;
-  overlayPosition?: string;
-  overlaySize?: number;
-  overlayOpacity?: number;
-  overlayTransition?: string;
-  overlayBorderRadius?: number;
-  overlayShadow?: string;
-  showGradient?: boolean;
-  gradientIntensity?: number;
-  loopBackground?: boolean;
-  ctaStartFrame?: number;
-  ctaFrames?: number;
-  backgroundColor?: string;
-  showCaptions?: boolean;
-  framesPerClip?: number;
+}
+
+export interface Project {
+  id: string;
+  name: string;
+  product: Product | null;
+  createdAt: string;
+  updatedAt: string;
+  assets: string[];
+}
+
+export interface Asset {
+  id: string;
+  type: AssetType;
+  url: string;
+  thumbnail?: string;
+  name: string;
+  size: number;
+  createdAt: string;
+  projectId?: string;
+}
+
+export interface Activity {
+  id: string;
+  type: ActivityType;
+  description: string;
+  timestamp: string;
 }
 
 const initialVideoSettings: VideoSettings = {
@@ -45,30 +55,32 @@ const initialVideoSettings: VideoSettings = {
   brandPalette: 'noir-gold',
 };
 
-const initialState: AppState & { 
-  generationType: GenerationType;
-  bRollConfig: BRollConfig | null;
-  productImages: string[];
-  adImages: string[];
-} = {
-  step: 'url' as Step,
-  product: null,
-  script: null,
-  videoUrl: null,
-  videoSettings: initialVideoSettings,
-  generationType: 'ad' as GenerationType,
-  bRollConfig: null,
-  productImages: [],
-  adImages: [],
-  isLoading: false,
-  error: null,
+const generateId = () => `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+const estimateAssetSize = (type: AssetType): number => {
+  switch (type) {
+    case 'image': return Math.floor(Math.random() * 5000000) + 500000;
+    case 'video': return Math.floor(Math.random() * 50000000) + 10000000;
+    case 'script': return Math.floor(Math.random() * 50000) + 5000;
+    default: return 0;
+  }
 };
 
-export const useStore = create<AppState & { 
+interface StoreState {
+  step: Step;
+  product: Product | null;
+  script: string | null;
+  videoUrl: string | null;
+  videoSettings: VideoSettings;
   generationType: GenerationType;
   bRollConfig: BRollConfig | null;
   productImages: string[];
   adImages: string[];
+  isLoading: boolean;
+  error: string | null;
+  projects: Project[];
+  assets: Asset[];
+  activities: Activity[];
   setStep: (step: Step) => void;
   setProduct: (product: Product) => void;
   setScript: (script: string) => void;
@@ -82,19 +94,143 @@ export const useStore = create<AppState & {
   setLoading: (isLoading: boolean) => void;
   setError: (error: string | null) => void;
   reset: () => void;
-}>((set) => ({
-  ...initialState,
-  setStep: (step) => set({ step }),
-  setProduct: (product) => set({ product }),
-  setScript: (script) => set({ script }),
-  setVideo: (videoUrl) => set({ videoUrl }),
-  setVideoSettings: (settings) => set({ videoSettings: settings }),
-  setGenerationType: (type) => set({ generationType: type }),
-  setBRollConfig: (config) => set({ bRollConfig: config }),
-  setProductImages: (images) => set({ productImages: images }),
-  setAdImages: (images) => set({ adImages: images }),
-  addAdImage: (image) => set((state) => ({ adImages: [...state.adImages, image] })),
-  setLoading: (isLoading) => set({ isLoading }),
-  setError: (error) => set({ error }),
-  reset: () => set(initialState),
-})); 
+  createProject: (name: string, product: Product | null) => Project;
+  updateProject: (id: string, updates: Partial<Project>) => void;
+  deleteProject: (id: string) => void;
+  renameProject: (id: string, newName: string) => void;
+  addAsset: (type: AssetType, url: string, name: string, projectId?: string) => Asset;
+  deleteAsset: (id: string) => void;
+  addActivity: (type: ActivityType, description: string) => void;
+}
+
+export const useStore = create<StoreState>()(
+  persist(
+    (set, get) => ({
+      step: 'url' as Step,
+      product: null,
+      script: null,
+      videoUrl: null,
+      videoSettings: initialVideoSettings,
+      generationType: 'ad' as GenerationType,
+      bRollConfig: null,
+      productImages: [],
+      adImages: [],
+      isLoading: false,
+      error: null,
+      projects: [],
+      assets: [],
+      activities: [],
+
+      setStep: (step) => set({ step }),
+      setProduct: (product) => set({ product }),
+      setScript: (script) => set({ script }),
+      setVideo: (videoUrl) => set({ videoUrl }),
+      setVideoSettings: (settings) => set({ videoSettings: settings }),
+      setGenerationType: (type) => set({ generationType: type }),
+      setBRollConfig: (config) => set({ bRollConfig: config }),
+      setProductImages: (images) => set({ productImages: images }),
+      setAdImages: (images) => set({ adImages: images }),
+      addAdImage: (image) => set((state) => ({ adImages: [...state.adImages, image] })),
+      setLoading: (isLoading) => set({ isLoading }),
+      setError: (error) => set({ error }),
+      reset: () => set({
+        step: 'url',
+        product: null,
+        script: null,
+        videoUrl: null,
+        isLoading: false,
+        error: null,
+      }),
+
+      createProject: (name, product) => {
+        const newProject: Project = {
+          id: generateId(),
+          name,
+          product,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          assets: [],
+        };
+        set((state) => ({ projects: [newProject, ...state.projects] }));
+        get().addActivity('campaign_created', `Created campaign: ${name}`);
+        return newProject;
+      },
+
+      updateProject: (id, updates) => {
+        set((state) => ({
+          projects: state.projects.map((p) =>
+            p.id === id ? { ...p, ...updates, updatedAt: new Date().toISOString() } : p
+          ),
+        }));
+      },
+
+      deleteProject: (id) => {
+        set((state) => ({ projects: state.projects.filter((p) => p.id !== id) }));
+        get().addActivity('asset_deleted', `Deleted project`);
+      },
+
+      renameProject: (id, newName) => {
+        set((state) => ({
+          projects: state.projects.map((p) =>
+            p.id === id ? { ...p, name: newName, updatedAt: new Date().toISOString() } : p
+          ),
+        }));
+        get().addActivity('project_renamed', `Renamed to: ${newName}`);
+      },
+
+      addAsset: (type, url, name, projectId) => {
+        const newAsset: Asset = {
+          id: generateId(),
+          type,
+          url,
+          name,
+          size: estimateAssetSize(type),
+          createdAt: new Date().toISOString(),
+          projectId,
+        };
+        set((state) => {
+          const newAssets = [newAsset, ...state.assets];
+          const updatedProjects = projectId
+            ? state.projects.map((p) =>
+                p.id === projectId
+                  ? { ...p, assets: [newAsset.id, ...p.assets], updatedAt: new Date().toISOString() }
+                  : p
+              )
+            : state.projects;
+          return { assets: newAssets, projects: updatedProjects };
+        });
+        const activityType = type === 'image' ? 'image_generated' 
+          : type === 'video' ? 'video_generated' 
+          : 'script_generated';
+        get().addActivity(activityType, `Generated ${type}: ${name}`);
+        return newAsset;
+      },
+
+      deleteAsset: (id) => {
+        set((state) => ({ assets: state.assets.filter((a) => a.id !== id) }));
+        get().addActivity('asset_deleted', `Deleted asset`);
+      },
+
+      addActivity: (type, description) => {
+        const newActivity: Activity = {
+          id: generateId(),
+          type,
+          description,
+          timestamp: new Date().toISOString(),
+        };
+        set((state) => ({
+          activities: [newActivity, ...state.activities].slice(0, 50),
+        }));
+      },
+    }),
+    {
+      name: 'supernova-storage',
+      storage: createJSONStorage(() => localStorage),
+      partialize: (state) => ({
+        projects: state.projects,
+        assets: state.assets,
+        activities: state.activities,
+      }),
+    }
+  )
+);

@@ -36,7 +36,7 @@ export function UrlInputForm() {
   const [ratio, setRatio] = useState<VideoRatio>('16:9');
   const [duration, setDuration] = useState<VideoDuration>(30);
   const [brandPalette, setBrandPalette] = useState<BrandPaletteId>('noir-gold');
-  const { setLoading, setError, setProduct, setStep, setVideoSettings, setGenerationType: setStoreGenerationType } = useStore();
+  const { setLoading, setError, setProduct, setStep, setVideoSettings, setGenerationType: setStoreGenerationType, createProject } = useStore();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,6 +59,11 @@ export function UrlInputForm() {
 
       const product = await response.json();
       setProduct(product);
+      
+      // Create a new project for this campaign
+      const campaignName = product.title || `Campaign ${new Date().toLocaleDateString()}`;
+      createProject(campaignName, product);
+      
       setStep('product');
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Something went wrong');
