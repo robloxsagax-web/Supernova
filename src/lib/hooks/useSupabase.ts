@@ -22,7 +22,9 @@ export function useSupabase() {
   useEffect(() => {
     const configured = !!(
       process.env.NEXT_PUBLIC_SUPABASE_URL &&
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+      process.env.NEXT_PUBLIC_SUPABASE_URL !== 'undefined' &&
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY &&
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY !== 'undefined'
     );
     setIsSupabaseConfigured(configured);
   }, []);
@@ -40,27 +42,21 @@ export function useCampaigns() {
     try {
       const isConfigured = !!(
         process.env.NEXT_PUBLIC_SUPABASE_URL &&
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+        process.env.NEXT_PUBLIC_SUPABASE_URL !== 'undefined' &&
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY &&
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY !== 'undefined'
       );
 
       if (isConfigured) {
         const data = await getCampaigns();
         setCampaigns(data);
       } else {
-        setCampaigns(projects.map((p) => ({
-          id: p.id,
-          title: p.name,
-          product_url: p.product?.url || '',
-          company: p.product?.company_name || '',
-          status: 'Completed' as any,
-          campaign_type: 'ad',
-          created_at: p.createdAt,
-          updated_at: p.updatedAt,
-          cover_image: p.product?.image
-        })));
+        // NO FALLBACK - Return empty array, use Zustand store instead
+        setCampaigns([]);
       }
     } catch (error) {
       console.error('Failed to fetch campaigns:', error);
+      setCampaigns([]);
     } finally {
       setIsLoading(false);
     }
@@ -83,28 +79,21 @@ export function useAssets(campaignId?: string) {
     try {
       const isConfigured = !!(
         process.env.NEXT_PUBLIC_SUPABASE_URL &&
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+        process.env.NEXT_PUBLIC_SUPABASE_URL !== 'undefined' &&
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY &&
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY !== 'undefined'
       );
 
       if (isConfigured) {
         const data = await getAssets(campaignId);
         setAssets(data);
       } else {
-        setAssets(localAssets.map((a) => ({
-          id: a.id,
-          campaign_id: a.projectId || '',
-          project_id: a.projectId || '',
-          type: a.type,
-          storage_path: a.url,
-          public_url: a.url,
-          thumbnail: a.thumbnail,
-          file_size: a.size,
-          name: a.name,
-          created_at: a.createdAt
-        })));
+        // NO FALLBACK - Return empty array, use Zustand store instead
+        setAssets([]);
       }
     } catch (error) {
       console.error('Failed to fetch assets:', error);
+      setAssets([]);
     } finally {
       setIsLoading(false);
     }
@@ -127,23 +116,21 @@ export function useActivities() {
     try {
       const isConfigured = !!(
         process.env.NEXT_PUBLIC_SUPABASE_URL &&
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+        process.env.NEXT_PUBLIC_SUPABASE_URL !== 'undefined' &&
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY &&
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY !== 'undefined'
       );
 
       if (isConfigured) {
         const data = await getActivities();
         setActivities(data);
       } else {
-        setActivities(localActivities.map((a) => ({
-          id: a.id,
-          campaign_id: '',
-          type: a.type,
-          description: a.description,
-          timestamp: a.timestamp
-        })));
+        // NO FALLBACK - Return empty array, use Zustand store instead
+        setActivities([]);
       }
     } catch (error) {
       console.error('Failed to fetch activities:', error);
+      setActivities([]);
     } finally {
       setIsLoading(false);
     }
@@ -171,24 +158,33 @@ export function useDashboardStats() {
     try {
       const isConfigured = !!(
         process.env.NEXT_PUBLIC_SUPABASE_URL &&
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+        process.env.NEXT_PUBLIC_SUPABASE_URL !== 'undefined' &&
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY &&
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY !== 'undefined'
       );
 
       if (isConfigured) {
         const data = await getDashboardStats();
         setStats({ ...data, storage: 0 });
       } else {
-        const { assets, projects } = useStore.getState();
+        // NO FALLBACK - Return zeros, use Zustand store instead
         setStats({
-          campaigns: projects.length,
-          videos: assets.filter(a => a.type === 'video').length,
-          images: assets.filter(a => a.type === 'image').length,
-          assets: assets.length,
-          storage: assets.reduce((sum, a) => sum + a.size, 0)
+          campaigns: 0,
+          videos: 0,
+          images: 0,
+          assets: 0,
+          storage: 0
         });
       }
     } catch (error) {
       console.error('Failed to fetch stats:', error);
+      setStats({
+        campaigns: 0,
+        videos: 0,
+        images: 0,
+        assets: 0,
+        storage: 0
+      });
     } finally {
       setIsLoading(false);
     }
