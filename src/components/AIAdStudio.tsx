@@ -214,200 +214,270 @@ Negative Prompt: Exclude any generated text, misspellings, or fictional branding
 
   const formatAspectClass = (format: ImageFormat): string => {
     switch (format) {
-      case '16:9': return 'aspect-video';
       case '1:1': return 'aspect-square';
-      default: return 'aspect-[3/4]';
+      case '9:16': return 'aspect-[9/16]';
+      case '4:5': return 'aspect-[4/5]';
+      case '16:9': return 'aspect-video';
+      default: return 'aspect-square';
     }
   };
 
   const isDisabled = !product?.image || !puterReady || isGenerating;
 
   return (
-    <div className="w-full bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-6 border border-gray-700">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl">
-            <Sparkles className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <h3 className="text-lg font-bold text-white">AI Ad Studio</h3>
-            <p className="text-xs text-gray-400">Powered by Puter.js</p>
-          </div>
-        </div>
-        
-        {/* Product Badge */}
-        {product && (
-          <div className="px-3 py-1.5 bg-gray-800 rounded-full border border-gray-600">
-            <span className="text-xs text-gray-300">{product.company_name}</span>
-          </div>
-        )}
-      </div>
+    <motion.div
+      initial={{ y: 20, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      className="relative w-full rounded-3xl glass overflow-hidden"
+    >
+      {/* Background Glow Effects */}
+      <div className="absolute inset-0 bg-gradient-to-br from-maroon/10 via-transparent to-peach/10" />
+      <div className="absolute top-0 left-0 w-96 h-96 bg-gradient-to-br from-maroon/20 to-peach/20 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
+      <div className="absolute bottom-0 right-0 w-96 h-96 bg-gradient-to-br from-peach/20 to-maroon/20 rounded-full blur-3xl translate-x-1/2 translate-y-1/2" />
 
-      {/* Status Banner */}
-      {statusMessage && (
-        <div className={`mb-4 flex items-center gap-2 px-4 py-3 rounded-xl ${
-          statusMessage.includes('failed') || statusMessage.includes('Failed')
-            ? 'bg-red-900/30 border border-red-700'
-            : statusMessage.includes('Loading')
-              ? 'bg-yellow-900/30 border border-yellow-700'
-              : 'bg-green-900/30 border border-green-700'
-        }`}>
-          {statusMessage.includes('failed') || statusMessage.includes('Failed') ? (
-            <AlertCircle className="w-4 h-4 text-red-400" />
-          ) : statusMessage.includes('Loading') ? (
-            <Loader2 className="w-4 h-4 text-yellow-400 animate-spin" />
-          ) : (
-            <Sparkles className="w-4 h-4 text-green-400" />
+      {/* Main Container */}
+      <div className="relative z-10 p-8 space-y-8">
+        {/* Header */}
+        <motion.div
+          initial={{ y: -10, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          className="flex items-center justify-between"
+        >
+          <div className="flex items-center gap-4">
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.1, type: 'spring' }}
+              className="w-14 h-14 rounded-2xl gradient-primary flex items-center justify-center glow-maroon"
+            >
+              <Wand2 className="w-7 h-7 text-peach" />
+            </motion.div>
+            <div>
+              <h2 className="text-3xl font-bold text-foreground">AI Image Studio</h2>
+              <p className="text-muted-foreground text-sm">Generate premium advertising creatives using AI</p>
+            </div>
+          </div>
+          {product && (
+            <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="px-4 py-2 rounded-full glass">
+              <span className="text-sm text-muted-foreground">{product.company_name}</span>
+            </motion.div>
           )}
-          <span className={`text-sm ${
-            statusMessage.includes('failed') || statusMessage.includes('Failed')
-              ? 'text-red-300'
-              : statusMessage.includes('Loading')
-                ? 'text-yellow-300'
-                : 'text-green-300'
-          }`}>{statusMessage}</span>
-        </div>
-      )}
+        </motion.div>
 
-      {/* Style Selector */}
-      <div className="mb-4">
-        <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 block">
-          Select Style
-        </label>
-        <div className="flex flex-wrap gap-2">
-          {AD_STYLES.map((style) => (
-            <button
-              key={style.id}
-              onClick={() => setSelectedStyle(style.id)}
-              disabled={isDisabled}
-              className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-                selectedStyle === style.id
-                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/25'
-                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600 border border-gray-600'
-              } ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+        {/* Status Banner */}
+        <AnimatePresence>
+          {statusMessage && (
+            <motion.div
+              initial={{ y: -20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: -20, opacity: 0 }}
+              className={`flex items-center gap-3 px-5 py-4 rounded-2xl border ${
+                statusMessage.includes('failed') || statusMessage.includes('Failed')
+                  ? 'bg-error/10 border-error/20'
+                  : statusMessage.includes('Loading')
+                    ? 'bg-yellow-500/10 border-yellow-500/20'
+                    : 'bg-success/10 border-success/20'
+              }`}
             >
-              <span className="mr-1">{style.emoji}</span>
-              <span className="text-white">{style.name}</span>
-            </button>
-          ))}
-        </div>
-      </div>
+              {statusMessage.includes('failed') || statusMessage.includes('Failed') ? (
+                <AlertCircle className="w-5 h-5 text-error" />
+              ) : statusMessage.includes('Loading') ? (
+                <Loader2 className="w-5 h-5 text-yellow-500 animate-spin" />
+              ) : (
+                <Sparkles className="w-5 h-5 text-success" />
+              )}
+              <span className={`text-sm font-medium ${
+                statusMessage.includes('failed') || statusMessage.includes('Failed')
+                  ? 'text-error'
+                  : statusMessage.includes('Loading')
+                    ? 'text-yellow-500'
+                    : 'text-success'
+              }`}>{statusMessage}</span>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-      {/* Format Selector */}
-      <div className="mb-6">
-        <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 block">
-          Select Format
-        </label>
-        <div className="grid grid-cols-4 gap-2">
-          {FORMATS.map((format) => (
-            <button
-              key={format.id}
-              onClick={() => setSelectedFormat(format.id)}
-              disabled={isDisabled}
-              className={`p-3 rounded-xl border-2 text-center transition-all ${
-                selectedFormat === format.id
-                  ? 'border-purple-500 bg-purple-900/30'
-                  : 'border-gray-600 bg-gray-700 hover:border-gray-500'
-              } ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
-            >
-              <div className="text-2xl mb-1">{format.emoji}</div>
-              <div className="text-xs font-bold text-white">{format.name}</div>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Generate Button */}
-      <Button
-        onClick={handleGenerate}
-        disabled={isDisabled}
-        className={`w-full h-12 text-base font-bold ${
-          !product?.image
-            ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
-            : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-lg shadow-purple-500/25'
-        } ${isGenerating ? 'opacity-70' : ''}`}
-      >
-        {isGenerating ? (
-          <>
-            <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-            <span className="text-white">Generating...</span>
-          </>
-        ) : !product?.image ? (
-          <>
-            <AlertCircle className="w-5 h-5 mr-2" />
-            <span className="text-gray-400">Enter URL to Enable</span>
-          </>
-        ) : (
-          <>
-            <Sparkles className="w-5 h-5 mr-2" />
-            <span className="text-white">Generate {selectedFormat} Poster</span>
-          </>
-        )}
-      </Button>
-
-      {/* Generated Posters Gallery */}
-      {posters.length > 0 && (
-        <div className="mt-8 pt-6 border-t border-gray-700">
-          <div className="flex items-center justify-between mb-4">
-            <h4 className="text-sm font-bold text-white flex items-center gap-2">
-              <ImageIcon className="w-4 h-4" />
-              Generated Posters ({posters.length})
-            </h4>
-          </div>
-          
-          <div 
-            ref={containerRef}
-            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-h-96 overflow-y-auto scrollbar-thin"
-          >
-            {posters.map((poster, index) => (
-              <div
-                key={poster.id}
-                className="relative group rounded-xl overflow-hidden border-2 border-gray-600 hover:border-purple-500 transition-all shadow-lg"
+        {/* Creative Style Section */}
+        <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }} className="space-y-4">
+          <h3 className="text-lg font-semibold text-foreground">Creative Style</h3>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            {AD_STYLES.map((style) => (
+              <motion.button
+                key={style.id}
+                onClick={() => setSelectedStyle(style.id)}
+                disabled={isDisabled}
+                whileHover={{ y: -4, scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className={`relative p-4 rounded-2xl border-2 transition-all duration-300 glass-hover ${
+                  selectedStyle === style.id
+                    ? 'border-peach glow-peach bg-gradient-to-br from-maroon/20 to-peach/20'
+                    : 'border-border hover:border-peach/50'
+                } ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
-                <div className={`w-full ${formatAspectClass(poster.format)} bg-gray-800`}>
-                  <img
-                    src={poster.url}
-                    alt={`Generated poster ${index + 1}`}
-                    className="w-full h-full object-contain"
-                    loading="lazy"
-                  />
-                </div>
-                
-                {/* Hover overlay with download */}
-                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                  <button
-                    onClick={() => handleDownload(poster, index)}
-                    className="p-3 bg-white rounded-full hover:bg-gray-100 transition-colors shadow-xl"
-                  >
-                    <Download className="w-5 h-5 text-gray-900" />
-                  </button>
-                </div>
-                
-                {/* Labels */}
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-white text-xs font-bold">
-                      {AD_STYLES.find(s => s.id === poster.style)?.emoji} {poster.style}
-                    </span>
-                    <span className="text-gray-300 text-xs">{poster.format}</span>
-                  </div>
-                </div>
-              </div>
+                <div className="text-3xl mb-2">{style.emoji}</div>
+                <div className="text-sm font-semibold text-foreground mb-1">{style.name}</div>
+                <div className="text-xs text-muted-foreground">{style.description}</div>
+                {selectedStyle === style.id && (
+                  <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="absolute -top-2 -right-2 w-6 h-6 rounded-full gradient-primary flex items-center justify-center shadow-lg">
+                    <span className="text-[10px] text-background font-bold">✓</span>
+                  </motion.div>
+                )}
+              </motion.button>
             ))}
           </div>
-        </div>
-      )}
+        </motion.div>
 
-      {/* Empty State */}
-      {!isGenerating && posters.length === 0 && (
-        <div className="mt-8 pt-6 border-t border-gray-700 text-center py-8">
-          <ImageIcon className="w-12 h-12 mx-auto mb-3 text-gray-600" />
-          <p className="text-sm text-gray-500">
-            Generated posters will appear here
-          </p>
-        </div>
-      )}
-    </div>
+        {/* Aspect Ratio Section */}
+        <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.3 }} className="space-y-4">
+          <h3 className="text-lg font-semibold text-foreground">Aspect Ratio</h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {FORMATS.map((format) => (
+              <motion.button
+                key={format.id}
+                onClick={() => setSelectedFormat(format.id)}
+                disabled={isDisabled}
+                whileHover={{ y: -4 }}
+                whileTap={{ scale: 0.95 }}
+                className={`relative p-6 rounded-2xl border-2 transition-all duration-300 glass-hover ${
+                  selectedFormat === format.id
+                    ? 'border-peach glow-peach bg-gradient-to-br from-maroon/20 to-peach/20'
+                    : 'border-border hover:border-peach/50'
+                } ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                <div className="flex items-center justify-center mb-3">
+                  <div className={`bg-gradient-to-br from-maroon to-peach transition-all duration-300 ${
+                    format.id === '1:1' ? 'w-12 h-12' : format.id === '16:9' ? 'w-14 h-8' : format.id === '9:16' ? 'w-8 h-14' : 'w-10 h-12'
+                  } rounded-lg`} />
+                </div>
+                <div className="text-base font-bold text-foreground mb-1">{format.name}</div>
+                <div className="text-xs text-muted-foreground">{format.description}</div>
+                {selectedFormat === format.id && (
+                  <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="absolute -top-2 -right-2 w-6 h-6 rounded-full gradient-primary flex items-center justify-center shadow-lg">
+                    <span className="text-[10px] text-background font-bold">✓</span>
+                  </motion.div>
+                )}
+              </motion.button>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Reference Image Section */}
+        <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4 }} className="space-y-4">
+          <h3 className="text-lg font-semibold text-foreground">Reference Image</h3>
+          <div className="relative">
+            {product?.image ? (
+              <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="relative rounded-2xl overflow-hidden glass border-2 border-border">
+                <img src={product.image} alt="Product reference" className="w-full h-48 object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                <div className="absolute bottom-4 left-4 right-4">
+                  <div className="text-sm font-semibold text-foreground">{product.title}</div>
+                  <div className="text-xs text-muted-foreground mt-1">{product.company_name}</div>
+                </div>
+              </motion.div>
+            ) : (
+              <div className="border-2 border-dashed border-border rounded-2xl p-12 text-center glass">
+                <Upload className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                <p className="text-muted-foreground text-sm">Enter a product URL above to enable image generation</p>
+              </div>
+            )}
+          </div>
+        </motion.div>
+
+        {/* Advanced Options (Collapsible) */}
+        <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.5 }} className="space-y-3">
+          <button onClick={() => setShowAdvanced(!showAdvanced)} className="flex items-center justify-between w-full text-left glass-hover rounded-xl p-4 transition-all duration-300">
+            <span className="text-sm font-semibold text-foreground">Generation Settings</span>
+            <motion.div animate={{ rotate: showAdvanced ? 180 : 0 }} transition={{ duration: 0.3 }}>
+              <ChevronDown className="w-5 h-5 text-muted-foreground" />
+            </motion.div>
+          </button>
+          <AnimatePresence>
+            {showAdvanced && (
+              <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.3 }} className="overflow-hidden">
+                <div className="p-6 rounded-2xl glass space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-foreground">Quality</label>
+                      <select className="w-full h-11 px-4 rounded-xl bg-white/5 border border-border text-foreground focus:outline-none focus:border-peach/50 transition-all">
+                        <option>Standard</option><option>High</option><option>Ultra</option>
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-foreground">Creativity</label>
+                      <select className="w-full h-11 px-4 rounded-xl bg-white/5 border border-border text-foreground focus:outline-none focus:border-peach/50 transition-all">
+                        <option>Balanced</option><option>Precise</option><option>Creative</option>
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-foreground">Steps</label>
+                      <select className="w-full h-11 px-4 rounded-xl bg-white/5 border border-border text-foreground focus:outline-none focus:border-peach/50 transition-all">
+                        <option>20</option><option>30</option><option>50</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-foreground">Negative Prompt</label>
+                    <textarea placeholder="text, words, letters, gibberish, branding..." className="w-full h-20 px-4 py-3 rounded-xl bg-white/5 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-peach/50 transition-all resize-none" />
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+
+        {/* Generate Button */}
+        <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.6 }} whileHover={{ scale: isDisabled ? 1 : 1.01 }} whileTap={{ scale: isDisabled ? 1 : 0.99 }}>
+          <Button onClick={handleGenerate} disabled={isDisabled} className={`w-full h-16 rounded-2xl text-lg font-bold transition-all duration-300 ${
+            !product?.image ? 'glass text-muted-foreground cursor-not-allowed' : isGenerating ? 'gradient-primary opacity-70' : 'gradient-primary glow-maroon hover:opacity-90 text-background'
+          }`}>
+            {isGenerating ? (<><Loader2 className="w-6 h-6 mr-3 animate-spin" /><span>Generating Creative...</span></>) : !product?.image ? (<><AlertCircle className="w-6 h-6 mr-3" /><span>Enter URL to Enable</span></>) : (<><Sparkles className="w-6 h-6 mr-3" /><span>✨ Generate Creative</span></>)}
+          </Button>
+        </motion.div>
+
+        {/* Generated Results Gallery */}
+        <AnimatePresence>
+          {posters.length > 0 && (
+            <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 20, opacity: 0 }} className="space-y-6 pt-6 border-t border-border">
+              <h3 className="text-xl font-bold text-foreground flex items-center gap-3"><ImageIcon className="w-6 h-6 text-peach" />Generated Creatives ({posters.length})</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {posters.map((poster, index) => (
+                  <motion.div key={poster.id} initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: index * 0.1 }} whileHover={{ y: -8, scale: 1.02 }} className="relative group rounded-2xl overflow-hidden glass border-2 border-border hover:border-peach/50 transition-all duration-300">
+                    <div className={`w-full ${formatAspectClass(poster.format)} bg-card overflow-hidden`}>
+                      <img src={poster.url} alt={`Generated creative ${index + 1}`} className="w-full h-full object-cover" loading="lazy" />
+                    </div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-4 gap-3">
+                      <motion.button onClick={() => handleDownload(poster, index)} whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} className="px-5 py-2.5 rounded-xl gradient-primary text-background font-semibold text-sm flex items-center gap-2 shadow-lg">
+                        <Download className="w-4 h-4" />Download
+                      </motion.button>
+                      <motion.button onClick={() => handleDelete(poster.id)} whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} className="px-5 py-2.5 rounded-xl bg-error/20 backdrop-blur-xl border border-error/30 text-error font-semibold text-sm flex items-center gap-2 hover:bg-error/30 transition-all">
+                        <X className="w-4 h-4" />Delete
+                      </motion.button>
+                    </div>
+                    <div className="absolute top-4 left-4 right-4 flex items-center justify-between">
+                      <div className="px-3 py-1.5 rounded-lg glass text-xs font-semibold text-foreground">{AD_STYLES.find(s => s.id === poster.style)?.emoji} {poster.style}</div>
+                      <div className="px-3 py-1.5 rounded-lg glass text-xs font-semibold text-muted-foreground">{poster.format}</div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Empty State */}
+        <AnimatePresence>
+          {!isGenerating && posters.length === 0 && (
+            <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 20, opacity: 0 }} className="pt-12 pb-8 text-center">
+              <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.5, type: 'spring' }} className="w-20 h-20 mx-auto mb-6 rounded-3xl gradient-primary flex items-center justify-center glow-maroon">
+                <ImageIcon className="w-10 h-10 text-peach" />
+              </motion.div>
+              <h4 className="text-xl font-bold text-foreground mb-2">Ready to Create</h4>
+              <p className="text-muted-foreground text-sm max-w-md mx-auto">Your generated creatives will appear here. Select a style, ratio, and hit generate to create stunning advertising images.</p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </motion.div>
   );
 }
