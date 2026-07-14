@@ -16,6 +16,8 @@
     "@remotion/player": "^4.0.314",
     "@remotion/transitions": "^4.0.484",
     "@shadcn/ui": "^0.0.4",
+    "@supabase/ssr": "^0.12.3",
+    "@supabase/supabase-js": "^2.110.5",
     "@tanstack/react-query": "^5.80.6",
     "@types/ws": "^8.18.1",
     "class-variance-authority": "^0.7.1",
