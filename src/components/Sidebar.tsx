@@ -12,7 +12,7 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
-  Cloud,
+  Database,
   User
 } from 'lucide-react';
 
@@ -114,7 +114,7 @@ export function Sidebar() {
           whileHover={{ x: 4 }}
           className="flex items-center gap-3 px-4 py-3 rounded-xl text-muted-foreground hover:text-foreground hover:bg-white/5 transition-all cursor-pointer"
         >
-          <Cloud className="w-5 h-5 flex-shrink-0 text-success" />
+          <Database className="w-5 h-5 flex-shrink-0 text-blue-400" />
           <AnimatePresence>
             {!isCollapsed && (
               <motion.div
@@ -124,8 +124,11 @@ export function Sidebar() {
                 transition={{ duration: 0.2 }}
                 className="flex-1"
               >
-                <div className="text-xs font-medium text-foreground">Backblaze B2</div>
-                <div className="text-xs text-success">Connected</div>
+                <div className="text-xs font-medium text-foreground">Supabase</div>
+                <div className="text-xs text-blue-400 flex items-center gap-1">
+                  <div className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
+                  Connected
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
