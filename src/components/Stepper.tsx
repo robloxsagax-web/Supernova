@@ -14,33 +14,32 @@ export function Stepper() {
   const currentStepIndex = steps.findIndex((s) => s.id === step);
 
   return (
-    <div className="w-full max-w-3xl mx-auto mb-8">
+    <div className="w-full max-w-4xl mx-auto">
       <div className="relative p-6 rounded-2xl glass">
         {/* Progress Line Background */}
-        <div className="absolute top-1/2 left-12 right-12 h-0.5 bg-border -translate-y-1/2" />
-        
+        <div className="absolute top-1/2 left-16 right-16 h-0.5 bg-border -translate-y-1/2" />
+
         {/* Active Progress Line */}
         <motion.div
-          initial={{ width: 0 }}
+          initial={false}
           animate={{ width: `${(currentStepIndex / (steps.length - 1)) * 100}%` }}
           transition={{ duration: 0.5, ease: 'easeInOut' }}
-          className="absolute top-1/2 left-12 h-0.5 bg-gradient-to-r from-maroon to-peach -translate-y-1/2"
-          style={{ width: `calc(${(currentStepIndex / (steps.length - 1)) * 100}% - 3rem)` }}
+          className="absolute top-1/2 left-16 h-0.5 bg-gradient-to-r from-maroon to-peach -translate-y-1/2 rounded-full"
         />
 
         {/* Steps */}
         <div className="relative flex items-center justify-between">
           {steps.map((s, idx) => {
             const isActive = idx <= currentStepIndex;
-            
+
             return (
-              <div key={s.id} className="flex items-center">
+              <div key={s.id} className="flex flex-col items-center gap-3 flex-1">
                 <motion.div
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   transition={{ delay: idx * 0.1, type: 'spring' }}
                   className={cn(
-                    'relative flex items-center justify-center w-12 h-12 rounded-xl text-sm font-semibold transition-all duration-300',
+                    'relative flex items-center justify-center w-14 h-14 rounded-2xl text-base font-bold transition-all duration-300 flex-shrink-0',
                     isActive
                       ? 'gradient-primary glow-maroon text-background'
                       : 'glass bg-white/5 text-muted-foreground'
@@ -60,8 +59,9 @@ export function Stepper() {
                     </motion.div>
                   )}
                 </motion.div>
-                <div className="ml-3 text-sm font-medium hidden lg:block">
+                <div className="text-center hidden md:block px-2">
                   <span className={cn(
+                    'text-xs font-medium leading-tight block',
                     isActive ? 'text-foreground' : 'text-muted-foreground'
                   )}>
                     {s.label}
@@ -74,4 +74,4 @@ export function Stepper() {
       </div>
     </div>
   );
-} 
+}

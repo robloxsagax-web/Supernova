@@ -174,18 +174,19 @@ export function UrlInputForm() {
               <div className="relative">
                 <motion.div
                   initial={false}
-                  animate={{ x: duration === 15 ? '0%' : duration === 30 ? '25%' : duration === 45 ? '50%' : '75%' }}
+                  animate={{ 
+                    x: duration === 15 ? 0 : duration === 30 ? '100%' : duration === 45 ? '200%' : '300%' 
+                  }}
                   transition={{ duration: 0.3, ease: 'easeInOut' }}
-                  className="absolute top-0 bottom-0 rounded-xl gradient-primary"
-                  style={{ width: '25%' }}
+                  className="absolute top-0 bottom-0 left-0 w-[calc(25%-6px)] ml-[3px] rounded-xl gradient-primary"
                 />
-                <div className="relative grid grid-cols-4 gap-2 p-1.5">
+                <div className="relative flex items-center gap-2 p-1.5">
                   {([15, 30, 45, 60] as VideoDuration[]).map((d) => (
                     <button
                       key={d}
                       type="button"
                       onClick={() => setDuration(d)}
-                      className="px-3 py-2 rounded-lg text-sm font-semibold transition-all duration-300"
+                      className="relative z-10 flex-1 px-3 py-2.5 rounded-lg text-sm font-semibold transition-all duration-300 text-center"
                     >
                       {d}s
                     </button>
