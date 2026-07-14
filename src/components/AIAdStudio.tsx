@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { useStore } from '@/lib/store';
-import { Sparkles, Download, Loader2, Image as ImageIcon, AlertCircle } from 'lucide-react';
+import { Sparkles, Download, Loader2, Image as ImageIcon, AlertCircle, ChevronDown, Upload, X, Wand2 } from 'lucide-react';
 
 type AdStyle = 'bold' | 'luxury' | 'minimal' | 'vibrant' | 'elegant' | 'modern';
 type ImageFormat = '1:1' | '9:16' | '4:5' | '16:9';
@@ -17,20 +18,20 @@ interface GeneratedPoster {
   companyName: string;
 }
 
-const AD_STYLES: { id: AdStyle; name: string; emoji: string; prompt: string }[] = [
-  { id: 'bold', name: 'Bold', emoji: '🔥', prompt: 'bold vibrant colors, dynamic composition, eye-catching design' },
-  { id: 'luxury', name: 'Luxury', emoji: '✨', prompt: 'luxury elegant design, gold accents, sophisticated premium quality' },
-  { id: 'minimal', name: 'Minimal', emoji: '💎', prompt: 'minimal clean design, white space, Scandinavian aesthetic' },
-  { id: 'vibrant', name: 'Vibrant', emoji: '🌈', prompt: 'vibrant colorful, rainbow gradient, playful Gen-Z style' },
-  { id: 'elegant', name: 'Elegant', emoji: '🌸', prompt: 'elegant sophisticated, soft pastel colors, French chic' },
-  { id: 'modern', name: 'Modern', emoji: '🚀', prompt: 'modern futuristic, holographic effects, tech aesthetic' },
+const AD_STYLES: { id: AdStyle; name: string; emoji: string; description: string }[] = [
+  { id: 'bold', name: 'Bold', emoji: '🔥', description: 'Dynamic & eye-catching' },
+  { id: 'luxury', name: 'Luxury', emoji: '✨', description: 'Premium & elegant' },
+  { id: 'minimal', name: 'Minimal', emoji: '💎', description: 'Clean & refined' },
+  { id: 'vibrant', name: 'Vibrant', emoji: '🌈', description: 'Colorful & playful' },
+  { id: 'elegant', name: 'Elegant', emoji: '🌸', description: 'Sophisticated & chic' },
+  { id: 'modern', name: 'Modern', emoji: '🚀', description: 'Futuristic & sleek' },
 ];
 
-const FORMATS: { id: ImageFormat; name: string; emoji: string; ratio: { w: number; h: number } }[] = [
-  { id: '1:1', name: '1:1', emoji: '📱', ratio: { w: 1, h: 1 } },
-  { id: '9:16', name: '9:16', emoji: '🎬', ratio: { w: 2, h: 3 } },
-  { id: '4:5', name: '4:5', emoji: '📲', ratio: { w: 4, h: 5 } },
-  { id: '16:9', name: '16:9', emoji: '🖥️', ratio: { w: 16, h: 9 } },
+const FORMATS: { id: ImageFormat; name: string; description: string }[] = [
+  { id: '1:1', name: 'Square', description: '1:1 Ratio' },
+  { id: '16:9', name: 'Landscape', description: '16:9 Ratio' },
+  { id: '9:16', name: 'Portrait', description: '9:16 Ratio' },
+  { id: '4:5', name: 'Instagram', description: '4:5 Ratio' },
 ];
 
 export function AIAdStudio() {
