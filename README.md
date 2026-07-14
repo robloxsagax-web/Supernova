@@ -1,49 +1,38 @@
-# 🎥 AdGen — AI Video Ad Generator from Any Product URL (For Businesses)
+# ✨ Supernova — The AI Marketing Agent
 
-A full-stack application that turns **product URLs into scroll-stopping video ads** using GPT-4 for scriptwriting and Remotion for video generation. Just paste a link from Amazon or Shopify — we’ll do the rest.
+A premium AI-powered marketing platform that transforms any product URL into a complete marketing campaign with videos, images, copy, and strategic insights.
 
-> ✅ Built with: `Next.js`, `TypeScript`, `Remotion`, `Puppeteer`, `OpenAI GPT-4`, `TailwindCSS`, `ShadcnUI`
+Built with Next.js, TypeScript, Remotion, Framer Motion, OpenAI, TailwindCSS, and Zustand.
 
-![GitHub Repo stars](https://img.shields.io/github/stars/Rakshath66/adgen?style=social)
-![GitHub forks](https://img.shields.io/github/forks/Rakshath66/adgen?style=social)
 ![MIT License](https://img.shields.io/github/license/Rakshath66/adgen)
 
 ---
 
-## 📸 Preview
+## 🎨 Features
 
-![Preview](images/adgen-ui.png)
-
-
----
-
-## ✨ Features
-
-* 🔗 Paste a product URL (Amazon or Shopify)
-* 🤖 AI extracts images, title, features & benefits
-* ✍️ AI writes catchy ad scripts (Groq/Llama)
-* 🎙️ ElevenLabs human-quality voiceover synthesis
-* 🎵 Jamendo niche-based background music
-* 🎞️ Remotion generates video ad with overlays
-* 🎯 15–60 sec video output (vertical or horizontal)
-* 🖥️ Modern UI with real-time status and preview
-* 📥 One-click video download (WebM/MP4)
-* 🎨 8 premium brand color palettes
-* ✏️ 5 caption style options
+- 🔗 Paste a product URL (Amazon, Shopify, or any website)
+- 🤖 AI extracts images, title, features & benefits
+- ✍️ AI writes catchy ad scripts
+- 🎙️ Human-quality voiceover synthesis
+- 🎵 Background music selection
+- 🎞️ Remotion generates video ad with overlays
+- 🎯 15–60 sec video output (vertical or horizontal)
+- 🖥️ Premium dark mode UI with real-time status
+- 📥 One-click video download
+- 🎨 8 premium brand color palettes
+- ✏️ 5 caption style options
 
 ---
 
 ## 🚀 Getting Started
 
-### 🔧 Prerequisites
+### Prerequisites
 
-* Node.js v18+
-* OpenAI API key
-* Google Chrome / Chromium (required for Puppeteer)
+- Node.js v18+
+- OpenAI API key
+- Google Chrome / Chromium (required for Puppeteer)
 
----
-
-### 🖥️ Local Setup
+### Local Setup
 
 ```bash
 # 1. Clone this repo
@@ -56,7 +45,7 @@ npm install
 # 3. Create env file
 cp .env.example .env.local
 
-# 4. Add your OpenAI key to .env.local
+# 4. Add your API keys to .env.local
 OPENAI_API_KEY=your_openai_api_key
 
 # 5. Run the app
@@ -89,9 +78,9 @@ JAMENDO_CLIENT_ID=your_jamendo_client_id
 
 1. **Input**: Paste a product page URL (Amazon/Shopify)
 2. **Scrape**: Jina AI extracts product data
-3. **Script**: Groq/Llama generates ad script
-4. **Voiceover**: ElevenLabs creates human-quality voice
-5. **Music**: Jamendo provides niche-based background track
+3. **Script**: AI generates ad script
+4. **Voiceover**: Creates human-quality voice
+5. **Music**: Provides niche-based background track
 6. **Video**: Remotion renders video with dual audio
 7. **Output**: Preview & download final video
 
@@ -99,38 +88,48 @@ JAMENDO_CLIENT_ID=your_jamendo_client_id
 
 ## 🧠 Tech Stack
 
-| Layer         | Tech                                          |
-| ------------- | --------------------------------------------- |
-| Frontend      | Next.js 15, TypeScript, TailwindCSS, ShadcnUI |
-| State Mgmt    | Zustand, React Query                          |
-| Backend       | API Routes in Next.js                         |
-| Scraping      | Jina AI Reader API                            |
-| AI Script     | Groq API (Llama 3.1)                         |
-| Voiceover     | ElevenLabs Neural TTS                         |
-| Background Music | Jamendo API                                |
-| Video         | Remotion + MediaRecorder                      |
+| Layer          | Tech                                    |
+| -------------- | --------------------------------------- |
+| Frontend       | Next.js 15, TypeScript, TailwindCSS     |
+| State Mgmt     | Zustand, React Query                    |
+| Backend        | API Routes in Next.js                   |
+| UI Animations  | Framer Motion                           |
+| Scraping       | Jina AI Reader API                      |
+| AI Script      | Groq API (Llama 3.1)                   |
+| Voiceover      | ElevenLabs Neural TTS                   |
+| Background Music | Jamendo API                           |
+| Video          | Remotion + MediaRecorder                |
 
 ---
 
 ## 📁 Project Structure
 
 ```
-adgen/
-├── .env.local             # API Keys
-├── app/
-│   ├── page.tsx           # Main Page
-│   └── api/
-│       ├── scrape/        # Scrape logic
-│       ├── generate-script/ # GPT-4 ad copy
-│       ├── generate-video/  # Remotion output
-│       └── save-video/    # Video download
-├── components/
-│   ├── UrlInputForm.tsx
-│   ├── ProductPreview.tsx
-│   ├── ScriptPreview.tsx
-│   ├── VideoPlayer.tsx
-│   └── Stepper.tsx
-├── public/videos/
+supernova/
+├── src/
+│   ├── app/
+│   │   ├── page.tsx           # Main Dashboard
+│   │   └── api/
+│   │       ├── scrape/        # Scrape logic
+│   │       ├── generate-script/ # AI ad copy
+│   │       ├── generate-video/  # Remotion output
+│   │       └── save-video/   # Video download
+│   └── components/
+│       ├── dashboard/
+│       │   ├── Dashboard.tsx      # Main dashboard
+│       │   ├── ActionCards.tsx   # Action cards
+│       │   ├── AIAgentPanel.tsx  # AI agent panel
+│       │   ├── URLInputForm.tsx  # URL input
+│       │   └── WorkflowProgress.tsx # Progress
+│       ├── layout/
+│       │   ├── Sidebar.tsx   # Navigation sidebar
+│       │   └── TopBar.tsx    # Top bar
+│       ├── UrlInputForm.tsx
+│       ├── ProductPreview.tsx
+│       ├── ScriptPreview.tsx
+│       ├── VideoPlayer.tsx
+│       └── AIAdStudio.tsx
+├── public/
 └── downloads/
 ```
 
@@ -138,18 +137,18 @@ adgen/
 
 ## 💬 Example Use Cases
 
-* DTC brands testing product creatives
-* Shopify owners generating quick ads
-* Amazon affiliates making viral content
-* Influencers creating reels for product links
+- DTC brands testing product creatives
+- Shopify owners generating quick ads
+- Amazon affiliates making viral content
+- Influencers creating reels for product links
 
 ---
 
 ## 🛠️ Quick Tips
 
-* Stick to Amazon or Shopify for best results
-* Long descriptions = better scripts
-* Vertical videos are ideal for Instagram/TikTok
+- Stick to Amazon or Shopify for best results
+- Long descriptions = better scripts
+- Vertical videos are ideal for Instagram/TikTok
 
 ---
 
@@ -157,7 +156,7 @@ adgen/
 
 We welcome PRs and improvements!
 
-### ✅ Steps:
+### Steps:
 
 1. Fork this repo
 2. Create your branch:
@@ -180,11 +179,11 @@ git commit -m "feat: added cool thing"
 
 Use [Conventional Commits](https://www.conventionalcommits.org/):
 
-* `feat:` New feature
-* `fix:` Bug fix
-* `docs:` Readme/docs updates
-* `refactor:` Cleanup/refactoring
-* `chore:` Setup or tool configs
+- `feat:` New feature
+- `fix:` Bug fix
+- `docs:` Readme/docs updates
+- `refactor:` Cleanup/refactoring
+- `chore:` Setup or tool configs
 
 ---
 
@@ -192,38 +191,33 @@ Use [Conventional Commits](https://www.conventionalcommits.org/):
 
 ### ✅ Phase 1: MVP (URL → Ad Video)
 
-* ✔️ URL scraping
-* ✔️ GPT-4 ad copy
-* ✔️ Remotion video render
-* ✔️ Basic UI
+- ✔️ URL scraping
+- ✔️ AI ad copy
+- ✔️ Remotion video render
+- ✔️ Premium UI
 
 ---
 
-### 🔜 Phase 2: Upgrades
+### Phase 2: Upgrades
 
-* 🔁 Multiple script versions
-* 🗣️ Text-to-speech (AI voiceover)
-* 🔳 Multiple aspect ratios (9:16, 1:1)
-* ✨ Advanced templates + animation
+- 🔁 Multiple script versions
+- 🗣️ Text-to-speech (AI voiceover)
+- 🔳 Multiple aspect ratios (9:16, 1:1)
+- ✨ Advanced templates + animation
 
 ---
 
-### 🔒 Phase 3: (Out of Scope Now)
+### Phase 3: (Future)
 
-* User auth
-* Deployments
-* Payment + SaaS features
+- User auth
+- Deployments
+- Payment + SaaS features
 
 ---
 
 ## 📄 License
 
-MIT © [Rakshath U Shetty](https://github.com/Rakshath66)
-
-```
-Permission is hereby granted, free of charge, to any person obtaining a copy...
-```
-Let’s connect on [LinkedIn](https://www.linkedin.com/in/rakshathushetty/)
+MIT © Rakshath U Shetty
 
 ---
 
@@ -232,3 +226,4 @@ Let’s connect on [LinkedIn](https://www.linkedin.com/in/rakshathushetty/)
 Star ⭐ this repo to support the project and help others find it.
 Open an issue, suggest features, or contribute a video template!
 
+Let's connect on [LinkedIn](https://www.linkedin.com/in/rakshathushetty/)

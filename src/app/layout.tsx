@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AI Ad Studio",
-  description: "Generate AI-powered video ads and creative assets",
+  title: "Supernova - The AI Marketing Agent",
+  description: "Turn any product into a complete marketing campaign with AI-powered video ads, images, and creative assets.",
 };
 
 export default function RootLayout({
@@ -23,7 +23,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark">
       <head>
         <script src="https://js.puter.com/v2/"></script>
       </head>
