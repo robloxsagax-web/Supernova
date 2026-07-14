@@ -346,10 +346,20 @@ Negative Prompt: Exclude any generated text, misspellings, or fictional branding
                     : 'border-border hover:border-peach/50'
                 } ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
-                <div className="flex items-center justify-center mb-3">
-                  <div className={`bg-gradient-to-br from-maroon to-peach transition-all duration-300 ${
-                    format.id === '1:1' ? 'w-12 h-12' : format.id === '16:9' ? 'w-14 h-8' : format.id === '9:16' ? 'w-8 h-14' : 'w-10 h-12'
-                  } rounded-lg`} />
+                {/* Aspect Ratio Wireframe Graphics */}
+                <div className="flex items-center justify-center mb-3 h-16">
+                  {format.id === '1:1' && (
+                    <div className="w-12 h-12 rounded border-2 border-border bg-gradient-to-br from-maroon/20 to-peach/20" />
+                  )}
+                  {format.id === '16:9' && (
+                    <div className="w-14 h-8 rounded border-2 border-border bg-gradient-to-br from-maroon/20 to-peach/20" />
+                  )}
+                  {format.id === '9:16' && (
+                    <div className="w-8 h-14 rounded border-2 border-border bg-gradient-to-br from-maroon/20 to-peach/20" />
+                  )}
+                  {format.id === '4:5' && (
+                    <div className="w-10 h-12 rounded border-2 border-border bg-gradient-to-br from-maroon/20 to-peach/20" />
+                  )}
                 </div>
                 <div className="text-base font-bold text-foreground mb-1">{format.name}</div>
                 <div className="text-xs text-muted-foreground">{format.description}</div>
@@ -372,7 +382,7 @@ Negative Prompt: Exclude any generated text, misspellings, or fictional branding
                 <img src={product.image} alt="Product reference" className="w-full h-48 object-cover" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                 <div className="absolute bottom-4 left-4 right-4">
-                  <div className="text-sm font-semibold text-foreground">{product.title}</div>
+                  <div className="text-sm font-semibold text-foreground">Primary image for use preview only</div>
                   <div className="text-xs text-muted-foreground mt-1">{product.company_name}</div>
                 </div>
               </motion.div>
