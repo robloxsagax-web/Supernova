@@ -42,6 +42,7 @@ export function AIAdStudio() {
   const [posters, setPosters] = useState<GeneratedPoster[]>([]);
   const [puterReady, setPuterReady] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [showAdvanced, setShowAdvanced] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Check if Puter.js is loaded
