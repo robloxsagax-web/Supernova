@@ -20,8 +20,7 @@ interface HardcodedFeatureBadgeProps {
 
 export const HardcodedFeatureBadge: React.FC<HardcodedFeatureBadgeProps> = ({ 
   isVertical, 
-  frame,
-  brandPalette 
+  frame
 }) => {
   // Cycle through trust signals based on frame (changes every 3 seconds = 90 frames)
   const signalIndex = Math.floor(frame / 90) % BADGE_TRUST_SIGNALS.length;

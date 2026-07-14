@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { AppState, Product, VideoSettings, BrandPaletteId, CaptionStyleId } from '@/types/product';
+import { AppState, Product, VideoSettings } from '@/types/product';
 
 type Step = 'url' | 'product' | 'script' | 'video';
 type GenerationType = 'ad' | 'b-roll';

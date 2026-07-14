@@ -17,7 +17,7 @@ const loadingMessages: Record<'url' | 'product' | 'script' | 'video', string> = 
 };
 
 export default function Home() {
-  const { step, isLoading, error, product } = useStore();
+  const { step, isLoading, error } = useStore();
 
   return (
     <main className="container mx-auto py-8 px-4 min-h-screen">

@@ -1,4 +1,4 @@
-import { AbsoluteFill, interpolate, random } from "remotion";
+import { AbsoluteFill, interpolate } from "remotion";
 import React from "react";
 
 interface GradientBackgroundProps {

@@ -34,7 +34,7 @@ const FORMATS: { id: ImageFormat; name: string; emoji: string; ratio: { w: numbe
 ];
 
 export function AIAdStudio() {
-  const { product, adImages, addAdImage } = useStore();
+  const { product, addAdImage } = useStore();
   const [selectedStyle, setSelectedStyle] = useState<AdStyle>('bold');
   const [selectedFormat, setSelectedFormat] = useState<ImageFormat>('9:16');
   const [isGenerating, setIsGenerating] = useState(false);

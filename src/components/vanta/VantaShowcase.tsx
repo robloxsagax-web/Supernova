@@ -109,47 +109,12 @@ function cleanText(text: string): string {
   return cleaned || '';
 }
 
-// Sanitize display text - removes ALL markdown artifacts, URLs, and special characters
-function sanitizeDisplayText(text: string | undefined | null): string {
-  if (!text) return '';
-  
-  // Remove markdown image syntax: ![alt](url)
-  let sanitized = text.replace(/!\[.*?\]\(.*?\)/g, '');
-  
-  // Remove markdown link syntax: [text](url)
-  sanitized = sanitized.replace(/\[([^\]]*)\]\([^)]*\)/g, '$1');
-  
-  // Remove all URLs (http, https, www)
-  sanitized = sanitized.replace(/https?:\/\/[^\s<>"'{}|\\^`[\]]+/gi, '');
-  sanitized = sanitized.replace(/www\.[^\s<>"'{}|\\^`[\]]+/gi, '');
-  
-  // Remove all brackets: [], (), {}
-  sanitized = sanitized.replace(/[\[\](){}]/g, '');
-  
-  // Remove exclamation marks
-  sanitized = sanitized.replace(/!/g, '');
-  
-  // Remove angle brackets and their contents
-  sanitized = sanitized.replace(/<[^>]*>/g, '');
-  
-  // Remove pipe characters (often used in markdown tables)
-  sanitized = sanitized.replace(/\|/g, '');
-  
-  // Remove markdown formatting characters
-  sanitized = sanitized.replace(/[#*_`~]/g, '');
-  
-  // Clean up multiple spaces/newlines
-  sanitized = sanitized.replace(/\s+/g, ' ').trim();
-  
-  return sanitized || '';
-}
-
 // Sanitize price - extracts only valid price format
 function sanitizePrice(price: string | undefined | null): string {
   if (!price) return '';
   
   // Remove any markdown or text artifacts
-  let sanitized = price
+  const sanitized = price
     .replace(/!\[.*?\]\(.*?\)/g, '')
     .replace(/\[.*?\]\(.*?\)/g, '')
     .replace(/https?:\/\/[^\s]*/gi, '')
@@ -756,8 +721,7 @@ const ProductScene: React.FC<{
   brandPalette, 
   captionStyle,
   currentTimeSeconds,
-  activeSegment,
-  captionSegments
+  activeSegment
 }) => {
   const frame = useCurrentFrame();
   
@@ -883,7 +847,7 @@ const CTAScene: React.FC<{
   brandPalette: BrandPalette;
   ctaProgress?: number; // 0 to 1 progress based on audio timeline
   imageCycleIndex?: number;
-}> = ({ productTitle, productImage, durationFrames, isVertical, brandPalette, ctaProgress = 0, imageCycleIndex = 0 }) => {
+}> = ({ productImage, durationFrames, isVertical, brandPalette, ctaProgress = 0 }) => {
   const frame = useCurrentFrame();
   
   // Use audio-based progress for smooth animations
@@ -1142,17 +1106,14 @@ export const VantaShowcase: React.FC<{
   const activeProductImg = segmentType === 'product' ? prodImages[prodImgIdx] : null;
   const activeBRollImg = segmentType === 'broll' ? bRollImages[bRollImgIdx] : null;
 
-  // Crossfade transition calculations
-  const TRANSITION_FRAMES = 20; // ~0.67 seconds crossfade
+  // Crossfade transition calculations - FAST transitions
+  const TRANSITION_FRAMES = 5; // ~0.17 seconds - snappy, no fade
   const frameInSegment = currentFrame % framesPerSegment;
   
   // Fade out current content (at end of segment)
   const fadeOutCurrent = frameInSegment > (framesPerSegment - TRANSITION_FRAMES)
     ? Math.max(0, 1 - (frameInSegment - (framesPerSegment - TRANSITION_FRAMES)) / TRANSITION_FRAMES)
     : 1;
-  
-  // Fade in new content (at start of segment)
-  const fadeInNew = Math.min(1, frameInSegment / TRANSITION_FRAMES);
   
   // Combined opacity for smooth crossfade
   const contentOpacity = isBRollCTAScene 

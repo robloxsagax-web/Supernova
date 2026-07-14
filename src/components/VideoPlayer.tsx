@@ -8,7 +8,6 @@ import { Player } from '@remotion/player';
 import { VantaShowcase } from './vanta/VantaShowcase';
 import { BRAND_PALETTES, BrandPaletteId } from '@/types/product';
 import { Download, Music, Loader2 } from 'lucide-react';
-import { Loader } from '@/components/Loader';
 
 const FPS = 30;
 
@@ -82,12 +81,13 @@ export function VideoPlayer() {
   const audioContextRef = useRef<AudioContext | null>(null);
   
   const [voiceoverUrl, setVoiceoverUrl] = useState<string | null>(null);
-  const [isGeneratingVoiceover, setIsGeneratingVoiceover] = useState(false);
+  const [, setIsGeneratingVoiceover] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadProgress, setDownloadProgress] = useState<string>('');
   const [recordedBlobUrl, setRecordedBlobUrl] = useState<string | null>(null);
   const [isPlayerLoaded, setIsPlayerLoaded] = useState(false);
   const [isPreparingVideo, setIsPreparingVideo] = useState(true);
+  const [showBRollNote, setShowBRollNote] = useState(true);
   
   // Derived values
   const { ratio, duration, captionStyle, brandPalette } = videoSettings;
@@ -157,8 +157,16 @@ export function VideoPlayer() {
     return () => clearTimeout(timer);
   }, []);
   
-  // EARLY RETURN AFTER ALL HOOKS
-  if (!script || !product) return null;
+  // Auto-dismiss B-Roll note after 35 seconds
+  useEffect(() => {
+    if (generationType === 'b-roll' && showBRollNote) {
+      const dismissTimer = setTimeout(() => {
+        setShowBRollNote(false);
+      }, 35000); // 35 seconds
+      
+      return () => clearTimeout(dismissTimer);
+    }
+  }, [generationType, showBRollNote]);
   
   // Generate voiceover
   useEffect(() => {
@@ -284,7 +292,7 @@ export function VideoPlayer() {
           audio.crossOrigin = 'anonymous';
           const source = audioContext.createMediaElementSource(audio);
           source.connect(destination);
-        } catch (e) {
+        } catch {
           // Ignore audio capture errors
         }
       }
@@ -356,7 +364,7 @@ export function VideoPlayer() {
         }, 100);
       };
 
-      const handleError = (event: Event) => {
+      const handleError = () => {
         mediaRecorder.removeEventListener('stop', handleStop);
         mediaRecorder.removeEventListener('error', handleError);
         reject(new Error('MediaRecorder error event'));
@@ -380,8 +388,11 @@ export function VideoPlayer() {
     });
   }, []);
 
+  // EARLY RETURN AFTER ALL HOOKS
+  if (!script || !product) return null;
+
   // Robust video download with onRecordingComplete callback
-  const handleDownloadVideo = useCallback(async () => {
+  const handleDownloadVideo = async () => {
     if (!playerRef.current) {
       alert('Player not ready. Please try again.');
       return;
@@ -462,7 +473,7 @@ export function VideoPlayer() {
       setDownloadProgress('');
       alert('Download failed: ' + (error instanceof Error ? error.message : 'Unknown error'));
     }
-  }, [duration, recordedBlobUrl, startRecording, stopRecordingAndWait, onRecordingComplete, triggerDownload, isPlayerLoaded]);
+  };
 
   const containerClass = isVertical 
     ? 'aspect-[9/16] max-h-[85vh] mx-auto' 
@@ -497,6 +508,33 @@ export function VideoPlayer() {
   if (isBRoll) {
     return (
       <div className="w-full">
+        {/* B-Roll Loading Note */}
+        {showBRollNote && generationType === 'b-roll' && (
+          <div className="mb-4 p-4 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-xl">
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0 mt-0.5">
+                <svg className="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <p className="text-sm text-blue-900 dark:text-blue-100">
+                  <span className="font-medium">Note:</span> B-roll clips are being fetched from external sources. If the video looks empty or doesn&apos;t play smoothly, please wait a few seconds for the assets to load and play it again.
+                </p>
+              </div>
+              <button
+                onClick={() => setShowBRollNote(false)}
+                className="flex-shrink-0 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200 transition-colors"
+                aria-label="Dismiss note"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        )}
+        
         {/* Full-width transparent player container */}
         <div 
           ref={playerRef} 
