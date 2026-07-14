@@ -81,7 +81,7 @@ export function VideoPlayer() {
   const audioContextRef = useRef<AudioContext | null>(null);
   
   const [voiceoverUrl, setVoiceoverUrl] = useState<string | null>(null);
-  const [, setIsGeneratingVoiceover] = useState(false);
+  const [isGeneratingVoiceover, setIsGeneratingVoiceover] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadProgress, setDownloadProgress] = useState<string>('');
   const [recordedBlobUrl, setRecordedBlobUrl] = useState<string | null>(null);
