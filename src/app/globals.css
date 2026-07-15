@@ -1,159 +1,251 @@
+/* ============================================
+   SUPERNOVA - Premium AI Marketing OS
+   Design System v1.0
+   ============================================ */
+
 @import "tailwindcss";
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
-  --color-ring: var(--ring);
-  --color-input: var(--input);
-  --color-border: var(--border);
-  --color-destructive: var(--destructive);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-accent: var(--accent);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-secondary: var(--secondary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary: var(--primary);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-popover: var(--popover);
-  --color-card-foreground: var(--card-foreground);
-  --color-card: var(--card);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-}
+/* ============================================
+   FONTS - Premium Typography
+   ============================================ */
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
 
+/* ============================================
+   SUPERNOVA BRAND TOKENS
+   ============================================ */
 :root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  /* Background */
+  --bg-primary: #09090B;
+  --bg-secondary: #111111;
+  --bg-tertiary: #1a1a1a;
+  
+  /* Primary Brand - Luxury Maroon */
+  --maroon: #5C3317;
+  --maroon-hover: #7A4320;
+  --maroon-light: #8B5A2B;
+  
+  /* Accent - Peach Puff */
+  --peach: #FFDAB9;
+  --peach-muted: rgba(255, 218, 185, 0.65);
+  --peach-dim: rgba(255, 218, 185, 0.45);
+  
+  /* Text */
+  --text-primary: #FFFFFF;
+  --text-secondary: rgba(255, 255, 255, 0.65);
+  --text-muted: rgba(255, 255, 255, 0.45);
+  
+  /* Card/Surface */
+  --card-bg: rgba(255, 218, 185, 0.05);
+  --card-border: rgba(255, 218, 185, 0.10);
+  --card-border-hover: rgba(255, 218, 185, 0.20);
+  
+  /* Glass */
+  --glass-bg: rgba(255, 255, 255, 0.04);
+  --glass-bg-hover: rgba(255, 255, 255, 0.08);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-border-hover: rgba(255, 218, 185, 0.30);
+  
+  /* Status */
+  --success: #22C55E;
+  --warning: #F59E0B;
+  --error: #EF4444;
+  --info: #3B82F6;
+  
+  /* Shadows */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
+  --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.6);
+  
+  /* Glow Effects */
+  --glow-maroon: 0 0 20px rgba(92, 51, 23, 0.4);
+  --glow-peach: 0 0 20px rgba(255, 218, 185, 0.3);
+  --glow-maroon-hover: 0 0 30px rgba(92, 51, 23, 0.6);
+  
+  /* Border Radius */
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 20px;
+  --radius-xl: 24px;
+  --radius-2xl: 32px;
 }
 
-.dark {
-  --background: #09090B;
-  --foreground: #FAFAFA;
-  --card: rgba(255, 255, 255, 0.05);
-  --card-foreground: #FAFAFA;
-  --popover: rgba(255, 255, 255, 0.05);
-  --popover-foreground: #FAFAFA;
-  --primary: #5C3317;
-  --primary-foreground: #FFDAB9;
-  --secondary: rgba(255, 255, 255, 0.08);
-  --secondary-foreground: #FAFAFA;
-  --muted: rgba(255, 255, 255, 0.08);
-  --muted-foreground: #A1A1AA;
-  --accent: rgba(255, 255, 255, 0.08);
-  --accent-foreground: #FFDAB9;
-  --destructive: #EF4444;
-  --border: rgba(255, 255, 255, 0.08);
-  --input: rgba(255, 255, 255, 0.1);
-  --ring: #5C3317;
-  --chart-1: #5C3317;
-  --chart-2: #FFDAB9;
-  --chart-3: #10B981;
-  --chart-4: #EF4444;
-  --chart-5: #A1A1AA;
-  --sidebar: #09090B;
-  --sidebar-foreground: #FAFAFA;
-  --sidebar-primary: #5C3317;
-  --sidebar-primary-foreground: #FFDAB9;
-  --sidebar-accent: rgba(255, 255, 255, 0.08);
-  --sidebar-accent-foreground: #FAFAFA;
-  --sidebar-border: rgba(255, 255, 255, 0.08);
-  --sidebar-ring: #5C3317;
+/* ============================================
+   TAILWIND THEME CONFIGURATION
+   ============================================ */
+@theme inline {
+  /* Fonts */
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-heading: 'Space Grotesk', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  
+  /* Colors */
+  --color-background: var(--bg-primary);
+  --color-foreground: var(--text-primary);
+  
+  --color-card: var(--card-bg);
+  --color-card-foreground: var(--text-primary);
+  
+  --color-popover: var(--bg-secondary);
+  --color-popover-foreground: var(--text-primary);
+  
+  --color-primary: var(--maroon);
+  --color-primary-foreground: var(--peach);
+  
+  --color-secondary: var(--glass-bg);
+  --color-secondary-foreground: var(--text-primary);
+  
+  --color-muted: var(--glass-bg);
+  --color-muted-foreground: var(--text-muted);
+  
+  --color-accent: var(--peach);
+  --color-accent-foreground: var(--bg-primary);
+  
+  --color-destructive: var(--error);
+  --color-destructive-foreground: var(--text-primary);
+  
+  --color-border: var(--glass-border);
+  --color-input: var(--glass-bg);
+  --color-ring: var(--maroon);
+  
+  /* Chart Colors */
+  --color-chart-1: var(--maroon);
+  --color-chart-2: var(--peach);
+  --color-chart-3: var(--success);
+  --color-chart-4: var(--error);
+  --color-chart-5: var(--text-muted);
+  
+  /* Sidebar */
+  --color-sidebar: var(--bg-secondary);
+  --color-sidebar-foreground: var(--text-primary);
+  --color-sidebar-primary: var(--maroon);
+  --color-sidebar-primary-foreground: var(--peach);
+  --color-sidebar-accent: var(--glass-bg);
+  --color-sidebar-accent-foreground: var(--text-primary);
+  --color-sidebar-border: var(--glass-border);
+  --color-sidebar-ring: var(--maroon);
+  
+  /* Radius */
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
 }
 
+/* ============================================
+   BASE STYLES
+   ============================================ */
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+  
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-sans);
     font-feature-settings: "rlig" 1, "calt" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
   
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+  
+  code, pre {
+    font-family: var(--font-mono);
+  }
+  
+  /* Premium Scrollbar */
   ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
   }
   
   ::-webkit-scrollbar-track {
-    background: var(--background);
+    background: transparent;
   }
   
   ::-webkit-scrollbar-thumb {
-    background: var(--border);
+    background: rgba(255, 255, 255, 0.15);
     border-radius: 4px;
   }
   
   ::-webkit-scrollbar-thumb:hover {
-    background: var(--muted-foreground);
+    background: var(--maroon);
+  }
+  
+  /* Selection */
+  ::selection {
+    background: rgba(92, 51, 23, 0.3);
+    color: var(--peach);
   }
 }
 
-:root {
-  --maroon: #5C3317;
-  --peach: #FFDAB9;
-  --success: #10B981;
-  --error: #EF4444;
+/* ============================================
+   SUPERNOVA GLASS SYSTEM
+   ============================================ */
+
+/* Base Glass Panel */
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.glass {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(2xl);
-  -webkit-backdrop-filter: blur(2xl);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+.glass-panel:hover {
+  background: var(--glass-bg-hover);
+  border-color: var(--glass-border-hover);
 }
 
+/* Premium Card */
+.premium-card {
+  background: var(--card-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-xl);
+  padding: 1.5rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--shadow-md);
+}
+
+.premium-card:hover {
+  background: rgba(255, 218, 185, 0.08);
+  border-color: var(--card-border-hover);
+  box-shadow: var(--shadow-lg), var(--glow-maroon);
+  transform: translateY(-4px);
+}
+
+/* Luxury Card - For Bento Grid */
+.luxury-card {
+  background: linear-gradient(135deg, 
+    rgba(255, 218, 185, 0.08) 0%, 
+    rgba(255, 218, 185, 0.02) 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 218, 185, 0.15);
+  border-radius: var(--radius-xl);
+  padding: 1.5rem;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: var(--shadow-lg), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.luxury-card:hover {
+  transform: scale(1.02) translateY(-4px);
+  border-color: rgba(255, 218, 185, 0.30);
+  box-shadow: var(--shadow-xl), 0 0 40px rgba(92, 51, 23, 0.2);
+}
+
+/* Glass Hover Effect */
 .glass-hover {
   transition: all 0.3s ease;
 }
@@ -163,26 +255,66 @@
   border-color: rgba(255, 255, 255, 0.12);
 }
 
+/* ============================================
+   SUPERNOVA GRADIENTS
+   ============================================ */
+
+/* Primary Brand Gradient */
 .gradient-primary {
   background: linear-gradient(135deg, var(--maroon) 0%, var(--peach) 100%);
 }
 
+.gradient-primary-hover {
+  background: linear-gradient(135deg, var(--maroon-hover) 0%, var(--peach) 100%);
+}
+
+/* Muted Gradient */
 .gradient-muted {
   background: linear-gradient(135deg, rgba(92, 51, 23, 0.1) 0%, rgba(255, 218, 185, 0.1) 100%);
 }
 
+/* Text Gradient - Maroon to Peach */
+.gradient-text {
+  background: linear-gradient(135deg, var(--maroon) 0%, var(--peach) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Gold/Peach Gradient */
+.gradient-peach {
+  background: linear-gradient(135deg, var(--peach) 0%, rgba(255, 218, 185, 0.7) 100%);
+}
+
+/* ============================================
+   SUPERNOVA GLOW EFFECTS
+   ============================================ */
+
 .glow-maroon {
-  box-shadow: 0 0 20px rgba(92, 51, 23, 0.3);
+  box-shadow: var(--glow-maroon);
+}
+
+.glow-maroon-hover:hover {
+  box-shadow: var(--glow-maroon-hover);
 }
 
 .glow-peach {
-  box-shadow: 0 0 20px rgba(255, 218, 185, 0.3);
+  box-shadow: var(--glow-peach);
 }
 
 .glow-success {
-  box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+  box-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
 }
 
+.glow-error {
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+}
+
+/* ============================================
+   SUPERNOVA ANIMATIONS
+   ============================================ */
+
+/* Pulse Glow */
 @keyframes pulse-glow {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.6; }
@@ -192,6 +324,7 @@
   animation: pulse-glow 2s ease-in-out infinite;
 }
 
+/* Float Animation */
 @keyframes float {
   0%, 100% { transform: translateY(0px); }
   50% { transform: translateY(-10px); }
@@ -199,4 +332,239 @@
 
 .animate-float {
   animation: float 6s ease-in-out infinite;
+}
+
+/* Shimmer Effect */
+@keyframes shimmer {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+.shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.shimmer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 218, 185, 0.1) 50%,
+    transparent 100%
+  );
+  animation: shimmer 2s infinite;
+}
+
+/* Aurora Pulse */
+@keyframes aurora-pulse {
+  0%, 100% { 
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% { 
+    opacity: 0.5;
+    transform: scale(1.1);
+  }
+}
+
+.animate-aurora {
+  animation: aurora-pulse 8s ease-in-out infinite;
+}
+
+/* Border Spin */
+@keyframes border-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-border-spin {
+  animation: border-spin 4s linear infinite;
+}
+
+/* ============================================
+   SUPERNOVA TYPOGRAPHY UTILITIES
+   ============================================ */
+
+.text-hero {
+  font-size: 4.5rem;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.text-display {
+  font-size: 3.75rem;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+
+.text-h1 {
+  font-size: 3rem;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.text-h2 {
+  font-size: 2.25rem;
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+}
+
+.text-h3 {
+  font-size: 1.875rem;
+  line-height: 1.2;
+}
+
+.text-h4 {
+  font-size: 1.5rem;
+  line-height: 1.25;
+}
+
+/* ============================================
+   SUPERNOVA PREMIUM COMPONENTS
+   ============================================ */
+
+/* Premium Input */
+.premium-input {
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  padding: 1rem 1.25rem;
+  color: var(--text-primary);
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.premium-input:focus {
+  outline: none;
+  border-color: var(--maroon);
+  box-shadow: 0 0 0 3px rgba(92, 51, 23, 0.2), var(--glow-maroon);
+}
+
+.premium-input::placeholder {
+  color: var(--text-muted);
+}
+
+/* Premium Button */
+.premium-button {
+  background: linear-gradient(135deg, var(--maroon) 0%, var(--maroon-light) 100%);
+  color: var(--peach);
+  padding: 0.875rem 1.5rem;
+  border-radius: var(--radius-lg);
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--shadow-md), var(--glow-maroon);
+  border: none;
+  cursor: pointer;
+}
+
+.premium-button:hover {
+  background: linear-gradient(135deg, var(--maroon-hover) 0%, var(--maroon) 100%);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg), var(--glow-maroon-hover);
+}
+
+.premium-button:active {
+  transform: translateY(0);
+}
+
+/* Glass Button */
+.glass-button {
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  color: var(--text-primary);
+  padding: 0.75rem 1.25rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.glass-button:hover {
+  background: var(--glass-bg-hover);
+  border-color: var(--glass-border-hover);
+  transform: translateY(-2px);
+}
+
+/* Status Badge */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.status-online {
+  background: rgba(34, 197, 94, 0.15);
+  color: var(--success);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.status-offline {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-muted);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.status-processing {
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--warning);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+/* ============================================
+   SUPERNOVA LAYOUT UTILITIES
+   ============================================ */
+
+.gradient-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(9, 9, 11, 0.5) 50%,
+    rgba(9, 9, 11, 0.9) 100%
+  );
+  pointer-events: none;
+}
+
+.grid-pattern {
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 80px 80px;
+}
+
+/* ============================================
+   RESPONSIVE UTILITIES
+   ============================================ */
+
+@media (max-width: 768px) {
+  .text-hero {
+    font-size: 2.5rem;
+  }
+  
+  .text-display {
+    font-size: 2.25rem;
+  }
+  
+  .text-h1 {
+    font-size: 2rem;
+  }
+  
+  .text-h2 {
+    font-size: 1.5rem;
+  }
 }
