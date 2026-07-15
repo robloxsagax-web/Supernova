@@ -7,23 +7,32 @@ import { useStore } from '@/lib/store';
 import { 
   Sparkles,
   Plus,
-  Link,
   Image as ImageIcon,
   Layers,
   LayoutTemplate,
-  Play,
   ArrowRight,
   Check,
   Zap,
-  Palette,
   Cloud,
   ChevronRight,
-  Clock
+  Clock,
+  Search,
+  Bot,
+  TrendingUp,
+  Video,
+  FileText,
+  Mic,
+  Share2,
+  RefreshCw,
+  Activity,
+  Brain,
+  Target
 } from 'lucide-react';
 
 export default function DashboardPage() {
   const router = useRouter();
   const [timeOfDay, setTimeOfDay] = useState('Afternoon');
+  const [searchQuery, setSearchQuery] = useState('');
   const projects = useStore((state) => state.projects);
   
   const hasCampaigns = projects.length > 0;
@@ -38,362 +47,555 @@ export default function DashboardPage() {
   const quickActions = [
     { 
       label: 'New Campaign', 
-      icon: Plus, 
-      gradient: 'from-[#ff7a00] to-[#ff9a3c]',
+      icon: Sparkles, 
+      gradient: 'from-[#FF6A00] to-[#FFB347]',
       description: 'Start from a product URL',
-      action: () => router.push('/create')
+      action: () => router.push('/create'),
+      glow: 'shadow-[#FF6A00]/50'
     },
     { 
-      label: 'Import Product URL', 
-      icon: Link, 
+      label: 'Video Ad', 
+      icon: Video, 
       gradient: 'from-purple-500 to-pink-500',
-      description: 'Analyze any product page',
-      action: () => router.push('/create')
+      description: 'Create video content',
+      action: () => router.push('/create'),
+      glow: 'shadow-purple-500/50'
     },
     { 
-      label: 'Upload Images', 
+      label: 'Image Campaign', 
       icon: ImageIcon, 
       gradient: 'from-blue-500 to-cyan-500',
-      description: 'Use your own visuals',
-      action: () => router.push('/create')
+      description: 'Generate ad creatives',
+      action: () => router.push('/create'),
+      glow: 'shadow-blue-500/50'
     },
     { 
-      label: 'Start From Scratch', 
-      icon: Layers, 
+      label: 'Marketing Copy', 
+      icon: FileText, 
       gradient: 'from-emerald-500 to-teal-500',
-      description: 'No product required',
-      action: () => router.push('/create')
+      description: 'AI-powered copywriting',
+      action: () => router.push('/create'),
+      glow: 'shadow-emerald-500/50'
     },
     { 
-      label: 'Browse Templates', 
-      icon: LayoutTemplate, 
+      label: 'Product Analysis', 
+      icon: Target, 
       gradient: 'from-violet-500 to-purple-500',
-      description: 'Explore pre-built campaigns',
-      action: () => router.push('/create')
+      description: 'Deep market research',
+      action: () => router.push('/create'),
+      glow: 'shadow-violet-500/50'
+    },
+    { 
+      label: 'Storyboard', 
+      icon: Layers, 
+      gradient: 'from-orange-500 to-amber-500',
+      description: 'Visual story planning',
+      action: () => router.push('/create'),
+      glow: 'shadow-orange-500/50'
     },
   ];
 
-  const features = [
-    {
-      icon: Zap,
-      title: 'AI Strategy Engine',
-      description: 'Generates comprehensive marketing strategies before creating content. Analyzes competitors and market trends automatically.',
-      gradient: 'from-[#ff7a00]/20 to-transparent'
-    },
-    {
-      icon: Palette,
-      title: 'Creative Studio',
-      description: 'Creates scripts, visuals, videos and all marketing assets in one unified workspace. Professional quality, every time.',
-      gradient: 'from-purple-500/20 to-transparent'
-    },
-    {
-      icon: Cloud,
-      title: 'Cloud Media Library',
-      description: 'Automatically stores every generated asset securely. Access your entire creative library from anywhere.',
-      gradient: 'from-blue-500/20 to-transparent'
-    },
+  const workflowSteps = [
+    { icon: Brain, label: 'Research', status: 'done' },
+    { icon: Zap, label: 'Strategy', status: 'active' },
+    { icon: FileText, label: 'Script', status: 'pending' },
+    { icon: ImageIcon, label: 'Visuals', status: 'pending' },
+    { icon: Video, label: 'Video', status: 'pending' },
+    { icon: Mic, label: 'Voice', status: 'pending' },
+    { icon: Share2, label: 'Publish', status: 'pending' },
   ];
 
-  const steps = [
-    { label: 'Product URL', icon: Link },
-    { label: 'AI Analysis', icon: Sparkles },
-    { label: 'Strategy', icon: Zap },
-    { label: 'Script', icon: Layers },
-    { label: 'Visuals', icon: ImageIcon },
-    { label: 'Video', icon: Play },
-    { label: 'Storage', icon: Cloud },
-    { label: 'Publish', icon: Check },
+  const agentActivities = [
+    { id: 1, text: 'Product analyzed', completed: true, time: '2s ago' },
+    { id: 2, text: 'Audience identified', completed: true, time: '5s ago' },
+    { id: 3, text: 'Competitors researched', completed: true, time: '8s ago' },
+    { id: 4, text: 'Strategy created', completed: true, time: '12s ago' },
+    { id: 5, text: 'Generating visuals...', completed: false, time: 'now' },
+    { id: 6, text: 'Rendering video...', completed: false, time: 'in progress' },
+    { id: 7, text: 'Uploading to storage', completed: false, time: 'pending' },
+    { id: 8, text: 'Ready to publish', completed: false, time: 'pending' },
   ];
 
   return (
     <div className="min-h-screen relative overflow-hidden">
+      {/* Animated Background */}
       <div className="fixed inset-0 -z-10">
-        <div className="absolute inset-0 bg-[#000000]" />
+        <div className="absolute inset-0 bg-[#050505]" />
+        
+        {/* Ambient Orange Glow - Top Left */}
         <motion.div 
-          animate={{ scale: [1, 1.2, 1], opacity: [0.4, 0.6, 0.4] }}
-          transition={{ duration: 10, repeat: Infinity }}
-          className="absolute top-0 left-1/4 w-[800px] h-[800px] bg-gradient-to-br from-[#ff7a00]/30 via-[#ff9a3c]/10 to-transparent rounded-full blur-[150px]"
+          animate={{ 
+            scale: [1, 1.2, 1], 
+            opacity: [0.3, 0.5, 0.3],
+            x: [0, 30, 0]
+          }}
+          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute -top-40 -left-40 w-[900px] h-[900px] bg-gradient-to-br from-[#FF6A00]/40 via-[#FFB347]/20 to-transparent rounded-full blur-[200px]"
         />
+        
+        {/* Ambient Orange Glow - Bottom Right */}
         <motion.div 
-          animate={{ scale: [1, 1.3, 1], opacity: [0.3, 0.5, 0.3] }}
-          transition={{ duration: 12, repeat: Infinity, delay: 3 }}
-          className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-gradient-to-tr from-purple-500/20 to-transparent rounded-full blur-[120px]"
+          animate={{ 
+            scale: [1, 1.3, 1], 
+            opacity: [0.2, 0.4, 0.2],
+            x: [0, -40, 0]
+          }}
+          transition={{ duration: 18, repeat: Infinity, ease: "easeInOut", delay: 5 }}
+          className="absolute -bottom-60 -right-60 w-[800px] h-[800px] bg-gradient-to-tr from-[#FF6A00]/30 via-[#FFB347]/15 to-transparent rounded-full blur-[180px]"
+        />
+
+        {/* Subtle Grid Pattern */}
+        <div 
+          className="absolute inset-0 opacity-[0.02]"
+          style={{
+            backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
+            backgroundSize: '80px 80px'
+          }}
         />
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-12 space-y-20">
+      <div className="max-w-[1600px] mx-auto px-8 py-12 space-y-16">
+        {/* Hero Section */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="text-center space-y-8 pt-20"
+          className="space-y-8 pt-8"
         >
-          <div className="space-y-4">
-            <h1 className="text-7xl md:text-8xl font-bold text-white">
-              Good {timeOfDay} 👋
-            </h1>
-            <div className="space-y-2">
-              <h2 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-[#ff7a00] via-[#ff9a3c] to-[#ffb366] bg-clip-text text-transparent">
-                Supernova Creative Studio
+          <div className="space-y-6">
+            <motion.h1 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="text-8xl md:text-9xl font-bold text-white leading-none tracking-tight"
+            >
+              Good {timeOfDay}
+              <span className="inline-block ml-4">👋</span>
+            </motion.h1>
+            
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="space-y-4"
+            >
+              <h2 className="text-7xl md:text-8xl font-bold bg-gradient-to-r from-[#FF6A00] via-[#FFB347] to-[#FF6A00] bg-clip-text text-transparent">
+                Supernova
               </h2>
-              <p className="text-xl md:text-2xl text-gray-400 max-w-3xl mx-auto leading-relaxed">
-                Turn any product into high-converting AI marketing campaigns, videos, images, and creative assets in minutes.
+              <p className="text-2xl md:text-3xl text-[#B7B7B7] max-w-4xl leading-relaxed">
+                Your AI Creative Command Center
               </p>
-            </div>
+              <p className="text-xl text-[#7A7A7A] max-w-3xl leading-relaxed">
+                Turn products into high-converting marketing campaigns using autonomous AI agents
+              </p>
+            </motion.div>
           </div>
 
-          <motion.div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-8">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="flex flex-col sm:flex-row items-center gap-6 pt-6"
+          >
             <motion.button
               onClick={() => router.push('/create')}
-              whileHover={{ scale: 1.05, boxShadow: '0 0 40px rgba(255, 122, 0, 0.4)' }}
-              whileTap={{ scale: 0.95 }}
-              className="group px-12 py-5 rounded-2xl bg-gradient-to-r from-[#ff7a00] to-[#ff9a3c] text-white font-bold text-xl shadow-2xl shadow-[#ff7a00]/30 relative overflow-hidden"
+              whileHover={{ scale: 1.03, boxShadow: '0 0 60px rgba(255, 106, 0, 0.6)' }}
+              whileTap={{ scale: 0.97 }}
+              className="group relative px-14 py-6 rounded-[28px] bg-gradient-to-r from-[#FF6A00] to-[#FFB347] text-white font-bold text-2xl shadow-2xl shadow-[#FF6A00]/40 relative overflow-hidden"
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
-              <span className="relative flex items-center gap-3">
-                <Sparkles className="w-6 h-6" />
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+              <span className="relative flex items-center gap-4">
+                <Sparkles className="w-7 h-7" />
                 Create Campaign
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform duration-300" />
               </span>
             </motion.button>
             
             <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="px-8 py-5 rounded-2xl glass border border-white/10 text-white font-semibold text-lg hover:bg-white/5 transition-all flex items-center gap-3"
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              className="px-10 py-6 rounded-[28px] bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)] backdrop-blur-[20px] text-white font-semibold text-xl hover:bg-[rgba(255,255,255,0.08)] transition-all flex items-center gap-3"
             >
-              <Play className="w-5 h-5" />
-              Watch Demo
+              <LayoutTemplate className="w-6 h-6" />
+              Browse Templates
             </motion.button>
           </motion.div>
         </motion.div>
 
+        {/* Search Bar */}
         <motion.div
-          initial={{ opacity: 0, y: 40 }}
+          initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="space-y-8"
+          transition={{ delay: 0.6 }}
+          className="relative"
         >
-          <div className="text-center">
-            <h3 className="text-4xl font-bold text-white mb-4">Get Started</h3>
-            <p className="text-gray-400 text-lg">Choose how you want to begin</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {quickActions.map((action, idx) => (
-              <motion.button
-                key={idx}
-                onClick={action.action}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 + idx * 0.1 }}
-                whileHover={{ y: -8, scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="group relative p-8 rounded-3xl glass border border-white/10 hover:border-[#ff7a00]/50 transition-all duration-300 overflow-hidden"
-              >
-                <div className={`absolute inset-0 bg-gradient-to-br ${action.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
-                <div className="relative z-10 flex flex-col items-start space-y-4">
-                  <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${action.gradient} flex items-center justify-center shadow-lg`}>
-                    <action.icon className="w-8 h-8 text-white" />
-                  </div>
-                  <div className="text-left">
-                    <h4 className="text-xl font-bold text-white mb-2">{action.label}</h4>
-                    <p className="text-sm text-gray-400">{action.description}</p>
-                  </div>
-                  <div className="flex items-center gap-2 text-[#ff7a00] text-sm font-semibold opacity-0 group-hover:opacity-100 transition-opacity">
-                    Start <ChevronRight className="w-4 h-4" />
-                  </div>
-                </div>
-              </motion.button>
-            ))}
-          </div>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
-          className="space-y-12"
-        >
-          <div className="text-center">
-            <h3 className="text-4xl font-bold text-white mb-4">How It Works</h3>
-            <p className="text-gray-400 text-lg">From product to published campaign in minutes</p>
-          </div>
-
-          <div className="relative">
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
-              {steps.map((step, idx) => (
-                <motion.div
-                  key={idx}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.5 + idx * 0.05 }}
-                  className="flex flex-col items-center space-y-3"
-                >
-                  <motion.div
-                    whileHover={{ scale: 1.1 }}
-                    className="w-16 h-16 rounded-2xl glass border border-white/10 flex items-center justify-center group hover:border-[#ff7a00]/50 transition-all"
-                  >
-                    <step.icon className="w-7 h-7 text-[#ff7a00]" />
-                  </motion.div>
-                  <span className="text-xs text-gray-400 text-center font-medium">{step.label}</span>
-                </motion.div>
-              ))}
+          <div className="relative group">
+            <div className="absolute inset-0 bg-gradient-to-r from-[#FF6A00]/20 to-[#FFB347]/20 rounded-[28px] blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <div className="relative">
+              <Search className="absolute left-8 top-1/2 -translate-y-1/2 w-7 h-7 text-[#7A7A7A]" />
+              <input
+                type="text"
+                placeholder="Search campaigns, products, assets..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full h-20 pl-20 pr-8 rounded-[28px] bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)] backdrop-blur-[20px] text-white text-xl placeholder:text-[#7A7A7A] focus:outline-none focus:border-[#FF6A00]/50 focus:shadow-[0_0_40px_rgba(255,106,0,0.2)] transition-all duration-300"
+              />
             </div>
           </div>
         </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.6 }}
-          className="space-y-8"
-        >
-          <div className="text-center">
-            <h3 className="text-4xl font-bold text-white mb-4">Powerful Features</h3>
-            <p className="text-gray-400 text-lg">Everything you need to create professional marketing content</p>
-          </div>
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-12">
+          {/* Main Content - Left 2/3 */}
+          <div className="xl:col-span-2 space-y-12">
+            {/* Quick Actions */}
+            <motion.div
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.7 }}
+              className="space-y-8"
+            >
+              <div className="space-y-2">
+                <h3 className="text-4xl font-bold text-white">Quick Actions</h3>
+                <p className="text-lg text-[#7A7A7A]">Choose how to start creating</p>
+              </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {features.map((feature, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.7 + idx * 0.1 }}
-                whileHover={{ y: -8 }}
-                className="p-8 rounded-3xl glass border border-white/10 hover:border-white/20 transition-all duration-300 relative overflow-hidden group"
-              >
-                <div className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
-                <div className="relative z-10 space-y-6">
-                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#ff7a00] to-[#ff9a3c] flex items-center justify-center shadow-lg">
-                    <feature.icon className="w-7 h-7 text-white" />
-                  </div>
-                  <div>
-                    <h4 className="text-2xl font-bold text-white mb-3">{feature.title}</h4>
-                    <p className="text-gray-400 leading-relaxed">{feature.description}</p>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
-
-        {!hasCampaigns && (
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.8 }}
-            className="relative"
-          >
-            <div className="absolute inset-0 bg-gradient-to-r from-[#ff7a00]/10 via-transparent to-[#ff9a3c]/10 rounded-3xl blur-xl" />
-            <div className="relative p-12 rounded-3xl glass border border-[#ff7a00]/20 bg-gradient-to-br from-[#ff7a00]/5 to-transparent">
-              <div className="max-w-4xl mx-auto text-center space-y-8">
-                <div className="space-y-4">
-                  <h3 className="text-5xl font-bold text-white">
-                    Ready to create your first campaign?
-                  </h3>
-                  <p className="text-xl text-gray-400 leading-relaxed">
-                    Paste any Amazon, Shopify or product URL and Supernova will automatically:
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-3xl mx-auto">
-                  {[
-                    'Analyze your product',
-                    'Build a marketing strategy',
-                    'Write the script',
-                    'Generate scenes',
-                    'Create AI visuals',
-                    'Produce the final video',
-                  ].map((item, idx) => (
-                    <motion.div
-                      key={idx}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.9 + idx * 0.05 }}
-                      className="flex items-center gap-3 text-left"
-                    >
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#ff7a00] to-[#ff9a3c] flex items-center justify-center flex-shrink-0">
-                        <Check className="w-4 h-4 text-white" />
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {quickActions.map((action, idx) => (
+                  <motion.button
+                    key={idx}
+                    onClick={action.action}
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.8 + idx * 0.1 }}
+                    whileHover={{ y: -12, scale: 1.03 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="group relative p-8 rounded-[28px] bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)] backdrop-blur-[16px] hover:border-[rgba(255,106,0,0.5)] transition-all duration-500 overflow-hidden"
+                  >
+                    {/* Gradient overlay on hover */}
+                    <div className={`absolute inset-0 bg-gradient-to-br ${action.gradient} opacity-0 group-hover:opacity-15 transition-opacity duration-500`} />
+                    
+                    {/* Glow effect */}
+                    <div className={`absolute inset-0 shadow-[inset_0_0_60px_rgba(255,106,0,0.3)] opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
+                    
+                    <div className="relative z-10 flex flex-col items-start space-y-6">
+                      <div className={`w-20 h-20 rounded-[24px] bg-gradient-to-br ${action.gradient} flex items-center justify-center shadow-xl ${action.glow} group-hover:scale-110 transition-transform duration-300`}>
+                        <action.icon className="w-10 h-10 text-white" />
                       </div>
-                      <span className="text-lg text-white font-medium">{item}</span>
+                      <div className="text-left space-y-2">
+                        <h4 className="text-2xl font-bold text-white">{action.label}</h4>
+                        <p className="text-base text-[#B7B7B7]">{action.description}</p>
+                      </div>
+                    </div>
+                  </motion.button>
+                ))}
+              </div>
+            </motion.div>
+
+            {/* Campaign Workflow */}
+            <motion.div
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.9 }}
+              className="space-y-8"
+            >
+              <div className="space-y-2">
+                <h3 className="text-4xl font-bold text-white">Campaign Workflow</h3>
+                <p className="text-lg text-[#7A7A7A]">From idea to publish in minutes</p>
+              </div>
+
+              <div className="relative p-10 rounded-[28px] bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)] backdrop-blur-[20px]">
+                <div className="relative flex items-center justify-between gap-3 overflow-x-auto pb-4">
+                  {workflowSteps.map((step, idx) => (
+                    <div key={idx} className="flex items-center gap-3">
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 1.0 + idx * 0.1 }}
+                        className="flex flex-col items-center gap-3 flex-shrink-0"
+                      >
+                        <div className={`
+                          relative w-16 h-16 rounded-[20px] backdrop-blur-[20px] border flex items-center justify-center transition-all duration-500
+                          ${step.status === 'done' ? 'bg-gradient-to-br from-[#FF6A00] to-[#FFB347] border-transparent shadow-[0_0_30px_rgba(255,106,0,0.4)]' : 
+                            step.status === 'active' ? 'bg-[rgba(255,106,0,0.2)] border-[#FF6A00]/50 shadow-[0_0_20px_rgba(255,106,0,0.3)] animate-pulse' : 
+                            'bg-[rgba(255,255,255,0.04)] border-[rgba(255,255,255,0.08)]'}
+                        `}>
+                          <step.icon className={`w-7 h-7 ${step.status === 'done' ? 'text-white' : step.status === 'active' ? 'text-[#FF6A00]' : 'text-[#7A7A7A]'}`} />
+                          
+                          {step.status === 'done' && (
+                            <motion.div 
+                              initial={{ scale: 0 }}
+                              animate={{ scale: 1 }}
+                              className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-white flex items-center justify-center"
+                            >
+                              <Check className="w-4 h-4 text-[#FF6A00]" />
+                            </motion.div>
+                          )}
+                        </div>
+                        <span className="text-sm font-semibold text-[#B7B7B7]">{step.label}</span>
+                      </motion.div>
+                      
+                      {idx < workflowSteps.length - 1 && (
+                        <motion.div
+                          initial={{ scaleX: 0, opacity: 0 }}
+                          animate={{ scaleX: 1, opacity: 1 }}
+                          transition={{ delay: 1.1 + idx * 0.1 }}
+                          className="w-8 h-1.5 bg-gradient-to-r from-[#FF6A00] to-[#FFB347] rounded-full flex-shrink-0"
+                        />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Recent Campaigns */}
+            {hasCampaigns ? (
+              <motion.div
+                initial={{ opacity: 0, y: 40 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1.1 }}
+                className="space-y-8"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="space-y-2">
+                    <h3 className="text-4xl font-bold text-white">Recent Campaigns</h3>
+                    <p className="text-lg text-[#7A7A7A]">Your latest creations</p>
+                  </div>
+                  <motion.button
+                    onClick={() => router.push('/create')}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="px-8 py-4 rounded-[20px] bg-gradient-to-r from-[#FF6A00] to-[#FFB347] text-white font-bold text-lg shadow-xl shadow-[#FF6A00]/30 flex items-center gap-3"
+                  >
+                    <Plus className="w-5 h-5" />
+                    New Campaign
+                  </motion.button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  {projects.slice(0, 4).map((project, idx) => (
+                    <motion.div
+                      key={project.id}
+                      initial={{ opacity: 0, y: 30 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 1.2 + idx * 0.1 }}
+                      whileHover={{ y: -8, scale: 1.02 }}
+                      className="group relative p-8 rounded-[28px] bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)] backdrop-blur-[16px] hover:border-[#FF6A00]/50 transition-all duration-500 cursor-pointer overflow-hidden"
+                      onClick={() => router.push('/create')}
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-br from-[#FF6A00]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                      
+                      <div className="relative z-10 space-y-6">
+                        <div className="w-full h-40 rounded-[20px] bg-gradient-to-br from-[#FF6A00]/20 to-[#FFB347]/10 flex items-center justify-center group-hover:shadow-[0_0_40px_rgba(255,106,0,0.2)] transition-all duration-500">
+                          <Sparkles className="w-16 h-16 text-[#FF6A00]/60" />
+                        </div>
+                        
+                        <div className="space-y-3">
+                          <h4 className="text-2xl font-bold text-white truncate">{project.name}</h4>
+                          <div className="flex items-center gap-3 text-[#7A7A7A]">
+                            <Clock className="w-4 h-4" />
+                            <span className="text-sm">{new Date(project.createdAt).toLocaleDateString()}</span>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center gap-2 text-[#FF6A00] font-semibold text-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                          Open Campaign 
+                          <ChevronRight className="w-5 h-5" />
+                        </div>
+                      </div>
                     </motion.div>
                   ))}
                 </div>
-
-                <motion.button
-                  onClick={() => router.push('/create')}
-                  whileHover={{ scale: 1.05, boxShadow: '0 0 60px rgba(255, 122, 0, 0.5)' }}
-                  whileTap={{ scale: 0.95 }}
-                  className="px-16 py-6 rounded-2xl bg-gradient-to-r from-[#ff7a00] to-[#ff9a3c] text-white font-bold text-2xl shadow-2xl shadow-[#ff7a00]/40 relative overflow-hidden group"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-                  <span className="relative flex items-center gap-4">
-                    <Sparkles className="w-8 h-8" />
-                    Create First Campaign
-                    <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform" />
-                  </span>
-                </motion.button>
-              </div>
-            </div>
-          </motion.div>
-        )}
-
-        {hasCampaigns && (
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.8 }}
-            className="space-y-8"
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-4xl font-bold text-white mb-2">Recent Activity</h3>
-                <p className="text-gray-400 text-lg">Your latest campaigns and creations</p>
-              </div>
-              <motion.button
-                onClick={() => router.push('/create')}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#ff7a00] to-[#ff9a3c] text-white font-semibold flex items-center gap-2"
+              </motion.div>
+            ) : (
+              /* Beautiful Empty State */
+              <motion.div
+                initial={{ opacity: 0, y: 40 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1.1 }}
+                className="relative"
               >
-                <Plus className="w-5 h-5" />
-                New Campaign
-              </motion.button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {projects.slice(0, 6).map((project, idx) => (
-                <motion.div
-                  key={project.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.9 + idx * 0.05 }}
-                  whileHover={{ y: -8, scale: 1.02 }}
-                  className="p-6 rounded-2xl glass border border-white/10 hover:border-[#ff7a00]/50 transition-all duration-300 group cursor-pointer"
-                  onClick={() => router.push('/create')}
-                >
-                  <div className="space-y-4">
-                    <div className="w-full h-32 rounded-xl bg-gradient-to-br from-[#ff7a00]/20 to-[#ff9a3c]/10 flex items-center justify-center">
-                      <Sparkles className="w-12 h-12 text-[#ff7a00]/50" />
-                    </div>
-                    <div>
-                      <h4 className="text-lg font-bold text-white mb-1 truncate">{project.name}</h4>
-                      <div className="flex items-center gap-2 text-sm text-gray-400">
-                        <Clock className="w-4 h-4" />
-                        {new Date(project.createdAt).toLocaleDateString()}
+                <div className="absolute inset-0 bg-gradient-to-r from-[#FF6A00]/10 via-transparent to-[#FFB347]/10 rounded-[28px] blur-xl" />
+                <div className="relative p-16 rounded-[28px] bg-[rgba(255,255,255,0.04)] border border-[#FF6A00]/20 backdrop-blur-[20px]">
+                  <div className="max-w-4xl mx-auto text-center space-y-10">
+                    <div className="space-y-6">
+                      <div className="w-32 h-32 mx-auto rounded-[32px] bg-gradient-to-br from-[#FF6A00] to-[#FFB347] flex items-center justify-center shadow-2xl shadow-[#FF6A00]/40">
+                        <Sparkles className="w-16 h-16 text-white" />
                       </div>
+                      <h3 className="text-6xl font-bold text-white">
+                        Start Your First Campaign
+                      </h3>
+                      <p className="text-2xl text-[#B7B7B7] leading-relaxed max-w-2xl mx-auto">
+                        Import any Amazon or Shopify product and Supernova will generate a complete marketing campaign in minutes
+                      </p>
                     </div>
-                    <div className="flex items-center gap-2 text-[#ff7a00] text-sm font-semibold opacity-0 group-hover:opacity-100 transition-opacity">
-                      Open Campaign <ChevronRight className="w-4 h-4" />
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl mx-auto">
+                      {[
+                        'Analyze product',
+                        'Generate strategy',
+                        'Create assets'
+                      ].map((item, idx) => (
+                        <motion.div
+                          key={idx}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 1.3 + idx * 0.1 }}
+                          className="flex items-center gap-4 p-6 rounded-[20px] bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)]"
+                        >
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#FF6A00] to-[#FFB347] flex items-center justify-center flex-shrink-0">
+                            <Check className="w-5 h-5 text-white" />
+                          </div>
+                          <span className="text-lg text-white font-semibold">{item}</span>
+                        </motion.div>
+                      ))}
                     </div>
+
+                    <motion.button
+                      onClick={() => router.push('/create')}
+                      whileHover={{ scale: 1.05, boxShadow: '0 0 80px rgba(255, 106, 0, 0.6)' }}
+                      whileTap={{ scale: 0.95 }}
+                      className="group px-16 py-7 rounded-[28px] bg-gradient-to-r from-[#FF6A00] to-[#FFB347] text-white font-bold text-2xl shadow-2xl shadow-[#FF6A00]/40 relative overflow-hidden"
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+                      <span className="relative flex items-center gap-4">
+                        <Sparkles className="w-7 h-7" />
+                        Create Campaign
+                        <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform duration-300" />
+                      </span>
+                    </motion.button>
                   </div>
+                </div>
+              </motion.div>
+            )}
+          </div>
+
+          {/* Sidebar - Right 1/3 */}
+          <div className="space-y-8">
+            {/* AI Agent Panel */}
+            <motion.div
+              initial={{ opacity: 0, x: 40 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.8 }}
+              className="relative"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-[#FF6A00]/10 to-transparent rounded-[28px] blur-xl" />
+              
+              <div className="relative p-8 rounded-[28px] bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)] backdrop-blur-[20px] space-y-6">
+                <div className="flex items-center gap-4">
+                  <div className="relative">
+                    <div className="w-14 h-14 rounded-[16px] bg-gradient-to-br from-[#FF6A00] to-[#FFB347] flex items-center justify-center">
+                      <Bot className="w-8 h-8 text-white" />
+                    </div>
+                    <motion.div
+                      animate={{ scale: [1, 1.2, 1], opacity: [1, 0.5, 1] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                      className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-green-500"
+                    />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold text-white">Supernova Agent</h3>
+                    <p className="text-sm text-[#7A7A7A]">AI Marketing Intelligence</p>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3 text-sm text-[#7A7A7A] mb-4">
+                    <Activity className="w-4 h-4" />
+                    <span>Live Activity</span>
+                  </div>
+                  
+                  {agentActivities.map((activity, idx) => (
+                    <motion.div
+                      key={activity.id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.9 + idx * 0.15 }}
+                      className="flex items-center gap-4 p-4 rounded-[16px] bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)]"
+                    >
+                      <div className={`
+                        w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0
+                        ${activity.completed ? 'bg-gradient-to-br from-[#FF6A00] to-[#FFB347]' : 'bg-[rgba(255,106,0,0.2)]'}
+                      `}>
+                        {activity.completed ? (
+                          <Check className="w-4 h-4 text-white" />
+                        ) : (
+                          <motion.div
+                            animate={{ rotate: 360 }}
+                            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                          >
+                            <RefreshCw className="w-4 h-4 text-[#FF6A00]" />
+                          </motion.div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className={`text-sm font-medium ${activity.completed ? 'text-white' : 'text-[#B7B7B7]'}`}>
+                          {activity.text}
+                        </p>
+                        <p className="text-xs text-[#7A7A7A]">{activity.time}</p>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Stats Card */}
+            <motion.div
+              initial={{ opacity: 0, x: 40 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 1.0 }}
+              className="relative"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent rounded-[28px] blur-xl" />
+              
+              <div className="relative p-8 rounded-[28px] bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)] backdrop-blur-[20px] space-y-6">
+                <div className="flex items-center gap-3">
+                  <TrendingUp className="w-6 h-6 text-[#FF6A00]" />
+                  <h3 className="text-xl font-bold text-white">Performance</h3>
+                </div>
+                
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-4 rounded-[16px] bg-[rgba(255,255,255,0.02)]">
+                    <span className="text-[#B7B7B7]">Campaigns</span>
+                    <span className="text-2xl font-bold text-white">{projects.length}</span>
+                  </div>
+                  <div className="flex items-center justify-between p-4 rounded-[16px] bg-[rgba(255,255,255,0.02)]">
+                    <span className="text-[#B7B7B7]">Assets Generated</span>
+                    <span className="text-2xl font-bold text-white">{projects.length * 3}</span>
+                  </div>
+                  <div className="flex items-center justify-between p-4 rounded-[16px] bg-[rgba(255,255,255,0.02)]">
+                    <span className="text-[#B7B7B7]">Videos Created</span>
+                    <span className="text-2xl font-bold text-white">{projects.length}</span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Quick Stats */}
+            <motion.div
+              initial={{ opacity: 0, x: 40 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 1.1 }}
+              className="grid grid-cols-2 gap-4"
+            >
+              {[
+                { label: 'Uptime', value: '99.9%', icon: Cloud },
+                { label: 'Speed', value: '2x', icon: Zap },
+              ].map((stat, idx) => (
+                <motion.div
+                  key={idx}
+                  whileHover={{ scale: 1.05 }}
+                  className="p-6 rounded-[20px] bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)] backdrop-blur-[16px] space-y-3"
+                >
+                  <stat.icon className="w-6 h-6 text-[#FF6A00]" />
+                  <div className="text-2xl font-bold text-white">{stat.value}</div>
+                  <div className="text-sm text-[#7A7A7A]">{stat.label}</div>
                 </motion.div>
               ))}
-            </div>
-          </motion.div>
-        )}
+            </motion.div>
+          </div>
+        </div>
 
         <div className="h-20" />
       </div>
