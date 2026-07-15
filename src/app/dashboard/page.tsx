@@ -5,505 +5,397 @@ import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useStore } from '@/lib/store';
 import { 
-  LayoutDashboard, 
-  TrendingUp,
-  Image,
-  Video,
-  Folder,
-  Plus,
-  Search,
-  Bell,
-  Zap,
-  ArrowRight,
-  Download,
-  Share2,
-  Trash2,
   Sparkles,
-  Activity,
-  Database,
-  FileText,
-  Clock,
-  Edit3,
-  Copy
+  Plus,
+  Link,
+  Image as ImageIcon,
+  Layers,
+  LayoutTemplate,
+  Play,
+  ArrowRight,
+  Check,
+  Zap,
+  Palette,
+  Cloud,
+  ChevronRight,
+  Clock
 } from 'lucide-react';
-
-function formatBytes(bytes: number): string {
-  if (bytes === 0) return '0 B';
-  const k = 1024;
-  const sizes = ['B', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
-}
-
-function formatTimeAgo(timestamp: string): string {
-  const now = new Date();
-  const date = new Date(timestamp);
-  const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-  
-  if (seconds < 60) return 'Just now';
-  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
-  if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
-  return date.toLocaleDateString();
-}
 
 export default function DashboardPage() {
   const router = useRouter();
-  const [timeOfDay, setTimeOfDay] = useState('Morning');
-  
-  // Get data directly from Zustand store ONLY - no Supabase, no fallbacks
+  const [timeOfDay, setTimeOfDay] = useState('Afternoon');
   const projects = useStore((state) => state.projects);
-  const assets = useStore((state) => state.assets);
-  const activities = useStore((state) => state.activities);
-  const deleteProject = useStore((state) => state.deleteProject);
-  const deleteAsset = useStore((state) => state.deleteAsset);
   
-  // Calculate counts from REAL data only
-  const campaignsCount = projects.length;
-  const videosCount = assets.filter((a) => a.type === 'video').length;
-  const imagesCount = assets.filter((a) => a.type === 'image').length;
-  const storageUsed = assets.reduce((total, asset) => total + asset.size, 0);
-  const recentProjects = projects.slice(0, 6);
-  const recentAssets = assets.slice(0, 12);
-  const recentActivities = activities.slice(0, 10);
-  
-  // Empty state when NO real data
-  const isEmpty = campaignsCount === 0 && videosCount === 0 && imagesCount === 0;
+  const hasCampaigns = projects.length > 0;
 
   useEffect(() => {
     const hour = new Date().getHours();
     if (hour < 12) setTimeOfDay('Morning');
-    else if (hour < 18) setTimeOfDay('Afternoon');
+    else if (hour < 17) setTimeOfDay('Afternoon');
     else setTimeOfDay('Evening');
   }, []);
 
-  const getActivityIcon = (type: string) => {
-    if (type.includes('video')) return <Video className="w-4 h-4 text-white" />;
-    if (type.includes('image')) return <Image className="w-4 h-4 text-white" />;
-    if (type.includes('script')) return <FileText className="w-4 h-4 text-white" />;
-    if (type.includes('campaign')) return <Zap className="w-4 h-4 text-white" />;
-    if (type.includes('deleted')) return <Trash2 className="w-4 h-4 text-white" />;
-    if (type.includes('renamed')) return <Edit3 className="w-4 h-4 text-white" />;
-    return <Sparkles className="w-4 h-4 text-white" />;
-  };
+  const quickActions = [
+    { 
+      label: 'New Campaign', 
+      icon: Plus, 
+      gradient: 'from-[#ff7a00] to-[#ff9a3c]',
+      description: 'Start from a product URL',
+      action: () => router.push('/create')
+    },
+    { 
+      label: 'Import Product URL', 
+      icon: Link, 
+      gradient: 'from-purple-500 to-pink-500',
+      description: 'Analyze any product page',
+      action: () => router.push('/create')
+    },
+    { 
+      label: 'Upload Images', 
+      icon: ImageIcon, 
+      gradient: 'from-blue-500 to-cyan-500',
+      description: 'Use your own visuals',
+      action: () => router.push('/create')
+    },
+    { 
+      label: 'Start From Scratch', 
+      icon: Layers, 
+      gradient: 'from-emerald-500 to-teal-500',
+      description: 'No product required',
+      action: () => router.push('/create')
+    },
+    { 
+      label: 'Browse Templates', 
+      icon: LayoutTemplate, 
+      gradient: 'from-violet-500 to-purple-500',
+      description: 'Explore pre-built campaigns',
+      action: () => router.push('/create')
+    },
+  ];
 
-  const getActivityGradient = (type: string) => {
-    if (type.includes('video')) return 'from-blue-500 to-cyan-500';
-    if (type.includes('image')) return 'from-purple-500 to-pink-500';
-    if (type.includes('script')) return 'from-emerald-500 to-teal-500';
-    if (type.includes('campaign')) return 'from-primary to-accent';
-    if (type.includes('deleted')) return 'from-red-500 to-rose-500';
-    if (type.includes('renamed')) return 'from-orange-500 to-yellow-500';
-    return 'from-gray-500 to-gray-600';
-  };
+  const features = [
+    {
+      icon: Zap,
+      title: 'AI Strategy Engine',
+      description: 'Generates comprehensive marketing strategies before creating content. Analyzes competitors and market trends automatically.',
+      gradient: 'from-[#ff7a00]/20 to-transparent'
+    },
+    {
+      icon: Palette,
+      title: 'Creative Studio',
+      description: 'Creates scripts, visuals, videos and all marketing assets in one unified workspace. Professional quality, every time.',
+      gradient: 'from-purple-500/20 to-transparent'
+    },
+    {
+      icon: Cloud,
+      title: 'Cloud Media Library',
+      description: 'Automatically stores every generated asset securely. Access your entire creative library from anywhere.',
+      gradient: 'from-blue-500/20 to-transparent'
+    },
+  ];
+
+  const steps = [
+    { label: 'Product URL', icon: Link },
+    { label: 'AI Analysis', icon: Sparkles },
+    { label: 'Strategy', icon: Zap },
+    { label: 'Script', icon: Layers },
+    { label: 'Visuals', icon: ImageIcon },
+    { label: 'Video', icon: Play },
+    { label: 'Storage', icon: Cloud },
+    { label: 'Publish', icon: Check },
+  ];
 
   return (
     <div className="min-h-screen relative overflow-hidden">
-      {/* Animated Background */}
       <div className="fixed inset-0 -z-10">
-        <div className="absolute inset-0 bg-[#09090B]" />
+        <div className="absolute inset-0 bg-[#000000]" />
         <motion.div 
-          animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
-          transition={{ duration: 8, repeat: Infinity }}
-          className="absolute top-0 left-0 w-96 h-96 bg-gradient-to-br from-primary/20 to-transparent rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"
+          animate={{ scale: [1, 1.2, 1], opacity: [0.4, 0.6, 0.4] }}
+          transition={{ duration: 10, repeat: Infinity }}
+          className="absolute top-0 left-1/4 w-[800px] h-[800px] bg-gradient-to-br from-[#ff7a00]/30 via-[#ff9a3c]/10 to-transparent rounded-full blur-[150px]"
         />
         <motion.div 
-          animate={{ scale: [1, 1.3, 1], opacity: [0.2, 0.4, 0.2] }}
-          transition={{ duration: 10, repeat: Infinity, delay: 2 }}
-          className="absolute top-1/4 right-0 w-96 h-96 bg-gradient-to-bl from-accent/20 to-transparent rounded-full blur-3xl translate-x-1/2"
+          animate={{ scale: [1, 1.3, 1], opacity: [0.3, 0.5, 0.3] }}
+          transition={{ duration: 12, repeat: Infinity, delay: 3 }}
+          className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-gradient-to-tr from-purple-500/20 to-transparent rounded-full blur-[120px]"
         />
       </div>
 
-      <div className="p-8 max-w-[1600px] mx-auto space-y-8">
-        {/* Header */}
+      <div className="max-w-7xl mx-auto px-6 py-12 space-y-20">
         <motion.div
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          className="flex items-start justify-between"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="text-center space-y-8 pt-20"
         >
-          <div className="space-y-2">
-            <h1 className="text-5xl font-bold bg-gradient-to-r from-primary via-red-800 to-accent bg-clip-text text-transparent">
-              Good {timeOfDay},
+          <div className="space-y-4">
+            <h1 className="text-7xl md:text-8xl font-bold text-white">
+              Good {timeOfDay} 👋
             </h1>
-            <h2 className="text-4xl font-bold text-foreground">
-              Welcome back to Supernova
-            </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl">
-              Your AI Marketing Agent - Create campaigns, generate creatives, and manage your marketing assets.
-            </p>
+            <div className="space-y-2">
+              <h2 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-[#ff7a00] via-[#ff9a3c] to-[#ffb366] bg-clip-text text-transparent">
+                Supernova Creative Studio
+              </h2>
+              <p className="text-xl md:text-2xl text-gray-400 max-w-3xl mx-auto leading-relaxed">
+                Turn any product into high-converting AI marketing campaigns, videos, images, and creative assets in minutes.
+              </p>
+            </div>
           </div>
 
-          <div className="flex items-center gap-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-              <input 
-                type="text"
-                placeholder="Search..."
-                className="pl-10 pr-4 py-2.5 w-64 rounded-xl bg-white/5 border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
-              />
-            </div>
+          <motion.div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-8">
             <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="relative p-3 rounded-xl glass hover:bg-white/10 transition-all"
-            >
-              <Bell className="w-5 h-5 text-foreground" />
-              <div className="absolute top-2 right-2 w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
               onClick={() => router.push('/create')}
-              className="px-6 py-2.5 rounded-xl gradient-primary text-background font-semibold hover:opacity-90 transition-opacity flex items-center gap-2"
+              whileHover={{ scale: 1.05, boxShadow: '0 0 40px rgba(255, 122, 0, 0.4)' }}
+              whileTap={{ scale: 0.95 }}
+              className="group px-12 py-5 rounded-2xl bg-gradient-to-r from-[#ff7a00] to-[#ff9a3c] text-white font-bold text-xl shadow-2xl shadow-[#ff7a00]/30 relative overflow-hidden"
             >
-              <Plus className="w-5 h-5" />
-              New Campaign
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
+              <span className="relative flex items-center gap-3">
+                <Sparkles className="w-6 h-6" />
+                Create Campaign
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </span>
             </motion.button>
+            
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="px-8 py-5 rounded-2xl glass border border-white/10 text-white font-semibold text-lg hover:bg-white/5 transition-all flex items-center gap-3"
+            >
+              <Play className="w-5 h-5" />
+              Watch Demo
+            </motion.button>
+          </motion.div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+          className="space-y-8"
+        >
+          <div className="text-center">
+            <h3 className="text-4xl font-bold text-white mb-4">Get Started</h3>
+            <p className="text-gray-400 text-lg">Choose how you want to begin</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {quickActions.map((action, idx) => (
+              <motion.button
+                key={idx}
+                onClick={action.action}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 + idx * 0.1 }}
+                whileHover={{ y: -8, scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="group relative p-8 rounded-3xl glass border border-white/10 hover:border-[#ff7a00]/50 transition-all duration-300 overflow-hidden"
+              >
+                <div className={`absolute inset-0 bg-gradient-to-br ${action.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
+                <div className="relative z-10 flex flex-col items-start space-y-4">
+                  <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${action.gradient} flex items-center justify-center shadow-lg`}>
+                    <action.icon className="w-8 h-8 text-white" />
+                  </div>
+                  <div className="text-left">
+                    <h4 className="text-xl font-bold text-white mb-2">{action.label}</h4>
+                    <p className="text-sm text-gray-400">{action.description}</p>
+                  </div>
+                  <div className="flex items-center gap-2 text-[#ff7a00] text-sm font-semibold opacity-0 group-hover:opacity-100 transition-opacity">
+                    Start <ChevronRight className="w-4 h-4" />
+                  </div>
+                </div>
+              </motion.button>
+            ))}
           </div>
         </motion.div>
 
-        {/* Empty State - ONLY shown when truly no data */}
-        {isEmpty ? (
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.4 }}
+          className="space-y-12"
+        >
+          <div className="text-center">
+            <h3 className="text-4xl font-bold text-white mb-4">How It Works</h3>
+            <p className="text-gray-400 text-lg">From product to published campaign in minutes</p>
+          </div>
+
+          <div className="relative">
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
+              {steps.map((step, idx) => (
+                <motion.div
+                  key={idx}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.5 + idx * 0.05 }}
+                  className="flex flex-col items-center space-y-3"
+                >
+                  <motion.div
+                    whileHover={{ scale: 1.1 }}
+                    className="w-16 h-16 rounded-2xl glass border border-white/10 flex items-center justify-center group hover:border-[#ff7a00]/50 transition-all"
+                  >
+                    <step.icon className="w-7 h-7 text-[#ff7a00]" />
+                  </motion.div>
+                  <span className="text-xs text-gray-400 text-center font-medium">{step.label}</span>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.6 }}
+          className="space-y-8"
+        >
+          <div className="text-center">
+            <h3 className="text-4xl font-bold text-white mb-4">Powerful Features</h3>
+            <p className="text-gray-400 text-lg">Everything you need to create professional marketing content</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {features.map((feature, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.7 + idx * 0.1 }}
+                whileHover={{ y: -8 }}
+                className="p-8 rounded-3xl glass border border-white/10 hover:border-white/20 transition-all duration-300 relative overflow-hidden group"
+              >
+                <div className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
+                <div className="relative z-10 space-y-6">
+                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#ff7a00] to-[#ff9a3c] flex items-center justify-center shadow-lg">
+                    <feature.icon className="w-7 h-7 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="text-2xl font-bold text-white mb-3">{feature.title}</h4>
+                    <p className="text-gray-400 leading-relaxed">{feature.description}</p>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+
+        {!hasCampaigns && (
           <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="flex flex-col items-center justify-center py-24 px-8 rounded-3xl glass border border-border"
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.8 }}
+            className="relative"
           >
-            <motion.div
-              animate={{ y: [0, -10, 0] }}
-              transition={{ duration: 2, repeat: Infinity }}
-              className="w-24 h-24 rounded-3xl bg-gradient-to-br from-primary to-accent flex items-center justify-center mb-8 shadow-lg shadow-primary/20"
-            >
-              <Sparkles className="w-12 h-12 text-white" />
-            </motion.div>
-            <h2 className="text-3xl font-bold text-foreground mb-4 text-center">
-              No campaigns yet
-            </h2>
-            <p className="text-muted-foreground text-center max-w-md mb-8">
-              Create your first AI marketing campaign to begin building your creative library.
-            </p>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => router.push('/create')}
-              className="px-8 py-4 rounded-2xl gradient-primary text-background font-bold text-lg flex items-center gap-3 shadow-lg"
-            >
-              <Sparkles className="w-6 h-6" />
-              Create Your First Campaign
-            </motion.button>
-          </motion.div>
-        ) : (
-          <>
-            {/* KPI Cards - ONLY showing REAL data */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <motion.div
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.1 }}
-                whileHover={{ y: -8, scale: 1.02 }}
-                className="p-8 rounded-3xl glass border border-border hover:border-peach/50 transition-all duration-300 relative overflow-hidden group"
-              >
-                <motion.div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                <div className="relative z-10">
-                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center mb-6 shadow-lg">
-                    <LayoutDashboard className="w-7 h-7 text-white" />
-                  </div>
-                  <div className="text-5xl font-bold text-foreground mb-2">{campaignsCount}</div>
-                  <div className="text-sm text-muted-foreground">Campaigns</div>
+            <div className="absolute inset-0 bg-gradient-to-r from-[#ff7a00]/10 via-transparent to-[#ff9a3c]/10 rounded-3xl blur-xl" />
+            <div className="relative p-12 rounded-3xl glass border border-[#ff7a00]/20 bg-gradient-to-br from-[#ff7a00]/5 to-transparent">
+              <div className="max-w-4xl mx-auto text-center space-y-8">
+                <div className="space-y-4">
+                  <h3 className="text-5xl font-bold text-white">
+                    Ready to create your first campaign?
+                  </h3>
+                  <p className="text-xl text-gray-400 leading-relaxed">
+                    Paste any Amazon, Shopify or product URL and Supernova will automatically:
+                  </p>
                 </div>
-              </motion.div>
 
-              <motion.div
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.2 }}
-                whileHover={{ y: -8, scale: 1.02 }}
-                className="p-8 rounded-3xl glass border border-border hover:border-peach/50 transition-all duration-300 relative overflow-hidden group"
-              >
-                <motion.div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                <div className="relative z-10">
-                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center mb-6 shadow-lg">
-                    <Video className="w-7 h-7 text-white" />
-                  </div>
-                  <div className="text-5xl font-bold text-foreground mb-2">{videosCount}</div>
-                  <div className="text-sm text-muted-foreground">Videos Generated</div>
-                </div>
-              </motion.div>
-
-              <motion.div
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.3 }}
-                whileHover={{ y: -8, scale: 1.02 }}
-                className="p-8 rounded-3xl glass border border-border hover:border-peach/50 transition-all duration-300 relative overflow-hidden group"
-              >
-                <motion.div className="absolute inset-0 bg-gradient-to-br from-purple-500/20 to-pink-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                <div className="relative z-10">
-                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mb-6 shadow-lg">
-                    <Image className="w-7 h-7 text-white" />
-                  </div>
-                  <div className="text-5xl font-bold text-foreground mb-2">{imagesCount}</div>
-                  <div className="text-sm text-muted-foreground">Images Created</div>
-                </div>
-              </motion.div>
-
-              <motion.div
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.4 }}
-                whileHover={{ y: -8, scale: 1.02 }}
-                className="p-8 rounded-3xl glass border border-border hover:border-peach/50 transition-all duration-300 relative overflow-hidden group"
-              >
-                <motion.div className="absolute inset-0 bg-gradient-to-br from-emerald-500/20 to-teal-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                <div className="relative z-10">
-                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center mb-6 shadow-lg">
-                    <Database className="w-7 h-7 text-white" />
-                  </div>
-                  <div className="text-5xl font-bold text-foreground mb-2">{formatBytes(storageUsed)}</div>
-                  <div className="text-sm text-muted-foreground">Storage Used</div>
-                </div>
-              </motion.div>
-            </div>
-
-            {/* Recent Projects - ONLY showing real projects */}
-            {recentProjects.length > 0 && (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-2xl font-bold text-foreground">Recent Projects</h3>
-                  <button 
-                    onClick={() => router.push('/projects')}
-                    className="text-sm text-primary hover:text-primary/80 font-medium transition-colors flex items-center gap-2"
-                  >
-                    View All <ArrowRight className="w-4 h-4" />
-                  </button>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {recentProjects.map((project, idx) => (
-                    <motion.div
-                      key={project.id}
-                      initial={{ y: 20, opacity: 0 }}
-                      animate={{ y: 0, opacity: 1 }}
-                      transition={{ delay: 0.5 + idx * 0.1 }}
-                      whileHover={{ y: -8, scale: 1.02 }}
-                      className="p-6 rounded-3xl glass border border-border hover:border-peach/50 transition-all duration-300 group"
-                    >
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="w-full">
-                          <h4 className="font-bold text-foreground mb-1 truncate">{project.name}</h4>
-                          <div className="text-xs text-muted-foreground">
-                            {project.product?.company_name || 'No product linked'}
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button className="p-1.5 rounded-lg hover:bg-white/10 text-muted-foreground hover:text-foreground transition-all">
-                            <Edit3 className="w-4 h-4" />
-                          </button>
-                          <button className="p-1.5 rounded-lg hover:bg-white/10 text-muted-foreground hover:text-foreground transition-all">
-                            <Copy className="w-4 h-4" />
-                          </button>
-                          <button 
-                            onClick={(e) => { e.stopPropagation(); deleteProject(project.id); }}
-                            className="p-1.5 rounded-lg hover:bg-red-500/20 text-muted-foreground hover:text-red-400 transition-all"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <div className="text-xs text-muted-foreground">{formatTimeAgo(project.updatedAt)}</div>
-                        <button 
-                          onClick={() => router.push('/create')}
-                          className="px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-medium text-foreground transition-all flex items-center gap-2"
-                        >
-                          Open <ArrowRight className="w-3 h-3" />
-                        </button>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Recent Assets - ONLY showing real assets */}
-            {recentAssets.length > 0 && (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-2xl font-bold text-foreground">Recent Assets</h3>
-                  <button 
-                    onClick={() => router.push('/assets')}
-                    className="text-sm text-primary hover:text-primary/80 font-medium transition-colors flex items-center gap-2"
-                  >
-                    View All <ArrowRight className="w-4 h-4" />
-                  </button>
-                </div>
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                  {recentAssets.map((asset, idx) => (
-                    <motion.div
-                      key={asset.id}
-                      initial={{ y: 20, opacity: 0 }}
-                      animate={{ y: 0, opacity: 1 }}
-                      transition={{ delay: 0.7 + idx * 0.05 }}
-                      whileHover={{ y: -8, scale: 1.05 }}
-                      className="group relative aspect-square rounded-2xl overflow-hidden glass border border-border hover:border-peach/50 transition-all duration-300"
-                    >
-                      <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/20" />
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        {asset.type === 'video' && <Video className="w-12 h-12 text-primary/50" />}
-                        {asset.type === 'image' && <Image className="w-12 h-12 text-primary/50" />}
-                        {asset.type === 'script' && <FileText className="w-12 h-12 text-primary/50" />}
-                      </div>
-                      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2">
-                        <motion.button
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.9 }}
-                          className="p-2 rounded-lg bg-white/10 hover:bg-white/20 backdrop-blur-sm transition-all"
-                          title="Download"
-                        >
-                          <Download className="w-4 h-4 text-white" />
-                        </motion.button>
-                        <motion.button
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.9 }}
-                          className="p-2 rounded-lg bg-white/10 hover:bg-white/20 backdrop-blur-sm transition-all"
-                          title="Share"
-                        >
-                          <Share2 className="w-4 h-4 text-white" />
-                        </motion.button>
-                        <motion.button
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.9 }}
-                          onClick={() => deleteAsset(asset.id)}
-                          className="p-2 rounded-lg bg-red-500/20 hover:bg-red-500/30 backdrop-blur-sm transition-all"
-                          title="Delete"
-                        >
-                          <Trash2 className="w-4 h-4 text-red-400" />
-                        </motion.button>
-                      </div>
-                      <div className="absolute bottom-0 left-0 right-0 p-2 bg-black/60">
-                        <div className="text-[10px] text-white/80 truncate">{asset.name}</div>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Quick Actions & Activity */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Quick Actions */}
-              <motion.div
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.9 }}
-                className="p-8 rounded-3xl glass border border-border"
-              >
-                <h3 className="text-xl font-bold text-foreground mb-6">Quick Actions</h3>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-3xl mx-auto">
                   {[
-                    { label: 'Create Campaign', icon: Plus, gradient: 'from-primary to-accent', action: () => router.push('/create') },
-                    { label: 'Video Ad', icon: Video, gradient: 'from-blue-500 to-cyan-500', action: () => router.push('/create') },
-                    { label: 'Image Ad', icon: Image, gradient: 'from-purple-500 to-pink-500', action: () => router.push('/create') },
-                    { label: 'View Assets', icon: Folder, gradient: 'from-emerald-500 to-teal-500', action: () => router.push('/assets') },
-                  ].map((action, idx) => (
-                    <motion.button
+                    'Analyze your product',
+                    'Build a marketing strategy',
+                    'Write the script',
+                    'Generate scenes',
+                    'Create AI visuals',
+                    'Produce the final video',
+                  ].map((item, idx) => (
+                    <motion.div
                       key={idx}
-                      whileHover={{ y: -4, scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={action.action}
-                      className="p-6 rounded-2xl glass border border-border hover:border-peach/50 transition-all duration-300 flex flex-col items-center gap-3 group"
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.9 + idx * 0.05 }}
+                      className="flex items-center gap-3 text-left"
                     >
-                      <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${action.gradient} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300`}>
-                        <action.icon className="w-6 h-6 text-white" />
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#ff7a00] to-[#ff9a3c] flex items-center justify-center flex-shrink-0">
+                        <Check className="w-4 h-4 text-white" />
                       </div>
-                      <span className="text-sm font-medium text-foreground">{action.label}</span>
-                    </motion.button>
+                      <span className="text-lg text-white font-medium">{item}</span>
+                    </motion.div>
                   ))}
                 </div>
-              </motion.div>
 
-              {/* Activity Feed - ONLY showing real activities */}
-              <motion.div
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 1.0 }}
-                className="p-8 rounded-3xl glass border border-border"
+                <motion.button
+                  onClick={() => router.push('/create')}
+                  whileHover={{ scale: 1.05, boxShadow: '0 0 60px rgba(255, 122, 0, 0.5)' }}
+                  whileTap={{ scale: 0.95 }}
+                  className="px-16 py-6 rounded-2xl bg-gradient-to-r from-[#ff7a00] to-[#ff9a3c] text-white font-bold text-2xl shadow-2xl shadow-[#ff7a00]/40 relative overflow-hidden group"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+                  <span className="relative flex items-center gap-4">
+                    <Sparkles className="w-8 h-8" />
+                    Create First Campaign
+                    <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform" />
+                  </span>
+                </motion.button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {hasCampaigns && (
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.8 }}
+            className="space-y-8"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-4xl font-bold text-white mb-2">Recent Activity</h3>
+                <p className="text-gray-400 text-lg">Your latest campaigns and creations</p>
+              </div>
+              <motion.button
+                onClick={() => router.push('/create')}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#ff7a00] to-[#ff9a3c] text-white font-semibold flex items-center gap-2"
               >
-                <h3 className="text-xl font-bold text-foreground mb-6">Activity Feed</h3>
-                {recentActivities.length > 0 ? (
-                  <div className="space-y-4 max-h-80 overflow-y-auto">
-                    {recentActivities.map((activity, idx) => (
-                      <motion.div 
-                        key={activity.id}
-                        initial={{ x: -20, opacity: 0 }}
-                        animate={{ x: 0, opacity: 1 }}
-                        transition={{ delay: 1.1 + idx * 0.05 }}
-                        className="flex items-start gap-3"
-                      >
-                        <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${getActivityGradient(activity.type)} flex items-center justify-center flex-shrink-0`}>
-                          {getActivityIcon(activity.type)}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="text-sm text-foreground truncate">{activity.description}</div>
-                          <div className="text-xs text-muted-foreground">{formatTimeAgo(activity.timestamp)}</div>
-                        </div>
-                      </motion.div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <Clock className="w-12 h-12 text-muted-foreground/50 mx-auto mb-4" />
-                    <p className="text-muted-foreground text-sm">No activity yet</p>
-                    <p className="text-xs text-muted-foreground/70">Start creating to see activity here</p>
-                  </div>
-                )}
-              </motion.div>
+                <Plus className="w-5 h-5" />
+                New Campaign
+              </motion.button>
             </div>
 
-            {/* Storage Card - ONLY showing real storage */}
-            <motion.div
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 1.1 }}
-              className="p-8 rounded-3xl glass border border-border relative overflow-hidden"
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent" />
-              <div className="relative z-10 space-y-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center">
-                      <Database className="w-5 h-5 text-blue-400" />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {projects.slice(0, 6).map((project, idx) => (
+                <motion.div
+                  key={project.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.9 + idx * 0.05 }}
+                  whileHover={{ y: -8, scale: 1.02 }}
+                  className="p-6 rounded-2xl glass border border-white/10 hover:border-[#ff7a00]/50 transition-all duration-300 group cursor-pointer"
+                  onClick={() => router.push('/create')}
+                >
+                  <div className="space-y-4">
+                    <div className="w-full h-32 rounded-xl bg-gradient-to-br from-[#ff7a00]/20 to-[#ff9a3c]/10 flex items-center justify-center">
+                      <Sparkles className="w-12 h-12 text-[#ff7a00]/50" />
                     </div>
                     <div>
-                      <div className="font-bold text-foreground">Supabase</div>
-                      <div className="flex items-center gap-2 text-xs text-blue-400">
-                        <div className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
-                        Connected
+                      <h4 className="text-lg font-bold text-white mb-1 truncate">{project.name}</h4>
+                      <div className="flex items-center gap-2 text-sm text-gray-400">
+                        <Clock className="w-4 h-4" />
+                        {new Date(project.createdAt).toLocaleDateString()}
                       </div>
                     </div>
+                    <div className="flex items-center gap-2 text-[#ff7a00] text-sm font-semibold opacity-0 group-hover:opacity-100 transition-opacity">
+                      Open Campaign <ChevronRight className="w-4 h-4" />
+                    </div>
                   </div>
-                  <div className="text-2xl font-bold text-foreground">{formatBytes(storageUsed)}</div>
-                </div>
-                <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-sm text-muted-foreground">Storage Used</span>
-                    <span className="text-sm font-medium text-foreground">{formatBytes(storageUsed)} / 5 GB</span>
-                  </div>
-                  <div className="h-2 rounded-full bg-white/5 overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${Math.min((storageUsed / (5 * 1024 * 1024 * 1024)) * 100, 100)}%` }}
-                      transition={{ duration: 1, delay: 1.2 }}
-                      className="h-full rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 relative"
-                    >
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
-                    </motion.div>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
         )}
+
+        <div className="h-20" />
       </div>
     </div>
   );
