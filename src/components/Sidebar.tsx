@@ -7,20 +7,14 @@ import { usePathname } from 'next/navigation';
 import { 
   Home, 
   Plus, 
-  Folder, 
-  Package, 
   Settings,
   ChevronLeft,
-  ChevronRight,
-  Database,
-  User
+  ChevronRight
 } from 'lucide-react';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: Home },
   { href: '/create', label: 'Create', icon: Plus },
-  { href: '/projects', label: 'Projects', icon: Folder },
-  { href: '/assets', label: 'Assets', icon: Package },
   { href: '/settings', label: 'Settings', icon: Settings },
 ];
 
@@ -109,55 +103,6 @@ export function Sidebar() {
 
       {/* Bottom Section */}
       <div className="border-t border-border p-3 space-y-2">
-        {/* Storage Status */}
-        <motion.div
-          whileHover={{ x: 4 }}
-          className="flex items-center gap-3 px-4 py-3 rounded-xl text-muted-foreground hover:text-foreground hover:bg-white/5 transition-all cursor-pointer"
-        >
-          <Database className="w-5 h-5 flex-shrink-0 text-blue-400" />
-          <AnimatePresence>
-            {!isCollapsed && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                className="flex-1"
-              >
-                <div className="text-xs font-medium text-foreground">Supabase</div>
-                <div className="text-xs text-blue-400 flex items-center gap-1">
-                  <div className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
-                  Connected
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.div>
-
-        {/* User Profile */}
-        <motion.div
-          whileHover={{ x: 4 }}
-          className="flex items-center gap-3 px-4 py-3 rounded-xl text-muted-foreground hover:text-foreground hover:bg-white/5 transition-all cursor-pointer"
-        >
-          <div className="w-5 h-5 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center flex-shrink-0">
-            <User className="w-3 h-3 text-background" />
-          </div>
-          <AnimatePresence>
-            {!isCollapsed && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                className="flex-1"
-              >
-                <div className="text-xs font-medium text-foreground">User Profile</div>
-                <div className="text-xs text-muted-foreground">Free Plan</div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.div>
-
         {/* Collapse Toggle */}
         <motion.button
           onClick={() => setIsCollapsed(!isCollapsed)}
