@@ -8,6 +8,7 @@ interface ThemeContextType {
   theme: Theme;
   toggleTheme: () => void;
   setTheme: (theme: Theme) => void;
+  mounted: boolean;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -63,13 +64,8 @@ export function ThemeProvider({
     setThemeState(newTheme);
   };
 
-  // Prevent flash of wrong theme
-  if (!mounted) {
-    return <div style={{ visibility: 'hidden' }}>{children}</div>;
-  }
-
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme, setTheme }}>
+    <ThemeContext.Provider value={{ theme, toggleTheme, setTheme, mounted }}>
       {children}
     </ThemeContext.Provider>
   );
@@ -77,8 +73,14 @@ export function ThemeProvider({
 
 export function useTheme() {
   const context = useContext(ThemeContext);
+  // Return default dark theme if context is undefined (SSR)
   if (context === undefined) {
-    throw new Error('useTheme must be used within a ThemeProvider');
+    return { 
+      theme: 'dark' as Theme, 
+      toggleTheme: () => {}, 
+      setTheme: () => {},
+      mounted: false 
+    };
   }
   return context;
 }
