@@ -1,14 +1,8 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { SupernovaLogo, CampaignIcon, VideoIcon, ImageIcon, CopyIcon, UrlIcon } from '@/components/ui/premium-icons';
-
-/**
- * Premium Hero Section for Supernova
- * Large typography, animated background, spotlight effect
- */
 
 interface HeroSectionProps {
   onCreateCampaign: () => void;
@@ -16,12 +10,6 @@ interface HeroSectionProps {
 }
 
 export function PremiumHeroSection({ onCreateCampaign, className }: HeroSectionProps) {
-  const [mounted, setMounted] = useState(false);
-  
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
   return (
     <section className={cn('relative w-full', className)}>
       {/* Background Glow Effects */}
@@ -79,7 +67,10 @@ export function PremiumHeroSection({ onCreateCampaign, className }: HeroSectionP
           >
             <SupernovaLogo size={64} />
             {/* Glow ring */}
-            <div className="absolute inset-0 rounded-full animate-ping" style={{ background: 'radial-gradient(circle, rgba(255, 218, 185, 0.3) 0%, transparent 70%)' }} />
+            <div 
+              className="absolute inset-0 rounded-full animate-ping opacity-30" 
+              style={{ background: 'radial-gradient(circle, rgba(255, 218, 185, 0.3) 0%, transparent 70%)' }} 
+            />
           </motion.div>
           <div>
             <h1 className="text-5xl md:text-7xl font-bold tracking-tight">
@@ -101,7 +92,7 @@ export function PremiumHeroSection({ onCreateCampaign, className }: HeroSectionP
           <h2 className="text-4xl md:text-6xl lg:text-7xl font-bold leading-[1.1] tracking-tight mb-6">
             <span className="text-white">Transform any product into a</span>
             <br />
-            <span className="bg-gradient-to-r from-[#FFDAB9] via-[#FFDAB9] to-[#5C3317] bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-[#FFDAB9] to-[#5C3317] bg-clip-text text-transparent">
               complete marketing campaign
             </span>
           </h2>
