@@ -7,7 +7,8 @@ import {
   Settings,
   ArrowUpCircle,
   User,
-  Accessibility
+  Accessibility,
+  CreditCard
 } from 'lucide-react';
 import { Logo } from '@/components/ui/logo';
 import { NavItem, NavGroup } from '@/components/ui/navigation';
@@ -18,10 +19,11 @@ import { AccessibilityPanel, useAccessibility, useApplyAccessibility } from '@/c
 const mainNavItems = [
   { icon: LayoutDashboard, label: 'Dashboard', href: '/dashboard' },
   { icon: Plus, label: 'Create Campaign', href: '/create' },
+  { icon: CreditCard, label: 'Pricing', href: '/pricing' },
 ];
 
 const bottomNavItems = [
-  { icon: Settings, label: 'Settings', href: '#' },
+  { icon: Settings, label: 'Settings', href: '/settings' },
 ];
 
 export function Sidebar() {
@@ -34,6 +36,7 @@ export function Sidebar() {
   const getActiveItem = () => {
     if (pathname === '/dashboard') return 'Dashboard';
     if (pathname === '/create') return 'Create Campaign';
+    if (pathname === '/pricing') return 'Pricing';
     return 'Dashboard';
   };
 
@@ -119,7 +122,10 @@ export function Sidebar() {
             <p className="text-xs text-muted-foreground mb-3">
               Unlock unlimited campaigns and advanced features
             </p>
-            <button className="w-full py-2 rounded-lg gradient-primary text-sm font-semibold text-background hover:opacity-90 transition-opacity">
+            <button 
+              onClick={() => router.push('/pricing')}
+              className="w-full py-2 rounded-lg gradient-primary text-sm font-semibold text-background hover:opacity-90 transition-opacity"
+            >
               Upgrade Now
             </button>
           </motion.div>
