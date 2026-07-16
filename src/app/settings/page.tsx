@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { useStore } from '@/lib/store';
 import { AccessibilityPanel, useAccessibility, useApplyAccessibility } from '@/components/ui/accessibility-panel';
-import { CustomCursor, CursorTrail } from '@/components/ui/cursor';
+import { CustomCursor, CursorTrail, useCursorVisibility } from '@/components/ui/cursor';
 import { useCursorMode } from '@/components/ui/cursor';
 import { 
   User, 
@@ -138,6 +138,7 @@ export default function SettingsPage() {
   const { settings, updateSettings } = useAccessibility();
   useApplyAccessibility(settings);
   const { mode, setCursorMode } = useCursorMode();
+  const { isEnabled: cursorEnabled, toggleCursor } = useCursorVisibility();
   
   // Settings state
   const [notifications, setNotifications] = useState(true);
@@ -274,6 +275,19 @@ export default function SettingsPage() {
                     </div>
                   </div>
                   <ToggleSwitch enabled={autoSave} onChange={setAutoSave} />
+                </div>
+
+                <div className="h-px bg-[rgba(255,255,255,0.06)]" />
+
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <MousePointer2 className="w-5 h-5 text-[rgba(255,255,255,0.5)]" />
+                    <div>
+                      <p className="text-sm font-medium text-white">Custom Cursor</p>
+                      <p className="text-xs text-[rgba(255,255,255,0.4)]">Enable animated custom cursor</p>
+                    </div>
+                  </div>
+                  <ToggleSwitch enabled={cursorEnabled} onChange={toggleCursor} />
                 </div>
 
                 <div className="h-px bg-[rgba(255,255,255,0.06)]" />

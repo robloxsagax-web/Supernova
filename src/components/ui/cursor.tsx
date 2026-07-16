@@ -47,6 +47,7 @@ const cursorStyles = {
 export function CustomCursor({ mode = 'default', className }: CustomCursorProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+  const [cursorEnabled, setCursorEnabled] = useState(true);
 
   const cursorX = useMotionValue(-100);
   const cursorY = useMotionValue(-100);
@@ -56,6 +57,19 @@ export function CustomCursor({ mode = 'default', className }: CustomCursorProps)
   const cursorYSpring = useSpring(cursorY, springConfig);
 
   useEffect(() => {
+    // Check localStorage for cursor visibility setting
+    const checkCursorVisibility = () => {
+      const stored = localStorage.getItem('supernova-cursor-enabled');
+      if (stored !== null) {
+        setCursorEnabled(stored === 'true');
+      }
+    };
+    checkCursorVisibility();
+
+    // Listen for storage changes
+    const handleStorageChange = () => checkCursorVisibility();
+    window.addEventListener('storage', handleStorageChange);
+
     const moveCursor = (e: MouseEvent) => {
       cursorX.set(e.clientX);
       cursorY.set(e.clientY);
@@ -76,12 +90,16 @@ export function CustomCursor({ mode = 'default', className }: CustomCursorProps)
 
     return () => {
       window.removeEventListener('mousemove', moveCursor);
+      window.removeEventListener('storage', handleStorageChange);
       interactiveElements.forEach(el => {
         el.removeEventListener('mouseenter', handleMouseEnter);
         el.removeEventListener('mouseleave', handleMouseLeave);
       });
     };
   }, [cursorX, cursorY, isVisible]);
+
+  // Don't render if cursor is disabled
+  if (!cursorEnabled) return null;
 
   const style = cursorStyles[mode];
   const scale = isHovered ? 1.5 : 1;
@@ -161,10 +179,24 @@ export function CustomCursor({ mode = 'default', className }: CustomCursorProps)
 // Cursor Trail Effect
 export function CursorTrail() {
   const [trails, setTrails] = useState<Array<{ x: number; y: number; id: number }>>([]);
+  const [cursorEnabled, setCursorEnabled] = useState(true);
   const cursorX = useMotionValue(-100);
   const cursorY = useMotionValue(-100);
 
   useEffect(() => {
+    // Check localStorage for cursor visibility setting
+    const checkCursorVisibility = () => {
+      const stored = localStorage.getItem('supernova-cursor-enabled');
+      if (stored !== null) {
+        setCursorEnabled(stored === 'true');
+      }
+    };
+    checkCursorVisibility();
+
+    // Listen for storage changes
+    const handleStorageChange = () => checkCursorVisibility();
+    window.addEventListener('storage', handleStorageChange);
+
     const moveCursor = (e: MouseEvent) => {
       cursorX.set(e.clientX);
       cursorY.set(e.clientY);
@@ -177,8 +209,14 @@ export function CursorTrail() {
     };
 
     window.addEventListener('mousemove', moveCursor);
-    return () => window.removeEventListener('mousemove', moveCursor);
+    return () => {
+      window.removeEventListener('mousemove', moveCursor);
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, [cursorX, cursorY]);
+
+  // Don't render if cursor is disabled
+  if (!cursorEnabled) return null;
 
   return (
     <>
@@ -222,4 +260,26 @@ export function useCursorMode() {
   };
 
   return { mode, setCursorMode };
+}
+
+// Hook to toggle cursor visibility
+export function useCursorVisibility() {
+  const [isEnabled, setIsEnabled] = useState(true);
+
+  useEffect(() => {
+    const stored = localStorage.getItem('supernova-cursor-enabled');
+    if (stored !== null) {
+      setIsEnabled(stored === 'true');
+    }
+  }, []);
+
+  const toggleCursor = () => {
+    const newValue = !isEnabled;
+    setIsEnabled(newValue);
+    localStorage.setItem('supernova-cursor-enabled', String(newValue));
+    // Dispatch custom event to notify cursor components
+    window.dispatchEvent(new Event('storage'));
+  };
+
+  return { isEnabled, toggleCursor };
 }
