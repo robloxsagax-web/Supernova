@@ -146,7 +146,7 @@ export function Sidebar() {
             </motion.div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-foreground truncate group-hover:text-[#FFDAB9] transition-colors">Alex Chen</p>
-              <p className="text-xs text-muted-foreground truncate">Pro Plan</p>
+              <p className="text-xs text-muted-foreground truncate">Starter Plan</p>
             </div>
           </motion.div>
         </div>

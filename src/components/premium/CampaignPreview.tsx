@@ -207,7 +207,7 @@ export function CampaignPreview() {
         </div>
       </motion.div>
 
-      {/* Estimated Output - Dynamic */}
+      {/* Default Output */}
       <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -221,7 +221,7 @@ export function CampaignPreview() {
         <div className="flex items-center gap-2 mb-4">
           <Sparkles className="w-4 h-4 text-[#FFDAB9]" />
           <span className="text-xs text-[rgba(255,218,185,0.8)] uppercase tracking-wider font-medium">
-            Estimated Output
+            Default Output
           </span>
         </div>
         
