@@ -95,31 +95,34 @@ export function ScriptPreview() {
         <div className="prose prose-sm">
           <p className="whitespace-pre-wrap">{script}</p>
         </div>
-        <div className={`${containerClass} bg-black rounded-lg overflow-hidden`}>
-          <Player
-            component={VantaShowcase}
-            durationInFrames={totalFrames}
-            fps={30}
-            compositionWidth={compositionWidth}
-            compositionHeight={compositionHeight}
-            style={{
-              width: '100%',
-              height: '100%',
-              maxWidth: '100%',
-              maxHeight: '100%',
-            }}
-            inputProps={{
-              script,
-              product,
-              settings: { ratio, duration, captionStyle, brandPalette },
-              brandPalette: brandPaletteObject,
-              generationType,
-              bRollConfig: bRollConfig || undefined,
-              productImages: productImages || [],
-            }}
-            controls
-            acknowledgeRemotionLicense={true}
-          />
+        {/* Video preview hidden but kept mounted for functionality */}
+        <div className="hidden">
+          <div className={containerClass}>
+            <Player
+              component={VantaShowcase}
+              durationInFrames={totalFrames}
+              fps={30}
+              compositionWidth={compositionWidth}
+              compositionHeight={compositionHeight}
+              style={{
+                width: '100%',
+                height: '100%',
+                maxWidth: '100%',
+                maxHeight: '100%',
+              }}
+              inputProps={{
+                script,
+                product,
+                settings: { ratio, duration, captionStyle, brandPalette },
+                brandPalette: brandPaletteObject,
+                generationType,
+                bRollConfig: bRollConfig || undefined,
+                productImages: productImages || [],
+              }}
+              controls
+              acknowledgeRemotionLicense={true}
+            />
+          </div>
         </div>
       </CardContent>
       <CardFooter>
