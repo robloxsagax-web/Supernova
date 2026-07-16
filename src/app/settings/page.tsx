@@ -6,6 +6,7 @@ import { useStore } from '@/lib/store';
 import { AccessibilityPanel, useAccessibility, useApplyAccessibility } from '@/components/ui/accessibility-panel';
 import { CustomCursor, CursorTrail, useCursorVisibility } from '@/components/ui/cursor';
 import { useCursorMode } from '@/components/ui/cursor';
+import { useTheme } from '@/components/ui/theme-provider';
 import { 
   User, 
   Bell, 
@@ -21,6 +22,7 @@ import {
   ChevronRight,
   Eye,
   Moon,
+  Sun,
   Zap,
   AlertTriangle,
   Check
@@ -139,10 +141,10 @@ export default function SettingsPage() {
   useApplyAccessibility(settings);
   const { mode, setCursorMode } = useCursorMode();
   const { isEnabled: cursorEnabled, toggleCursor } = useCursorVisibility();
+  const { theme, toggleTheme } = useTheme();
   
   // Settings state
   const [notifications, setNotifications] = useState(true);
-  const [darkMode, setDarkMode] = useState(true);
   const [autoSave, setAutoSave] = useState(true);
   const [analytics, setAnalytics] = useState(false);
 
@@ -255,13 +257,17 @@ export default function SettingsPage() {
                 {/* Toggle Options */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <Moon className="w-5 h-5 text-[rgba(255,255,255,0.5)]" />
+                    {theme === 'dark' ? (
+                      <Moon className="w-5 h-5 text-[rgba(255,255,255,0.5)]" />
+                    ) : (
+                      <Sun className="w-5 h-5 text-[rgba(255,255,255,0.5)]" />
+                    )}
                     <div>
-                      <p className="text-sm font-medium text-white">Dark Mode</p>
-                      <p className="text-xs text-[rgba(255,255,255,0.4)]">Use dark theme for the interface</p>
+                      <p className="text-sm font-medium text-white">{theme === 'dark' ? 'Dark Mode' : 'Light Mode'}</p>
+                      <p className="text-xs text-[rgba(255,255,255,0.4)]">{theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}</p>
                     </div>
                   </div>
-                  <ToggleSwitch enabled={darkMode} onChange={setDarkMode} />
+                  <ToggleSwitch enabled={theme === 'dark'} onChange={toggleTheme} />
                 </div>
 
                 <div className="h-px bg-[rgba(255,255,255,0.06)]" />

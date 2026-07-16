@@ -3,6 +3,7 @@ import "./globals.css";
 import { Sidebar } from "@/components/Sidebar";
 import { AuroraBackground } from "@/components/ui/aurora-background";
 import { CustomCursor, CursorTrail } from "@/components/ui/cursor";
+import { ThemeProvider } from "@/components/ui/theme-provider";
 
 export const metadata: Metadata = {
   title: "Supernova - AI Marketing Agent",
@@ -27,19 +28,33 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <head>
         <script src="https://js.puter.com/v2/"></script>
-        <meta name="color-scheme" content="dark" />
+        <script dangerouslySetInnerHTML={{ __html: `
+          (function() {
+            try {
+              var theme = localStorage.getItem('supernova-theme');
+              if (theme === 'light') {
+                document.documentElement.classList.add('light');
+                document.documentElement.classList.remove('dark');
+              } else {
+                document.documentElement.classList.add('dark');
+              }
+            } catch (e) {}
+          })();
+        `}} />
       </head>
       <body className="font-sans antialiased">
-        <AuroraBackground />
-        <Sidebar />
-        <main className="ml-[280px] min-h-screen transition-all duration-300 relative z-10">
-          {children}
-        </main>
-        <CustomCursor />
-        <CursorTrail />
+        <ThemeProvider defaultTheme="dark">
+          <AuroraBackground />
+          <Sidebar />
+          <main className="ml-[280px] min-h-screen transition-all duration-300 relative z-10">
+            {children}
+          </main>
+          <CustomCursor />
+          <CursorTrail />
+        </ThemeProvider>
       </body>
     </html>
   );

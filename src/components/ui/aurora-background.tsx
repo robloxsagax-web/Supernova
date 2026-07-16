@@ -6,7 +6,7 @@ export function AuroraBackground() {
   return (
     <div className="fixed inset-0 -z-10 overflow-hidden">
       {/* Base Background */}
-      <div className="absolute inset-0 bg-[#09090B]" />
+      <div className="absolute inset-0 bg-background transition-colors duration-300" />
       
       {/* Primary Aurora Glow - Top Left */}
       <motion.div 
@@ -21,9 +21,10 @@ export function AuroraBackground() {
           repeat: Infinity, 
           ease: "easeInOut" 
         }}
+        style={{ opacity: 'var(--aurora-opacity, 1)' }}
         className="absolute -top-60 -left-60 w-[900px] h-[900px] 
                    bg-gradient-to-br from-[#5C3317]/50 via-[#8B5A2B]/30 to-transparent 
-                   rounded-full blur-[180px]"
+                   rounded-full blur-[180px] transition-opacity duration-300"
       />
       
       {/* Secondary Aurora Glow - Bottom Right */}
@@ -40,9 +41,10 @@ export function AuroraBackground() {
           ease: "easeInOut",
           delay: 3
         }}
+        style={{ opacity: 'var(--aurora-opacity, 1)' }}
         className="absolute -bottom-60 -right-60 w-[800px] h-[800px] 
                    bg-gradient-to-tr from-[#5C3317]/40 via-[#FFDAB9]/20 to-transparent 
-                   rounded-full blur-[160px]"
+                   rounded-full blur-[160px] transition-opacity duration-300"
       />
       
       {/* Tertiary Glow - Top Right */}
@@ -58,9 +60,10 @@ export function AuroraBackground() {
           ease: "easeInOut",
           delay: 6
         }}
+        style={{ opacity: 'var(--aurora-opacity, 1)' }}
         className="absolute -top-40 right-1/4 w-[600px] h-[600px] 
                    bg-gradient-to-bl from-[#FFDAB9]/20 via-[#5C3317]/10 to-transparent 
-                   rounded-full blur-[140px]"
+                   rounded-full blur-[140px] transition-opacity duration-300"
       />
       
       {/* Accent Glow - Bottom Left */}
@@ -76,34 +79,37 @@ export function AuroraBackground() {
           ease: "easeInOut",
           delay: 9
         }}
+        style={{ opacity: 'var(--aurora-opacity, 1)' }}
         className="absolute bottom-1/4 -left-40 w-[500px] h-[500px] 
                    bg-gradient-to-tr from-[#8B5A2B]/15 to-transparent 
-                   rounded-full blur-[120px]"
+                   rounded-full blur-[120px] transition-opacity duration-300"
       />
       
       {/* Subtle Grid Pattern */}
       <div 
-        className="absolute inset-0 opacity-[0.015]"
+        className="absolute inset-0 transition-opacity duration-300"
         style={{
-          backgroundImage: `linear-gradient(rgba(255,255,255,0.15) 1px, transparent 1px), 
-                           linear-gradient(90deg, rgba(255,255,255,0.15) 1px, transparent 1px)`,
+          opacity: 'var(--aurora-opacity, 1)',
+          backgroundImage: `linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px), 
+                           linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px)`,
           backgroundSize: '60px 60px'
         }}
       />
       
       {/* Noise Texture Overlay */}
       <div 
-        className="absolute inset-0 opacity-[0.02] pointer-events-none"
+        className="absolute inset-0 opacity-[0.02] pointer-events-none transition-opacity duration-300"
         style={{
+          opacity: 'calc(var(--aurora-opacity, 1) * 0.02)',
           backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
         }}
       />
       
       {/* Bottom Gradient Fade */}
-      <div className="absolute inset-0 bg-gradient-to-t from-[#09090B] via-transparent to-transparent pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent pointer-events-none transition-colors duration-300" />
       
       {/* Top Gradient Fade */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#09090B] via-transparent to-transparent pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-b from-background via-transparent to-transparent pointer-events-none transition-colors duration-300" />
     </div>
   );
 }

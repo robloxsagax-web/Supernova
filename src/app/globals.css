@@ -16,7 +16,7 @@
 /* ============================================
    SUPERNOVA BRAND TOKENS
    ============================================ */
-:root {
+:root, .dark {
   /* Background */
   --bg-primary: #09090B;
   --bg-secondary: #111111;
@@ -71,6 +71,67 @@
   --radius-lg: 20px;
   --radius-xl: 24px;
   --radius-2xl: 32px;
+  
+  /* Aurora Background */
+  --aurora-opacity: 1;
+  --scrollbar-color: rgba(255, 255, 255, 0.15);
+}
+
+/* ============================================
+   LIGHT THEME - Premium Light Mode
+   ============================================ */
+.light {
+  /* Background */
+  --bg-primary: #FAFAFA;
+  --bg-secondary: #F5F5F5;
+  --bg-tertiary: #EBEBEB;
+  
+  /* Primary Brand - Luxury Maroon (Same) */
+  --maroon: #5C3317;
+  --maroon-hover: #7A4320;
+  --maroon-light: #8B5A2B;
+  
+  /* Accent - Peach Puff */
+  --peach: #FFDAB9;
+  --peach-muted: rgba(255, 218, 185, 0.65);
+  --peach-dim: rgba(255, 218, 185, 0.45);
+  
+  /* Text - Dark for light mode */
+  --text-primary: #111111;
+  --text-secondary: #4B5563;
+  --text-muted: #9CA3AF;
+  
+  /* Card/Surface - Light glass */
+  --card-bg: rgba(255, 255, 255, 0.85);
+  --card-border: rgba(0, 0, 0, 0.06);
+  --card-border-hover: rgba(92, 51, 23, 0.20);
+  
+  /* Glass - Elegant white glass */
+  --glass-bg: rgba(255, 255, 255, 0.85);
+  --glass-bg-hover: rgba(255, 255, 255, 0.95);
+  --glass-border: rgba(0, 0, 0, 0.06);
+  --glass-border-hover: rgba(92, 51, 23, 0.25);
+  
+  /* Status (Same) */
+  --success: #22C55E;
+  --warning: #F59E0B;
+  --error: #EF4444;
+  --info: #3B82F6;
+  
+  /* Shadows - Soft elegant shadows */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.10);
+  --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.12);
+  
+  /* Glow Effects - Softer for light mode */
+  --glow-maroon: 0 0 20px rgba(92, 51, 23, 0.15);
+  --glow-peach: 0 0 20px rgba(255, 218, 185, 0.2);
+  --glow-maroon-hover: 0 0 30px rgba(92, 51, 23, 0.25);
+  
+  /* Aurora Background - Muted for light mode */
+  --aurora-opacity: 0.4;
+  --scrollbar-color: rgba(0, 0, 0, 0.15);
 }
 
 /* ============================================
@@ -143,12 +204,17 @@
     @apply border-border outline-ring/50;
   }
   
+  html {
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-sans);
     font-feature-settings: "rlig" 1, "calt" 1;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
   
   h1, h2, h3, h4, h5, h6 {
@@ -172,8 +238,9 @@
   }
   
   ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.15);
+    background: var(--scrollbar-color);
     border-radius: 4px;
+    transition: background-color 0.3s ease;
   }
   
   ::-webkit-scrollbar-thumb:hover {
@@ -184,6 +251,11 @@
   ::selection {
     background: rgba(92, 51, 23, 0.3);
     color: var(--peach);
+  }
+  
+  /* Theme transition for interactive elements */
+  button, a, input, textarea, select {
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
   }
 }
 
@@ -1080,4 +1152,63 @@
   to {
     transform: translateX(100%);
   }
+}
+
+/* ============================================
+   LIGHT THEME ADDITIONAL OVERRIDES
+   ============================================ */
+.light {
+  /* Additional overrides for components with inline styles */
+  /* These ensure compatibility with hardcoded colors in components */
+  
+  /* Status colors remain visible on light backgrounds */
+  --status-bg: rgba(0, 0, 0, 0.04);
+  --status-border: rgba(0, 0, 0, 0.08);
+  
+  /* Ensure text remains readable */
+  --input-bg: rgba(255, 255, 255, 0.9);
+  --input-border: rgba(0, 0, 0, 0.1);
+  --input-focus-bg: rgba(255, 255, 255, 1);
+  --input-focus-border: var(--maroon);
+}
+
+/* Override inline background patterns for light theme */
+.light [style*="rgba(255, 255, 255, 0.05)"],
+.light [style*="rgba(255, 255, 255, 0.02)"],
+.light [style*="rgba(255, 255, 255, 0.03)"],
+.light [style*="rgba(255, 255, 255, 0.08)"],
+.light [style*="rgba(255, 255, 255, 0.1)"],
+.light [style*="rgba(255, 255, 255, 0.15)"] {
+  background-color: rgba(0, 0, 0, 0.03) !important;
+}
+
+/* Override inline text color patterns for light theme */
+.light [style*="rgba(255, 255, 255, 0.65)"],
+.light [style*="rgba(255, 255, 255, 0.5)"],
+.light [style*="rgba(255, 255, 255, 0.4)"],
+.light [style*="rgba(255, 255, 255, 0.3)"],
+.light [style*="rgba(255, 255, 255, 0.7)"] {
+  color: var(--text-secondary) !important;
+}
+
+/* Override white text in light theme */
+.light [style*="color: #FFFFFF"],
+.light [style*="color: rgb(255, 255, 255)"],
+.light [style*="#FFF"] {
+  color: var(--text-primary) !important;
+}
+
+/* Ensure buttons with gradients work in light theme */
+.light button[class*="gradient"] {
+  color: var(--peach);
+}
+
+/* Override bg-[#09090B] patterns */
+.light [style*="#09090B"] {
+  background-color: var(--bg-primary) !important;
+}
+
+/* Override bg-[#111111] patterns */
+.light [style*="#111111"] {
+  background-color: var(--bg-secondary) !important;
 }
