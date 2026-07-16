@@ -4,50 +4,44 @@ import { motion } from 'framer-motion';
 import { 
   LayoutDashboard,
   Plus,
-  FolderOpen,
-  Palette,
-  Video,
-  Image,
-  Archive,
-  Paintbrush,
-  BarChart3,
-  HardDrive,
   Settings,
   ArrowUpCircle,
   User,
   Accessibility
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { Logo } from '@/components/ui/logo';
-import { NavItem, NavSection, NavGroup } from '@/components/ui/navigation';
+import { NavItem, NavGroup } from '@/components/ui/navigation';
 import { useState } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 import { AccessibilityPanel, useAccessibility, useApplyAccessibility } from '@/components/ui/accessibility-panel';
 
 const mainNavItems = [
-  { icon: LayoutDashboard, label: 'Dashboard', href: '#' },
-  { icon: Plus, label: 'Create Campaign', href: '#' },
-  { icon: FolderOpen, label: 'Projects', href: '#' },
-  { icon: Palette, label: 'Creative Studio', href: '#' },
-  { icon: Video, label: 'Video Ads', href: '#' },
-  { icon: Image, label: 'Image Ads', href: '#' },
-  { icon: Archive, label: 'Asset Library', href: '#' },
-  { icon: Paintbrush, label: 'Brand Kit', href: '#' },
-  { icon: BarChart3, label: 'Analytics', href: '#' },
-  { icon: HardDrive, label: 'Storage', href: '#' },
+  { icon: LayoutDashboard, label: 'Dashboard', href: '/dashboard' },
+  { icon: Plus, label: 'Create Campaign', href: '/create' },
 ];
 
 const bottomNavItems = [
   { icon: Settings, label: 'Settings', href: '#' },
 ];
 
-interface SidebarProps {
-  activeItem?: string;
-}
-
-export function Sidebar({ activeItem = 'Dashboard' }: SidebarProps) {
+export function Sidebar() {
+  const router = useRouter();
+  const pathname = usePathname();
   const [showAccessibility, setShowAccessibility] = useState(false);
   const { settings, updateSettings } = useAccessibility();
   useApplyAccessibility(settings);
+
+  const getActiveItem = () => {
+    if (pathname === '/dashboard') return 'Dashboard';
+    if (pathname === '/create') return 'Create Campaign';
+    return 'Dashboard';
+  };
+
+  const handleNavClick = (href: string) => {
+    if (href !== '#') {
+      router.push(href);
+    }
+  };
 
   return (
     <>
@@ -68,8 +62,8 @@ export function Sidebar({ activeItem = 'Dashboard' }: SidebarProps) {
             items={mainNavItems.map((item) => ({
               icon: item.icon,
               label: item.label,
-              isActive: item.label === activeItem,
-              onClick: () => window.location.href = item.href,
+              isActive: item.label === getActiveItem(),
+              onClick: () => handleNavClick(item.href),
             }))}
           />
         </nav>
@@ -80,7 +74,7 @@ export function Sidebar({ activeItem = 'Dashboard' }: SidebarProps) {
           <motion.button
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.5 }}
+            transition={{ delay: 0.3 }}
             onClick={() => setShowAccessibility(true)}
             className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-white/5 transition-all duration-300 group"
           >
@@ -106,7 +100,7 @@ export function Sidebar({ activeItem = 'Dashboard' }: SidebarProps) {
                 key={item.label}
                 icon={item.icon}
                 label={item.label}
-                onClick={() => window.location.href = item.href}
+                onClick={() => handleNavClick(item.href)}
               />
             );
           })}
@@ -115,7 +109,7 @@ export function Sidebar({ activeItem = 'Dashboard' }: SidebarProps) {
           <motion.div
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.6 }}
+            transition={{ delay: 0.4 }}
             className="mt-4 p-4 rounded-xl gradient-muted border border-border premium-card hover:border-[rgba(255,218,185,0.20)]"
           >
             <div className="flex items-center gap-3 mb-3">
@@ -134,7 +128,7 @@ export function Sidebar({ activeItem = 'Dashboard' }: SidebarProps) {
           <motion.div
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.7 }}
+            transition={{ delay: 0.5 }}
             className="flex items-center gap-3 px-4 py-3 mt-2 rounded-xl glass-hover cursor-pointer group"
           >
             <motion.div
