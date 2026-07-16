@@ -28,25 +28,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className="dark">
       <head>
         <script src="https://js.puter.com/v2/"></script>
-        <script dangerouslySetInnerHTML={{ __html: `
-          (function() {
-            try {
-              var theme = localStorage.getItem('supernova-theme');
-              if (theme === 'light') {
-                document.documentElement.classList.add('light');
-                document.documentElement.classList.remove('dark');
-              } else {
-                document.documentElement.classList.add('dark');
-              }
-            } catch (e) {}
-          })();
-        `}} />
       </head>
       <body className="font-sans antialiased">
-        <ThemeProvider defaultTheme="dark">
+        <ThemeProvider>
           <AuroraBackground />
           <Sidebar />
           <main className="ml-[280px] min-h-screen transition-all duration-300 relative z-10">

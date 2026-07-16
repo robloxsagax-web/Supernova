@@ -2,70 +2,35 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 
-type Theme = 'dark' | 'light';
-
-interface ThemeContextType {
-  theme: Theme;
+// Dark-only theme - no light mode
+const ThemeContext = createContext<{
+  theme: 'dark';
   toggleTheme: () => void;
-  setTheme: (theme: Theme) => void;
+  setTheme: (theme: 'dark') => void;
   mounted: boolean;
-}
-
-const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+} | undefined>(undefined);
 
 export function ThemeProvider({ 
-  children, 
-  defaultTheme = 'dark' 
+  children
 }: { 
-  children: ReactNode; 
-  defaultTheme?: Theme;
+  children: ReactNode;
 }) {
-  const [theme, setThemeState] = useState<Theme>(defaultTheme);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    const stored = localStorage.getItem('supernova-theme') as Theme | null;
-    if (stored) {
-      setThemeState(stored);
-    }
+    // Always set dark theme
+    document.documentElement.classList.add('dark');
+    document.documentElement.classList.remove('light');
+    localStorage.setItem('supernova-theme', 'dark');
   }, []);
 
-  useEffect(() => {
-    if (!mounted) return;
-    
-    const root = document.documentElement;
-    
-    if (theme === 'dark') {
-      root.classList.add('dark');
-      root.classList.remove('light');
-    } else {
-      root.classList.add('light');
-      root.classList.remove('dark');
-    }
-    
-    localStorage.setItem('supernova-theme', theme);
-    
-    // Update meta theme-color
-    const metaTheme = document.querySelector('meta[name="theme-color"]');
-    if (metaTheme) {
-      metaTheme.setAttribute('content', theme === 'dark' ? '#09090B' : '#FAFAFA');
-    }
-    
-    // Update color-scheme
-    document.body.style.colorScheme = theme;
-  }, [theme, mounted]);
-
-  const toggleTheme = () => {
-    setThemeState(prev => prev === 'dark' ? 'light' : 'dark');
-  };
-
-  const setTheme = (newTheme: Theme) => {
-    setThemeState(newTheme);
-  };
+  // No-op functions since we're locked to dark
+  const toggleTheme = () => {};
+  const setTheme = () => {};
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme, setTheme, mounted }}>
+    <ThemeContext.Provider value={{ theme: 'dark', toggleTheme, setTheme, mounted }}>
       {children}
     </ThemeContext.Provider>
   );
@@ -76,7 +41,7 @@ export function useTheme() {
   // Return default dark theme if context is undefined (SSR)
   if (context === undefined) {
     return { 
-      theme: 'dark' as Theme, 
+      theme: 'dark' as const, 
       toggleTheme: () => {}, 
       setTheme: () => {},
       mounted: false 

@@ -6,7 +6,6 @@ import { useStore } from '@/lib/store';
 import { AccessibilityPanel, useAccessibility, useApplyAccessibility } from '@/components/ui/accessibility-panel';
 import { CustomCursor, CursorTrail, useCursorVisibility } from '@/components/ui/cursor';
 import { useCursorMode } from '@/components/ui/cursor';
-import { useTheme } from '@/components/ui/theme-provider';
 import { 
   User, 
   Bell, 
@@ -22,7 +21,6 @@ import {
   ChevronRight,
   Eye,
   Moon,
-  Sun,
   Zap,
   AlertTriangle,
   Check
@@ -141,7 +139,6 @@ export default function SettingsPage() {
   useApplyAccessibility(settings);
   const { mode, setCursorMode } = useCursorMode();
   const { isEnabled: cursorEnabled, toggleCursor } = useCursorVisibility();
-  const { theme, toggleTheme } = useTheme();
   
   // Settings state
   const [notifications, setNotifications] = useState(true);
@@ -254,20 +251,18 @@ export default function SettingsPage() {
                   border: '1px solid rgba(255, 218, 185, 0.08)',
                 }}
               >
-                {/* Toggle Options */}
+                {/* Theme Info */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    {theme === 'dark' ? (
-                      <Moon className="w-5 h-5 text-[rgba(255,255,255,0.5)]" />
-                    ) : (
-                      <Sun className="w-5 h-5 text-[rgba(255,255,255,0.5)]" />
-                    )}
+                    <Moon className="w-5 h-5 text-[#FFDAB9]" />
                     <div>
-                      <p className="text-sm font-medium text-white">{theme === 'dark' ? 'Dark Mode' : 'Light Mode'}</p>
-                      <p className="text-xs text-[rgba(255,255,255,0.4)]">{theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}</p>
+                      <p className="text-sm font-medium text-white">Dark Mode</p>
+                      <p className="text-xs text-[rgba(255,255,255,0.4)]">Always dark for optimal viewing</p>
                     </div>
                   </div>
-                  <ToggleSwitch enabled={theme === 'dark'} onChange={toggleTheme} />
+                  <span className="px-3 py-1 rounded-full text-xs font-semibold bg-[#22C55E]/20 text-[#22C55E] border border-[#22C55E]/30">
+                    Active
+                  </span>
                 </div>
 
                 <div className="h-px bg-[rgba(255,255,255,0.06)]" />
