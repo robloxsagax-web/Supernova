@@ -1,15 +1,25 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '@/lib/store';
-import { Stepper } from '@/components/Stepper';
 import { UrlInputForm } from '@/components/UrlInputForm';
 import { ProductPreview } from '@/components/ProductPreview';
 import { ScriptPreview } from '@/components/ScriptPreview';
 import { VideoPlayer } from '@/components/VideoPlayer';
 import { Loader } from '@/components/Loader';
 import { AIAdStudio } from '@/components/AIAdStudio';
-import { Sparkles } from 'lucide-react';
+import { 
+  Sparkles, 
+  ArrowRight, 
+  Zap,
+  FileText,
+  Image,
+  Film,
+  Rocket,
+  Check
+} from 'lucide-react';
+import { PremiumStepper } from '@/components/premium/PremiumStepper';
+import { CampaignPreview } from '@/components/premium/CampaignPreview';
 
 const loadingMessages: Record<'url' | 'product' | 'script' | 'video', string> = {
   url: 'Analyzing product page...',
@@ -18,81 +28,146 @@ const loadingMessages: Record<'url' | 'product' | 'script' | 'video', string> = 
   video: 'Processing video...',
 };
 
-export default function Home() {
+/**
+ * Premium Create Page - Complete UI overhaul
+ * Inspired by Linear, Vercel, Arc Browser
+ * Features:
+ * - Premium hero header with badge
+ * - Animated horizontal stepper
+ * - Campaign preview sidebar
+ * - All existing functionality preserved
+ */
+export default function CreatePage() {
   const { step, isLoading, error } = useStore();
 
   return (
-    <main className="min-h-screen">
-      <div className="container mx-auto px-4 py-12">
-        <div className="max-w-5xl mx-auto space-y-12">
-          {/* Header Section */}
-          <motion.div 
-            initial={{ y: -20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.6 }}
-            className="text-center space-y-4"
-          >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass mb-4">
-              <Sparkles className="w-4 h-4 text-peach" />
-              <span className="text-sm text-muted-foreground">Powered by Advanced AI</span>
-            </div>
-            <h1 className="text-5xl font-bold text-foreground">
-              <span className="bg-gradient-to-r from-maroon to-peach bg-clip-text text-transparent">
-                Supernova
-              </span>
-            </h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Transform any product page into stunning video ads and creative assets
-            </p>
-          </motion.div>
+    <main className="min-h-screen relative">
+      {/* Background ambient effects */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        {/* Top gradient glow */}
+        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-[#5C3317]/10 rounded-full blur-[150px]" />
+        <div className="absolute top-0 right-1/4 w-[400px] h-[400px] bg-[#FFDAB9]/5 rounded-full blur-[120px]" />
+      </div>
 
-          {/* Stepper */}
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-          >
-            <Stepper />
-          </motion.div>
-
-          {/* Error Message */}
-          {error && (
-            <motion.div
-              initial={{ y: -20, opacity: 0 }}
+      {/* Main Content Grid */}
+      <div className="relative z-10 flex">
+        {/* Left/Center Content Area */}
+        <div className="flex-1 min-h-screen">
+          <div className="max-w-4xl mx-auto px-8 py-12">
+            {/* Premium Hero Header */}
+            <motion.div 
+              initial={{ y: -30, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              className="p-4 rounded-xl bg-error/10 border border-error/20 text-error text-center glass"
+              transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
+              className="mb-12"
             >
-              {error}
-            </motion.div>
-          )}
+              {/* Badge */}
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ delay: 0.1 }}
+                className="inline-flex items-center gap-2 px-4 py-2 mb-6 rounded-full"
+                style={{
+                  background: 'rgba(92, 51, 23, 0.15)',
+                  border: '1px solid rgba(255, 218, 185, 0.15)',
+                  backdropFilter: 'blur(12px)',
+                }}
+              >
+                <div className="relative flex items-center gap-1.5">
+                  <div className="w-1.5 h-1.5 rounded-full bg-[#22C55E] animate-pulse" />
+                  <Zap className="w-3 h-3 text-[#FFDAB9]" />
+                </div>
+                <span className="text-xs font-medium text-[rgba(255,218,185,0.8)] uppercase tracking-wider">
+                  AI Marketing Workspace
+                </span>
+              </motion.div>
 
-          {/* Main Content */}
-          {isLoading ? (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-            >
-              <Loader message={loadingMessages[step]} />
+              {/* Title */}
+              <h1 className="text-5xl md:text-6xl font-bold tracking-tight mb-4">
+                <span className="text-white">Create </span>
+                <span className="bg-gradient-to-r from-[#FFDAB9] via-[#FFDAB9] to-[#8B5A2B] bg-clip-text text-transparent">
+                  Campaign
+                </span>
+              </h1>
+
+              {/* Subtitle */}
+              <p className="text-lg text-[rgba(255,255,255,0.5)] max-w-xl leading-relaxed">
+                Build cinematic marketing assets powered by autonomous AI agents.
+                Transform any product URL into stunning video content.
+              </p>
             </motion.div>
-          ) : (
-            <>
-              {step === 'url' && <UrlInputForm />}
-              {step === 'product' && <ProductPreview />}
-              {step === 'script' && <ScriptPreview />}
-              {step === 'video' && (
+
+            {/* Premium Stepper */}
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="mb-10"
+            >
+              <PremiumStepper />
+            </motion.div>
+
+            {/* Error Message */}
+            <AnimatePresence>
+              {error && (
                 <motion.div
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ duration: 0.5 }}
-                  className="space-y-8"
+                  initial={{ y: -20, opacity: 0, height: 0 }}
+                  animate={{ y: 0, opacity: 1, height: 'auto' }}
+                  exit={{ y: -20, opacity: 0, height: 0 }}
+                  className="mb-8 p-4 rounded-2xl"
+                  style={{
+                    background: 'rgba(239, 68, 68, 0.1)',
+                    border: '1px solid rgba(239, 68, 68, 0.2)',
+                  }}
                 >
-                  <VideoPlayer />
-                  <AIAdStudio />
+                  <p className="text-sm text-[#EF4444] text-center">{error}</p>
                 </motion.div>
               )}
-            </>
-          )}
+            </AnimatePresence>
+
+            {/* Main Content */}
+            <AnimatePresence mode="wait">
+              {isLoading ? (
+                <motion.div
+                  key="loading"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                >
+                  <Loader message={loadingMessages[step]} />
+                </motion.div>
+              ) : (
+                <motion.div
+                  key={step}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+                >
+                  {step === 'url' && <UrlInputForm />}
+                  {step === 'product' && <ProductPreview />}
+                  {step === 'script' && <ScriptPreview />}
+                  {step === 'video' && (
+                    <div className="space-y-8">
+                      <VideoPlayer />
+                      <AIAdStudio />
+                    </div>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
+
+        {/* Right Sidebar - Campaign Preview */}
+        <motion.aside
+          initial={{ x: 50, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+          className="hidden xl:block w-80 sticky top-0 h-screen p-6"
+        >
+          <CampaignPreview />
+        </motion.aside>
       </div>
     </main>
   );

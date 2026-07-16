@@ -7,259 +7,361 @@ import { usePathname } from 'next/navigation';
 import { 
   Sparkles,
   LayoutDashboard,
-  FolderOpen,
-  Palette,
-  Video,
-  Image,
-  Archive,
-  Paintbrush,
-  BarChart3,
-  HardDrive,
   Settings,
   User,
-  ArrowUpCircle
+  ArrowUpCircle,
+  ChevronLeft,
+  ChevronRight,
+  Sparkle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { SupernovaMinimalLogo, SupernovaTextLogo } from '@/components/ui/logo';
+
+/**
+ * Premium Glass Sidebar - Inspired by Linear, Arc Browser, Vercel
+ * Features:
+ * - Minimal glassmorphism (subtle blur, soft shadows)
+ * - Animated active indicators with maroon glow
+ * - Smooth hover effects with lift animation
+ * - Collapsible with smooth transitions
+ * - Premium spacing and typography
+ */
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/create', label: 'Create', icon: Sparkles },
-  { href: '/projects', label: 'Projects', icon: FolderOpen },
-  { href: '/creative-studio', label: 'Creative Studio', icon: Palette },
-  { href: '/asset-library', label: 'Asset Library', icon: Archive },
-  { href: '/brand-kit', label: 'Brand Kit', icon: Paintbrush },
-  { href: '/analytics', label: 'Analytics', icon: BarChart3 },
-  { href: '/storage', label: 'Storage', icon: HardDrive },
 ];
 
 const bottomNavItems = [
   { href: '/settings', label: 'Settings', icon: Settings },
 ];
 
+interface NavItemProps {
+  href: string;
+  label: string;
+  icon: React.ElementType;
+  isActive: boolean;
+  isCollapsed: boolean;
+  onClick?: () => void;
+}
+
+function NavItem({ href, label, icon: Icon, isActive, isCollapsed, onClick }: NavItemProps) {
+  return (
+    <Link href={href} onClick={onClick}>
+      <motion.div
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        whileHover={{ x: 4, scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+        className={cn(
+          'relative flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 cursor-pointer group',
+          isActive
+            ? 'bg-gradient-to-r from-[#5C3317]/40 to-[#5C3317]/20 text-[#FFDAB9]'
+            : 'text-[rgba(255,255,255,0.6)] hover:text-[#FFDAB9] hover:bg-[rgba(255,255,255,0.05)]'
+        )}
+      >
+        {isActive && (
+          <>
+            {/* Active left border - maroon glow */}
+            <motion.div
+              layoutId="activeBorder"
+              className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-10 bg-gradient-to-b from-[#5C3317] via-[#FFDAB9] to-[#5C3317] rounded-r-full shadow-[0_0_15px_rgba(255,218,185,0.5)]"
+              transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+            />
+            
+            {/* Ambient glow */}
+            <div className="absolute inset-0 bg-gradient-to-r from-[#5C3317]/15 to-transparent rounded-xl" />
+            
+            {/* Pulse dot */}
+            <motion.div
+              layoutId="activeDot"
+              className="absolute -right-1 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-[#FFDAB9] shadow-[0_0_10px_rgba(255,218,185,0.8)]"
+            />
+          </>
+        )}
+        
+        {/* Icon container with hover lift */}
+        <motion.div
+          whileHover={{ y: -2, scale: 1.1 }}
+          transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+          className={cn(
+            'relative w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-300',
+            isActive 
+              ? 'bg-[#5C3317]/50 shadow-[0_0_20px_rgba(92,51,23,0.4)]' 
+              : 'bg-[rgba(255,255,255,0.03)] group-hover:bg-[#5C3317]/30'
+          )}
+        >
+          <Icon className={cn(
+            'w-5 h-5 transition-all duration-300',
+            isActive ? 'text-[#FFDAB9]' : 'text-[rgba(255,255,255,0.6)] group-hover:text-[#FFDAB9]'
+          )} />
+          
+          {/* Icon glow on hover */}
+          {!isActive && (
+            <div className="absolute inset-0 rounded-lg bg-gradient-to-br from-[#5C3317]/0 to-[#FFDAB9]/0 group-hover:from-[#5C3317]/20 group-hover:to-transparent transition-all duration-300 opacity-0 group-hover:opacity-100" />
+          )}
+        </motion.div>
+        
+        {/* Label */}
+        <AnimatePresence>
+          {!isCollapsed && (
+            <motion.span
+              initial={{ opacity: 0, width: 0 }}
+              animate={{ opacity: 1, width: 'auto' }}
+              exit={{ opacity: 0, width: 0 }}
+              transition={{ duration: 0.2 }}
+              className="text-sm font-medium whitespace-nowrap overflow-hidden"
+            >
+              {label}
+            </motion.span>
+          )}
+        </AnimatePresence>
+      </motion.div>
+    </Link>
+  );
+}
+
 export function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const pathname = usePathname();
 
   return (
-    <motion.aside
-      initial={false}
-      animate={{ width: isCollapsed ? 80 : 260 }}
-      transition={{ duration: 0.3, ease: 'easeInOut' }}
-      className="fixed left-0 top-0 h-screen glass-panel flex flex-col z-50 overflow-hidden"
-    >
-      {/* Logo */}
-      <div className="h-20 flex items-center px-5 border-b border-[rgba(255,255,255,0.08)] shrink-0">
-        <div className="flex items-center gap-3">
-          <motion.div
-            initial={{ scale: 0.8, rotate: -10 }}
-            animate={{ scale: 1, rotate: 0 }}
-            whileHover={{ scale: 1.1, rotate: 5 }}
-            className="relative w-12 h-12 rounded-xl bg-gradient-to-br from-[#5C3317] via-[#8B5A2B] to-[#5C3317] flex items-center justify-center shadow-lg glow-maroon"
-          >
-            <Sparkles className="w-6 h-6 text-[#FFDAB9]" />
-            {/* Glow dot */}
-            <div className="absolute -top-1 -right-1 w-3 h-3 bg-[#22C55E] rounded-full animate-pulse shadow-lg shadow-green-500/50" />
-          </motion.div>
+    <>
+      {/* Premium Sidebar */}
+      <motion.aside
+        initial={false}
+        animate={{ width: isCollapsed ? 72 : 280 }}
+        transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+        className="fixed left-0 top-0 h-screen flex flex-col z-50 overflow-hidden"
+      >
+        {/* Glass Background */}
+        <div className="absolute inset-0 bg-[rgba(17,17,17,0.8)] backdrop-blur-[30px] border-r border-[rgba(255,218,185,0.08)]" />
+        
+        {/* Ambient glow top */}
+        <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-[#5C3317]/10 to-transparent pointer-events-none" />
+        
+        {/* Content Layer */}
+        <div className="relative z-10 flex flex-col h-full">
+          {/* Logo Section */}
+          <div className="h-16 flex items-center px-4 shrink-0">
+            <div className="flex items-center gap-3 w-full">
+              {/* Premium Logo */}
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                whileHover={{ scale: 1.05, rotate: 3 }}
+                className="relative flex-shrink-0"
+              >
+                <SupernovaMinimalLogo size="md" animate={true} />
+              </motion.div>
+              
+              {/* Logo Text */}
+              <AnimatePresence>
+                {!isCollapsed && (
+                  <motion.div
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -10 }}
+                    transition={{ duration: 0.2 }}
+                    className="overflow-hidden"
+                  >
+                    <SupernovaTextLogo size="sm" />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+              
+              {/* Collapse Button */}
+              <button
+                onClick={() => setIsCollapsed(!isCollapsed)}
+                className={cn(
+                  'ml-auto p-1.5 rounded-lg transition-all duration-300',
+                  'hover:bg-[rgba(255,255,255,0.08)] text-[rgba(255,255,255,0.4)] hover:text-[#FFDAB9]',
+                  isCollapsed && 'mx-auto ml-0'
+                )}
+              >
+                <motion.div
+                  animate={{ rotate: isCollapsed ? 180 : 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </motion.div>
+              </button>
+            </div>
+          </div>
+
+          {/* Online Status Badge */}
           <AnimatePresence>
             {!isCollapsed && (
               <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.2 }}
-                className="overflow-hidden"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="px-4 pb-3"
               >
-                <h1 className="text-xl font-bold font-heading tracking-tight">
-                  <span className="gradient-text">Supernova</span>
-                </h1>
-                <p className="text-xs text-[rgba(255,255,255,0.45)] font-medium">
-                  AI Marketing Agent
-                </p>
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[rgba(34,197,94,0.1)] border border-[rgba(34,197,94,0.2)]">
+                  <div className="w-2 h-2 rounded-full bg-[#22C55E] animate-pulse" />
+                  <span className="text-xs text-[rgba(255,255,255,0.6)]">All systems operational</span>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
-        </div>
-      </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 py-4 px-3 overflow-y-auto">
-        <div className="space-y-1">
-          {navItems.map((item, index) => {
-            const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href));
-            const Icon = item.icon;
+          {/* Navigation */}
+          <nav className="flex-1 py-2 px-3 overflow-y-auto">
+            <div className="space-y-1">
+              {navItems.map((item, index) => {
+                const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href));
+                return (
+                  <NavItem
+                    key={item.href}
+                    {...item}
+                    isActive={isActive}
+                    isCollapsed={isCollapsed}
+                  />
+                );
+              })}
+            </div>
+          </nav>
 
-            return (
-              <Link key={item.href} href={item.href}>
+          {/* Bottom Section */}
+          <div className="border-t border-[rgba(255,255,255,0.06)] p-3 space-y-2 shrink-0">
+            {/* Bottom nav items */}
+            {bottomNavItems.map((item) => {
+              const isActive = pathname === item.href;
+              return (
+                <NavItem
+                  key={item.href}
+                  {...item}
+                  isActive={isActive}
+                  isCollapsed={isCollapsed}
+                />
+              );
+            })}
+
+            {/* Upgrade CTA - Glass Card */}
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.3 }}
+              className={cn(
+                'mt-3 rounded-xl p-4 transition-all duration-300',
+                'bg-gradient-to-br from-[#5C3317]/20 to-[rgba(255,218,185,0.05)]',
+                'border border-[rgba(255,218,185,0.1)]',
+                'hover:border-[rgba(255,218,185,0.2)] hover:bg-gradient-to-br hover:from-[#5C3317]/30 hover:to-[rgba(255,218,185,0.08)]',
+                isCollapsed && 'p-2'
+              )}
+            >
+              <div className="flex items-center gap-3 mb-3">
                 <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.03 }}
-                  whileHover={{ x: 4, scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className={cn(
-                    'relative flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200',
-                    isActive
-                      ? 'bg-gradient-to-r from-[#5C3317]/30 to-[#FFDAB9]/10 text-[#FFDAB9] border border-[rgba(255,218,185,0.2)]'
-                      : 'text-[rgba(255,255,255,0.65)] hover:text-[#FFDAB9] hover:bg-[rgba(255,255,255,0.05)]'
-                  )}
+                  whileHover={{ scale: 1.1, rotate: 5 }}
+                  className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#5C3317] to-[#8B5A2B] flex items-center justify-center shadow-lg"
                 >
-                  {isActive && (
-                    <>
-                      {/* Active indicator bar */}
-                      <motion.div
-                        layoutId="activeNav"
-                        className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-gradient-to-b from-[#5C3317] to-[#FFDAB9] rounded-r-full"
-                        transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                      />
-                      {/* Glow effect */}
-                      <div className="absolute inset-0 bg-gradient-to-r from-[#5C3317]/10 to-transparent rounded-xl blur-md -z-10" />
-                    </>
-                  )}
-                  <motion.div
-                    whileHover={{ rotate: isActive ? 0 : 5, scale: 1.1 }}
-                    transition={{ duration: 0.2 }}
-                    className={cn(
-                      'w-6 h-6 flex items-center justify-center',
-                      isActive && 'text-[#FFDAB9]'
-                    )}
-                  >
-                    <Icon className="w-5 h-5" />
-                  </motion.div>
-                  <AnimatePresence>
-                    {!isCollapsed && (
-                      <motion.span
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="text-sm font-medium whitespace-nowrap"
-                      >
-                        {item.label}
-                      </motion.span>
-                    )}
-                  </AnimatePresence>
-                  {isActive && (
-                    <motion.div
-                      layoutId="activeDot"
-                      className="ml-auto w-2 h-2 rounded-full bg-[#FFDAB9] shadow-lg shadow-[#FFDAB9]/50"
-                    />
-                  )}
+                  <ArrowUpCircle className="w-5 h-5 text-[#FFDAB9]" />
                 </motion.div>
-              </Link>
-            );
-          })}
-        </div>
-      </nav>
-
-      {/* Bottom Section */}
-      <div className="border-t border-[rgba(255,255,255,0.08)] p-3 space-y-2 shrink-0">
-        {/* Bottom nav items */}
-        {bottomNavItems.map((item) => {
-          const isActive = pathname === item.href;
-          const Icon = item.icon;
-
-          return (
-            <Link key={item.href} href={item.href}>
-              <motion.div
-                whileHover={{ x: 4, scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className={cn(
-                  'relative flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200',
-                  isActive
-                    ? 'bg-[rgba(255,218,185,0.1)] text-[#FFDAB9]'
-                    : 'text-[rgba(255,255,255,0.65)] hover:text-[#FFDAB9] hover:bg-[rgba(255,255,255,0.05)]'
-                )}
-              >
-                <Icon className="w-5 h-5" />
                 <AnimatePresence>
                   {!isCollapsed && (
-                    <motion.span
+                    <motion.div
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
-                      className="text-sm font-medium"
+                      className="flex-1"
                     >
-                      {item.label}
-                    </motion.span>
+                      <p className="text-sm font-semibold text-[#FFDAB9]">Upgrade Plan</p>
+                      <p className="text-xs text-[rgba(255,255,255,0.5)]">Unlimited campaigns</p>
+                    </motion.div>
                   )}
                 </AnimatePresence>
-              </motion.div>
-            </Link>
-          );
-        })}
+              </div>
+              
+              <motion.button
+                whileHover={{ scale: 1.02, y: -1 }}
+                whileTap={{ scale: 0.98 }}
+                className={cn(
+                  'w-full py-2.5 rounded-lg font-semibold text-sm transition-all duration-300',
+                  'bg-gradient-to-r from-[#5C3317] to-[#8B5A2B]',
+                  'text-[#FFDAB9] shadow-lg hover:shadow-xl',
+                  'hover:shadow-[0_8px_30px_rgba(92,51,23,0.4)]',
+                  isCollapsed && 'px-2'
+                )}
+              >
+                {isCollapsed ? (
+                  <Sparkle className="w-4 h-4 mx-auto" />
+                ) : (
+                  'Upgrade Now'
+                )}
+              </motion.button>
+            </motion.div>
 
-        {/* Upgrade CTA */}
-        <motion.div
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.4 }}
-          className="mt-4 p-4 rounded-xl bg-gradient-to-br from-[#5C3317]/20 to-[#FFDAB9]/5 border border-[rgba(255,218,185,0.15)]"
-        >
-          <div className="flex items-center gap-3 mb-3">
-            <ArrowUpCircle className="w-5 h-5 text-[#FFDAB9]" />
-            <AnimatePresence>
-              {!isCollapsed && (
-                <motion.span 
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="text-sm font-semibold text-[#FFDAB9]"
-                >
-                  Upgrade Plan
-                </motion.span>
+            {/* User Profile - Premium Glass */}
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.4 }}
+              className={cn(
+                'flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all duration-300',
+                'bg-[rgba(255,255,255,0.03)]',
+                'hover:bg-[rgba(255,255,255,0.08)]',
+                'border border-transparent hover:border-[rgba(255,218,185,0.15)]',
+                'group',
+                isCollapsed && 'justify-center p-2'
               )}
-            </AnimatePresence>
-          </div>
-          <AnimatePresence>
-            {!isCollapsed && (
-              <motion.p 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="text-xs text-[rgba(255,255,255,0.45)] mb-3"
-              >
-                Unlock unlimited campaigns
-              </motion.p>
-            )}
-          </AnimatePresence>
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className="w-full py-2 rounded-lg bg-gradient-to-r from-[#5C3317] to-[#8B5A2B] text-[#FFDAB9] text-sm font-semibold shadow-lg hover:shadow-xl transition-all"
-          >
-            Upgrade Now
-          </motion.button>
-        </motion.div>
-
-        {/* User Profile */}
-        <motion.div
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="flex items-center gap-3 px-4 py-3 mt-2 rounded-xl glass-button cursor-pointer group"
-        >
-          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#5C3317] to-[#FFDAB9] flex items-center justify-center shadow-md group-hover:shadow-lg transition-shadow">
-            <User className="w-5 h-5 text-[#09090B]" />
-          </div>
-          <AnimatePresence>
-            {!isCollapsed && (
+            >
+              {/* Avatar with premium gradient */}
               <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="flex-1 min-w-0"
+                whileHover={{ scale: 1.05 }}
+                className="relative flex-shrink-0"
               >
-                <p className="text-sm font-medium text-white truncate group-hover:text-[#FFDAB9] transition-colors">
-                  Alex Chen
-                </p>
-                <p className="text-xs text-[rgba(255,255,255,0.45)] truncate">
-                  Pro Plan
-                </p>
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#5C3317] via-[#8B5A2B] to-[#FFDAB9] p-[2px]">
+                  <div className="w-full h-full rounded-[10px] bg-[#111111] flex items-center justify-center">
+                    <User className="w-5 h-5 text-[#FFDAB9]" />
+                  </div>
+                </div>
+                
+                {/* Online status */}
+                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-[#22C55E] rounded-full border-2 border-[#111111]" />
               </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.div>
-      </div>
-    </motion.aside>
+              
+              <AnimatePresence>
+                {!isCollapsed && (
+                  <motion.div
+                    initial={{ opacity: 0, width: 0 }}
+                    animate={{ opacity: 1, width: 'auto' }}
+                    exit={{ opacity: 0, width: 0 }}
+                    className="flex-1 min-w-0"
+                  >
+                    <p className="text-sm font-medium text-white truncate group-hover:text-[#FFDAB9] transition-colors">
+                      Alex Chen
+                    </p>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-gradient-to-r from-[#5C3317]/50 to-[#8B5A2B]/50 text-[#FFDAB9] font-medium">
+                        Pro
+                      </span>
+                      <span className="text-xs text-[rgba(255,255,255,0.4)]">
+                        Plan
+                      </span>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
+          </div>
+        </div>
+      </motion.aside>
+
+      {/* Expand button when collapsed */}
+      <AnimatePresence>
+        {isCollapsed && (
+          <motion.button
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            onClick={() => setIsCollapsed(false)}
+            className="fixed left-[72px] top-20 z-50 p-2 rounded-lg bg-[#111111] border border-[rgba(255,218,185,0.1)] hover:border-[rgba(255,218,185,0.2)] hover:bg-[#1a1a1a] transition-all duration-300"
+          >
+            <ChevronRight className="w-4 h-4 text-[rgba(255,255,255,0.6)]" />
+          </motion.button>
+        )}
+      </AnimatePresence>
+    </>
   );
 }

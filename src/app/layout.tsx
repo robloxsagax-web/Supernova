@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { Sidebar } from "@/components/layout/Sidebar";
+import { Sidebar } from "@/components/Sidebar";
 import { AuroraBackground } from "@/components/ui/aurora-background";
 
 export const metadata: Metadata = {
@@ -34,7 +34,7 @@ export default function RootLayout({
       <body className="font-sans antialiased">
         <AuroraBackground />
         <Sidebar />
-        <main className="ml-[260px] min-h-screen transition-all duration-300 relative z-10">
+        <main className="ml-[280px] min-h-screen transition-all duration-300 relative z-10">
           {children}
         </main>
       </body>
