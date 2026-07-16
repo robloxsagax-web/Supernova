@@ -14,15 +14,19 @@ import {
   ChevronRight,
   Zap,
   Clock,
-  Sparkles
+  Sparkles,
+  Monitor,
+  Smartphone,
+  Sparkle
 } from 'lucide-react';
+import { BRAND_PALETTES, BrandPaletteId } from '@/types/product';
 
 /**
  * Campaign Preview - Right sidebar showing workflow pipeline
  * Features:
  * - Animated workflow visualization
  * - Step-by-step pipeline display
- * - Estimated output preview
+ * - Dynamic estimated output preview
  * - Features list
  */
 
@@ -44,9 +48,44 @@ const features = [
   'One-click download',
 ];
 
+// Helper function to get brand palette name
+const getBrandPaletteName = (id: BrandPaletteId): string => {
+  return BRAND_PALETTES[id]?.name || id.replace('-', ' & ');
+};
+
+// Helper function to get estimated time based on duration
+const getEstimatedTime = (duration: number): string => {
+  switch (duration) {
+    case 15: return '1-2 minutes';
+    case 30: return '2-3 minutes';
+    case 45: return '3-4 minutes';
+    case 60: return '4-5 minutes';
+    default: return '2-3 minutes';
+  }
+};
+
+// Helper function to get orientation based on ratio
+const getOrientation = (ratio: string): { label: string; icon: typeof Monitor } => {
+  if (ratio === '16:9') {
+    return { label: 'Landscape', icon: Monitor };
+  }
+  return { label: 'Portrait', icon: Smartphone };
+};
+
+// Helper function to get content type label
+const getContentTypeLabel = (type: 'ad' | 'b-roll'): string => {
+  return type === 'ad' ? 'High-Conversion Ad' : 'Organic B-Roll';
+};
+
 export function CampaignPreview() {
-  const { step, videoSettings } = useStore();
+  const { step, videoSettings, generationType } = useStore();
   const currentStepIndex = step === 'url' ? 0 : step === 'product' ? 2 : step === 'script' ? 4 : 5;
+  
+  // Derived values for dynamic display
+  const brandPaletteName = getBrandPaletteName(videoSettings.brandPalette);
+  const estimatedTime = getEstimatedTime(videoSettings.duration);
+  const orientation = getOrientation(videoSettings.ratio);
+  const contentType = getContentTypeLabel(generationType);
 
   return (
     <div className="h-full flex flex-col">
@@ -168,7 +207,7 @@ export function CampaignPreview() {
         </div>
       </motion.div>
 
-      {/* Estimated Output */}
+      {/* Estimated Output - Dynamic */}
       <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -187,29 +226,76 @@ export function CampaignPreview() {
         </div>
         
         <div className="space-y-3">
+          {/* Content Type */}
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-[rgba(255,255,255,0.6)]">Content</span>
+            <motion.span
+              key={contentType}
+              initial={{ opacity: 0, y: -5 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.2 }}
+              className="text-sm font-medium text-white"
+            >
+              {contentType}
+            </motion.span>
+          </div>
+
           {/* Video format */}
           <div className="flex items-center justify-between">
             <span className="text-sm text-[rgba(255,255,255,0.6)]">Format</span>
-            <span className="text-sm font-medium text-white">
+            <motion.span
+              key={`${videoSettings.ratio}-${videoSettings.duration}`}
+              initial={{ opacity: 0, y: -5 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.2 }}
+              className="text-sm font-medium text-white"
+            >
               {videoSettings.ratio} • {videoSettings.duration}s
-            </span>
+            </motion.span>
+          </div>
+          
+          {/* Resolution/Orientation */}
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-[rgba(255,255,255,0.6)]">Resolution</span>
+            <motion.div
+              key={videoSettings.ratio}
+              initial={{ opacity: 0, y: -5 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.2 }}
+              className="flex items-center gap-1.5"
+            >
+              <orientation.icon className="w-4 h-4 text-[rgba(255,255,255,0.4)]" />
+              <span className="text-sm font-medium text-white">{orientation.label}</span>
+            </motion.div>
           </div>
           
           {/* Brand palette */}
           <div className="flex items-center justify-between">
             <span className="text-sm text-[rgba(255,255,255,0.6)]">Style</span>
-            <span className="text-sm font-medium text-white capitalize">
-              {videoSettings.brandPalette.replace('-', ' ')}
-            </span>
+            <motion.span
+              key={videoSettings.brandPalette}
+              initial={{ opacity: 0, y: -5 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.2 }}
+              className="text-sm font-medium text-white"
+            >
+              {brandPaletteName}
+            </motion.span>
           </div>
           
           {/* Time estimate */}
           <div className="flex items-center justify-between">
             <span className="text-sm text-[rgba(255,255,255,0.6)]">Est. Time</span>
-            <div className="flex items-center gap-1.5">
+            <motion.div
+              key={videoSettings.duration}
+              initial={{ opacity: 0, y: -5 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.2 }}
+              className="flex items-center gap-1.5"
+            >
               <Clock className="w-4 h-4 text-[rgba(255,255,255,0.4)]" />
-              <span className="text-sm font-medium text-white">2-3 minutes</span>
-            </div>
+              <span className="text-sm font-medium text-white">{estimatedTime}</span>
+            </motion.div>
           </div>
         </div>
       </motion.div>
