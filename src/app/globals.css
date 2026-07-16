@@ -1210,3 +1210,101 @@
 .light [style*="#111111"] {
   background-color: var(--bg-secondary) !important;
 }
+
+/* Dashboard and page-specific overrides */
+.light .min-h-screen {
+  background-color: var(--bg-primary) !important;
+}
+
+.light .relative.min-h-screen {
+  background-color: var(--bg-primary) !important;
+}
+
+/* Override text-white classes */
+.light .text-white {
+  color: var(--text-primary) !important;
+}
+
+.light .text-\[\#FFFFFF\] {
+  color: var(--text-primary) !important;
+}
+
+/* Override text-[rgba(255,255,255,0.x)] classes */
+.light .text-\[rgba\(255\,255\,255\,0\.\([0-9]+\)\)\] {
+  color: var(--text-secondary) !important;
+}
+
+.light [class*="text-[rgba(255,255,255"] {
+  color: var(--text-secondary) !important;
+}
+
+/* Override fixed backgrounds in components */
+.light [class*="fixed"][class*="inset-0"] {
+  background-color: var(--bg-primary) !important;
+}
+
+/* Override z-50 backgrounds that overlap */
+.light .-z-50,
+.light .z-\[50\] {
+  background-color: var(--bg-primary) !important;
+}
+
+/* PremiumAuroraBackground override */
+.light .fixed.inset-0.-z-50 {
+  background-color: var(--bg-primary) !important;
+}
+
+/* Ensure bg-background works */
+.light .bg-background,
+.light [class*="bg-background"] {
+  background-color: var(--bg-primary) !important;
+}
+
+/* Text colors that need fixing */
+.light h1,
+.light h2,
+.light h3,
+.light h4,
+.light h5,
+.light h6,
+.light p,
+.light span,
+.light label {
+  color: inherit;
+}
+
+/* Ensure transparent backgrounds on light theme */
+.light .bg-transparent {
+  background-color: transparent !important;
+}
+
+/* Override gradient-to-t/b from-[#09090B] patterns */
+.light [class*="from-\[#09090B\]"] {
+  --tw-gradient-from: var(--bg-primary) !important;
+}
+
+/* Override hardcoded text colors in spans and divs */
+.light div.text-white,
+.light span.text-white,
+.light p.text-white,
+.light h1.text-white,
+.light h2.text-white,
+.light h3.text-white {
+  color: var(--text-primary) !important;
+}
+
+/* Muted text override */
+.light .text-\[rgba\(255\,
+.light [style*="text-[rgba(255,255,255"] {
+  color: var(--text-secondary) !important;
+}
+
+/* Override all rgba white text patterns */
+.light [style*="255, 255, 255"][style*="text"] {
+  color: var(--text-secondary) !important;
+}
+
+/* Important overrides for Tailwind */
+.light * {
+  border-color: var(--card-border) !important;
+}

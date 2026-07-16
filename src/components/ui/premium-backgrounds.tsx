@@ -15,7 +15,7 @@ export function PremiumAuroraBackground({ className }: { className?: string }) {
   return (
     <div className={cn('fixed inset-0 -z-50 overflow-hidden', className)}>
       {/* Base Background */}
-      <div className="absolute inset-0 bg-[#09090B]" />
+      <div className="absolute inset-0 bg-background transition-colors duration-300" />
       
       {/* Primary Aurora Glow - Top Left */}
       <motion.div 
@@ -126,10 +126,10 @@ export function PremiumAuroraBackground({ className }: { className?: string }) {
       />
       
       {/* Bottom Gradient Fade */}
-      <div className="absolute inset-0 bg-gradient-to-t from-[#09090B] via-transparent to-transparent pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent pointer-events-none" />
       
       {/* Top Gradient Fade */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#09090B] via-transparent to-transparent pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-b from-background via-transparent to-transparent pointer-events-none" />
     </div>
   );
 }
