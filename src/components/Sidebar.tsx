@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { 
   Sparkles,
   LayoutDashboard,
@@ -12,7 +12,8 @@ import {
   ArrowUpCircle,
   ChevronLeft,
   ChevronRight,
-  Sparkle
+  Sparkle,
+  CreditCard
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { SupernovaMinimalLogo, SupernovaTextLogo } from '@/components/ui/logo';
@@ -30,6 +31,7 @@ import { SupernovaMinimalLogo, SupernovaTextLogo } from '@/components/ui/logo';
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/create', label: 'Create', icon: Sparkles },
+  { href: '/pricing', label: 'Pricing', icon: CreditCard },
 ];
 
 const bottomNavItems = [
@@ -124,6 +126,7 @@ function NavItem({ href, label, icon: Icon, isActive, isCollapsed, onClick }: Na
 export function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
 
   return (
     <>
@@ -276,6 +279,7 @@ export function Sidebar() {
               <motion.button
                 whileHover={{ scale: 1.02, y: -1 }}
                 whileTap={{ scale: 0.98 }}
+                onClick={() => router.push('/pricing')}
                 className={cn(
                   'w-full py-2.5 rounded-lg font-semibold text-sm transition-all duration-300',
                   'bg-gradient-to-r from-[#5C3317] to-[#8B5A2B]',
@@ -334,7 +338,7 @@ export function Sidebar() {
                     </p>
                     <div className="flex items-center gap-1.5">
                       <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-gradient-to-r from-[#5C3317]/50 to-[#8B5A2B]/50 text-[#FFDAB9] font-medium">
-                        Pro
+                        Starter
                       </span>
                       <span className="text-xs text-[rgba(255,255,255,0.4)]">
                         Plan
