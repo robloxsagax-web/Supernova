@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Sidebar } from "@/components/Sidebar";
 import { AuroraBackground } from "@/components/ui/aurora-background";
+import { CustomCursor, CursorTrail } from "@/components/ui/cursor";
 
 export const metadata: Metadata = {
   title: "Supernova - AI Marketing Agent",
@@ -37,6 +38,8 @@ export default function RootLayout({
         <main className="ml-[280px] min-h-screen transition-all duration-300 relative z-10">
           {children}
         </main>
+        <CustomCursor />
+        <CursorTrail />
       </body>
     </html>
   );
