@@ -7,6 +7,7 @@
     "dev:next": "next dev",
     "dev:api": "cd services/api && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload",
     "dev:api:standalone": "cd services/api && uvicorn app.main:app --host 0.0.0.0 --port 8000",
+    "dev:api:install": "cd services/api && pip install -r requirements.txt",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"

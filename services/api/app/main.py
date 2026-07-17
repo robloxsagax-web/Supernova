@@ -1,9 +1,11 @@
 """Genblaze API Service - Main Application.
 
 FastAPI application for script generation using Genblaze.
+Deployed separately from Next.js frontend on Vercel.
 """
 
 import logging
+import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -23,6 +25,7 @@ logger = logging.getLogger("api.main")
 async def lifespan(app: FastAPI):
     """Application lifespan handler."""
     logger.info("Starting Genblaze API Service")
+    logger.info(f"OPENROUTER_API_KEY configured: {bool(os.environ.get('OPENROUTER_API_KEY'))}")
     yield
     logger.info("Shutting down Genblaze API Service")
 
@@ -35,10 +38,12 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# Configure CORS
+# Configure CORS - allow requests from Vercel frontend
+cors_origins = os.environ.get("CORS_ORIGINS", "*").split(",")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=cors_origins if cors_origins != ["*"] else ["*"],
     allow_credentials=True,
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["Content-Type", "Authorization"],
@@ -61,4 +66,8 @@ async def root():
 @app.get("/health")
 async def health():
     """Health check endpoint."""
-    return {"status": "healthy"}
+    return {
+        "status": "healthy",
+        "provider": "Genblaze",
+        "model": "qwen/qwen-turbo"
+    }
