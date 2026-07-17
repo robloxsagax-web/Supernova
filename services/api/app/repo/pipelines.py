@@ -5,6 +5,7 @@ This module implements the script generation logic using Genblaze.
 
 import logging
 import os
+import time
 import traceback
 from typing import Any, Dict, Literal
 
@@ -285,9 +286,11 @@ def generate_script(product: Dict[str, Any], duration: int = 30, generation_type
     logger.info(f"Models available for fallback: {models_to_try}")
     
     last_exception = None
+    generation_start_time = time.time()
     
     # Try each model in order
     for model in models_to_try:
+        model_start_time = time.time()
         logger.info(f"Attempting to generate script with model: {model}")
         
         try:
@@ -303,8 +306,12 @@ def generate_script(product: Dict[str, Any], duration: int = 30, generation_type
                 max_tokens=max_tokens
             )
             
+            model_duration = time.time() - model_start_time
+            total_duration = time.time() - generation_start_time
+            
             logger.info(f"genblaze_openai.chat() returned successfully with model {model}")
             logger.info(f"Response type: {type(response)}")
+            logger.info(f"TIMING - OpenRouter call: {model_duration:.2f}s, Total generation: {total_duration:.2f}s")
             
             script = response.text if hasattr(response, 'text') else str(response)
             script = script.strip() if script else ""
@@ -316,7 +323,12 @@ def generate_script(product: Dict[str, Any], duration: int = 30, generation_type
             logger.info("Script generated successfully", extra={
                 "script_length": len(script),
                 "model_used": model,
-                "script_preview": script[:100] + "..." if len(script) > 100 else script
+                "script_preview": script[:100] + "..." if len(script) > 100 else script,
+                "timing": {
+                    "openrouter_duration_s": round(model_duration, 2),
+                    "total_duration_s": round(total_duration, 2),
+                    "models_tried": len([m for m in models_to_try if m != model])
+                }
             })
             
             return script
