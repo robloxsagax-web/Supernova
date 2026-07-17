@@ -6,10 +6,6 @@
   "installCommand": "npm install",
   "regions": ["iad1"],
   "functions": {
-    "api/generate-script.py": {
-      "memory": 512,
-      "maxDuration": 30
-    },
     "src/app/api/scrape/route.ts": {
       "memory": 512,
       "maxDuration": 30

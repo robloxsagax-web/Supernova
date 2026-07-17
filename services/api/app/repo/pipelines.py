@@ -1,155 +1,19 @@
-"""
-Script Generation API using Genblaze with OpenRouter
+"""Genblaze pipelines for script generation.
 
-Vercel Python Function for generating marketing scripts.
-Uses Genblaze's genblaze_openai.chat() for script generation.
+This module implements the script generation logic using Genblaze.
 """
 
-import json
-import os
-from typing import Any, Literal, Optional
+import logging
+from typing import Any, Dict, Literal
 
 from genblaze_openai import chat
 
+from app.repo.provider_catalog import get_default_provider
 
-# Configuration
-OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY")
-OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
-MODEL = "qwen/qwen-turbo"
-TEMPERATURE = 0.7
+logger = logging.getLogger("api.pipelines")
 
 
-def handler(request: Any) -> dict:
-    """
-    Main handler for the Genblaze script generation route.
-    Compatible with Vercel Python runtime.
-    """
-    
-    # Handle GET requests for health check
-    if request.method == "GET":
-        return {
-            "statusCode": 200,
-            "headers": {"Content-Type": "application/json"},
-            "body": json.dumps({
-                "status": "ok",
-                "provider": "Genblaze",
-                "model": MODEL
-            })
-        }
-    
-    # Handle POST requests for script generation
-    if request.method == "POST":
-        return generate_script(request)
-    
-    # Method not allowed
-    return {
-        "statusCode": 405,
-        "headers": {"Content-Type": "application/json"},
-        "body": json.dumps({"error": "Method not allowed"})
-    }
-
-
-def generate_script(request: Any) -> dict:
-    """Generate marketing script using Genblaze."""
-    
-    try:
-        # Parse request body
-        data = request.get_json()
-        
-        if not data:
-            return {
-                "statusCode": 400,
-                "headers": {"Content-Type": "application/json"},
-                "body": json.dumps({"error": "Product data is required"})
-            }
-        
-        product = data.get("product")
-        duration = data.get("duration", 30)
-        generation_type = data.get("generationType", "ad")
-        
-        # Validate product data
-        if not product:
-            return {
-                "statusCode": 400,
-                "headers": {"Content-Type": "application/json"},
-                "body": json.dumps({"error": "Product data is required"})
-            }
-        
-        if not product.get("title") or not product.get("description"):
-            return {
-                "statusCode": 400,
-                "headers": {"Content-Type": "application/json"},
-                "body": json.dumps({"error": "Product must have a title and description"})
-            }
-        
-        # Validate API key
-        if not OPENROUTER_API_KEY:
-            return {
-                "statusCode": 500,
-                "headers": {"Content-Type": "application/json"},
-                "body": json.dumps({"error": "OPENROUTER_API_KEY environment variable is not set"})
-            }
-        
-        # Normalize generation type
-        gen_type: Literal["ad", "b-roll"] = "b-roll" if generation_type == "b-roll" else "ad"
-        
-        # Build prompt and system message
-        prompt = build_script_prompt(product, duration, gen_type)
-        system_prompt = get_system_prompt(gen_type)
-        
-        # Calculate max tokens based on duration
-        max_tokens = calculate_max_tokens(duration)
-        
-        # Generate script using Genblaze
-        try:
-            response = chat(
-                model=MODEL,
-                prompt=prompt,
-                api_key=OPENROUTER_API_KEY,
-                base_url=OPENROUTER_BASE_URL,
-                system_prompt=system_prompt,
-                temperature=TEMPERATURE,
-                max_tokens=max_tokens
-            )
-        except Exception as e:
-            return {
-                "statusCode": 500,
-                "headers": {"Content-Type": "application/json"},
-                "body": json.dumps({"error": f"Failed to generate script: {str(e)}"})
-            }
-        
-        # Extract script from response
-        script = response.text if hasattr(response, 'text') else str(response)
-        
-        if not script:
-            return {
-                "statusCode": 500,
-                "headers": {"Content-Type": "application/json"},
-                "body": json.dumps({"error": "Failed to generate script"})
-            }
-        
-        # Clean up script
-        script = script.strip()
-        
-        # Return response matching original format exactly
-        return {
-            "statusCode": 200,
-            "headers": {"Content-Type": "application/json"},
-            "body": json.dumps({
-                "script": script,
-                "generationType": gen_type
-            })
-        }
-        
-    except Exception as e:
-        return {
-            "statusCode": 500,
-            "headers": {"Content-Type": "application/json"},
-            "body": json.dumps({"error": f"Failed to generate script: {str(e)}"})
-        }
-
-
-def build_product_info(product: dict) -> str:
+def build_product_info(product: Dict[str, Any]) -> str:
     """Build product info string for prompts."""
     features = product.get("features", [])
     features_str = "\n".join([f"- {f}" for f in features]) if features else "No features listed"
@@ -161,7 +25,7 @@ Key Features:
 {features_str}"""
 
 
-def build_ad_prompt(product: dict, duration: int) -> str:
+def build_ad_prompt(product: Dict[str, Any], duration: int) -> str:
     """Build ad-type prompt based on duration."""
     product_info = build_product_info(product)
     title = product.get("title", "the product")
@@ -243,7 +107,7 @@ FORMAT: Raw script lines only, separated by newlines. NO brackets. NO labels. NO
 Start now - the product name "{title}" is your hook:"""
 
 
-def build_broll_prompt(product: dict, duration: int) -> str:
+def build_broll_prompt(product: Dict[str, Any], duration: int) -> str:
     """Build b-roll type prompt based on duration."""
     product_info = build_product_info(product)
     
@@ -337,7 +201,7 @@ FORMAT: Raw script lines only, separated by newlines. NO brackets. NO labels. NO
 Start now:"""
 
 
-def build_script_prompt(product: dict, duration: int = 30, gen_type: Literal["ad", "b-roll"] = "ad") -> str:
+def build_script_prompt(product: Dict[str, Any], duration: int = 30, gen_type: Literal["ad", "b-roll"] = "ad") -> str:
     """Build the complete script prompt based on type and duration."""
     if gen_type == "b-roll":
         return build_broll_prompt(product, duration)
@@ -360,3 +224,64 @@ def calculate_max_tokens(duration: int) -> int:
     if duration <= 45:
         return 750
     return 1000
+
+
+def generate_script(product: Dict[str, Any], duration: int = 30, generation_type: str = "ad") -> str:
+    """Generate a marketing script using Genblaze.
+    
+    Args:
+        product: Product information dictionary
+        duration: Video duration in seconds (15, 30, 45, or 60)
+        generation_type: Type of script ('ad' or 'b-roll')
+    
+    Returns:
+        Generated script string
+    """
+    # Get provider configuration
+    provider = get_default_provider()
+    if not provider or not provider.is_available():
+        raise ValueError("OPENROUTER_API_KEY environment variable is not set")
+    
+    # Normalize generation type
+    gen_type: Literal["ad", "b-roll"] = "b-roll" if generation_type == "b-roll" else "ad"
+    
+    # Build prompts
+    prompt = build_script_prompt(product, duration, gen_type)
+    system_prompt = get_system_prompt(gen_type)
+    
+    # Calculate max tokens
+    max_tokens = calculate_max_tokens(duration)
+    
+    logger.info("Generating script", extra={
+        "duration": duration,
+        "generation_type": gen_type,
+        "model": provider.model
+    })
+    
+    # Generate script using Genblaze
+    try:
+        response = chat(
+            model=provider.model,
+            prompt=prompt,
+            api_key=provider.api_key,
+            base_url=provider.base_url,
+            system_prompt=system_prompt,
+            temperature=provider.temperature,
+            max_tokens=max_tokens
+        )
+        
+        script = response.text if hasattr(response, 'text') else str(response)
+        script = script.strip() if script else ""
+        
+        if not script:
+            raise ValueError("Empty response from AI provider")
+        
+        logger.info("Script generated successfully", extra={
+            "script_length": len(script)
+        })
+        
+        return script
+        
+    except Exception as e:
+        logger.error("Script generation failed", extra={"error": str(e)})
+        raise
