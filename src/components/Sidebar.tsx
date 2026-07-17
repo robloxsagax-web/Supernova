@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback, useMemo, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -19,48 +19,53 @@ import { cn } from '@/lib/utils';
 import { SupernovaMinimalLogo, SupernovaTextLogo } from '@/components/ui/logo';
 
 /**
- * Premium Glass Sidebar - Inspired by Linear, Arc Browser, Vercel
- * Features:
- * - Minimal glassmorphism (subtle blur, soft shadows)
- * - Animated active indicators with maroon glow
- * - Smooth hover effects with lift animation
- * - Collapsible with smooth transitions
- * - Premium spacing and typography
+ * Premium Glass Sidebar - Performance Optimized
+ * 
+ * Optimizations:
+ * - Memoized nav items
+ * - Memoized NavItem component
+ * - useCallback for handlers
+ * - useMemo for stable object references
  */
 
-const navItems = [
+// Memoized navigation items
+const NAV_ITEMS = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/create', label: 'Create', icon: Sparkles },
   { href: '/pricing', label: 'Pricing', icon: CreditCard },
-];
+] as const;
 
-const bottomNavItems = [
+const BOTTOM_NAV_ITEMS = [
   { href: '/settings', label: 'Settings', icon: Settings },
-];
+] as const;
 
-interface NavItemProps {
+// Memoized NavItem component
+const NavItem = memo(function NavItem({ 
+  href, 
+  label, 
+  icon: Icon, 
+  isActive, 
+  isCollapsed, 
+  onClick 
+}: { 
   href: string;
   label: string;
   icon: React.ElementType;
   isActive: boolean;
   isCollapsed: boolean;
   onClick?: () => void;
-}
-
-function NavItem({ href, label, icon: Icon, isActive, isCollapsed, onClick }: NavItemProps) {
+}) {
   return (
     <Link href={href} onClick={onClick}>
       <motion.div
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        whileHover={{ x: 4, scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
         className={cn(
           'relative flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 cursor-pointer group',
           isActive
             ? 'bg-gradient-to-r from-[#5C3317]/40 to-[#5C3317]/20 text-[#FFDAB9]'
             : 'text-[rgba(255,255,255,0.6)] hover:text-[#FFDAB9] hover:bg-[rgba(255,255,255,0.05)]'
         )}
+        whileHover={{ x: 4, scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
       >
         {isActive && (
           <>
@@ -87,14 +92,14 @@ function NavItem({ href, label, icon: Icon, isActive, isCollapsed, onClick }: Na
           whileHover={{ y: -2, scale: 1.1 }}
           transition={{ type: 'spring', stiffness: 400, damping: 25 }}
           className={cn(
-            'relative w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-300',
+            'relative w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-300 will-change-transform',
             isActive 
               ? 'bg-[#5C3317]/50 shadow-[0_0_20px_rgba(92,51,23,0.4)]' 
               : 'bg-[rgba(255,255,255,0.03)] group-hover:bg-[#5C3317]/30'
           )}
         >
           <Icon className={cn(
-            'w-5 h-5 transition-all duration-300',
+            'w-5 h-5 transition-all duration-300 will-change-transform',
             isActive ? 'text-[#FFDAB9]' : 'text-[rgba(255,255,255,0.6)] group-hover:text-[#FFDAB9]'
           )} />
           
@@ -112,7 +117,7 @@ function NavItem({ href, label, icon: Icon, isActive, isCollapsed, onClick }: Na
               animate={{ opacity: 1, width: 'auto' }}
               exit={{ opacity: 0, width: 0 }}
               transition={{ duration: 0.2 }}
-              className="text-sm font-medium whitespace-nowrap overflow-hidden"
+              className="text-sm font-medium whitespace-nowrap overflow-hidden will-change-transform"
             >
               {label}
             </motion.span>
@@ -121,12 +126,32 @@ function NavItem({ href, label, icon: Icon, isActive, isCollapsed, onClick }: Na
       </motion.div>
     </Link>
   );
-}
+});
 
 export function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
+
+  // Memoize handlers to prevent unnecessary rerenders
+  const handleToggleCollapse = useCallback(() => {
+    setIsCollapsed(prev => !prev);
+  }, []);
+
+  const handleExpandSidebar = useCallback(() => {
+    setIsCollapsed(false);
+  }, []);
+
+  // Memoize active states to prevent recalculation
+  const activeItems = useMemo(() => {
+    const active = new Set<string>();
+    NAV_ITEMS.forEach(item => {
+      if (pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))) {
+        active.add(item.href);
+      }
+    });
+    return active;
+  }, [pathname]);
 
   return (
     <>
@@ -150,10 +175,8 @@ export function Sidebar() {
             <div className="flex items-center gap-3 w-full">
               {/* Premium Logo */}
               <motion.div
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
                 whileHover={{ scale: 1.05, rotate: 3 }}
-                className="relative flex-shrink-0"
+                className="relative flex-shrink-0 will-change-transform"
               >
                 <SupernovaMinimalLogo size="md" animate={true} />
               </motion.div>
@@ -166,7 +189,7 @@ export function Sidebar() {
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -10 }}
                     transition={{ duration: 0.2 }}
-                    className="overflow-hidden"
+                    className="overflow-hidden will-change-transform"
                   >
                     <SupernovaTextLogo size="sm" />
                   </motion.div>
@@ -175,9 +198,9 @@ export function Sidebar() {
               
               {/* Collapse Button */}
               <button
-                onClick={() => setIsCollapsed(!isCollapsed)}
+                onClick={handleToggleCollapse}
                 className={cn(
-                  'ml-auto p-1.5 rounded-lg transition-all duration-300',
+                  'ml-auto p-1.5 rounded-lg transition-all duration-300 will-change-transform',
                   'hover:bg-[rgba(255,255,255,0.08)] text-[rgba(255,255,255,0.4)] hover:text-[#FFDAB9]',
                   isCollapsed && 'mx-auto ml-0'
                 )}
@@ -199,7 +222,7 @@ export function Sidebar() {
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
-                className="px-4 pb-3"
+                className="px-4 pb-3 will-change-transform"
               >
                 <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[rgba(34,197,94,0.1)] border border-[rgba(34,197,94,0.2)]">
                   <div className="w-2 h-2 rounded-full bg-[#22C55E] animate-pulse" />
@@ -212,12 +235,14 @@ export function Sidebar() {
           {/* Navigation */}
           <nav className="flex-1 py-2 px-3 overflow-y-auto">
             <div className="space-y-1">
-              {navItems.map((item, index) => {
-                const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href));
+              {NAV_ITEMS.map((item) => {
+                const isActive = activeItems.has(item.href);
                 return (
                   <NavItem
                     key={item.href}
-                    {...item}
+                    href={item.href}
+                    label={item.label}
+                    icon={item.icon}
                     isActive={isActive}
                     isCollapsed={isCollapsed}
                   />
@@ -229,12 +254,14 @@ export function Sidebar() {
           {/* Bottom Section */}
           <div className="border-t border-[rgba(255,255,255,0.06)] p-3 space-y-2 shrink-0">
             {/* Bottom nav items */}
-            {bottomNavItems.map((item) => {
+            {BOTTOM_NAV_ITEMS.map((item) => {
               const isActive = pathname === item.href;
               return (
                 <NavItem
                   key={item.href}
-                  {...item}
+                  href={item.href}
+                  label={item.label}
+                  icon={item.icon}
                   isActive={isActive}
                   isCollapsed={isCollapsed}
                 />
@@ -247,7 +274,7 @@ export function Sidebar() {
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.3 }}
               className={cn(
-                'mt-3 rounded-xl p-4 transition-all duration-300',
+                'mt-3 rounded-xl p-4 transition-all duration-300 will-change-transform',
                 'bg-gradient-to-br from-[#5C3317]/20 to-[rgba(255,218,185,0.05)]',
                 'border border-[rgba(255,218,185,0.1)]',
                 'hover:border-[rgba(255,218,185,0.2)] hover:bg-gradient-to-br hover:from-[#5C3317]/30 hover:to-[rgba(255,218,185,0.08)]',
@@ -257,7 +284,7 @@ export function Sidebar() {
               <div className="flex items-center gap-3 mb-3">
                 <motion.div
                   whileHover={{ scale: 1.1, rotate: 5 }}
-                  className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#5C3317] to-[#8B5A2B] flex items-center justify-center shadow-lg"
+                  className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#5C3317] to-[#8B5A2B] flex items-center justify-center shadow-lg will-change-transform"
                 >
                   <ArrowUpCircle className="w-5 h-5 text-[#FFDAB9]" />
                 </motion.div>
@@ -267,7 +294,7 @@ export function Sidebar() {
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
-                      className="flex-1"
+                      className="flex-1 will-change-transform"
                     >
                       <p className="text-sm font-semibold text-[#FFDAB9]">Upgrade Plan</p>
                       <p className="text-xs text-[rgba(255,255,255,0.5)]">Unlimited campaigns</p>
@@ -281,7 +308,7 @@ export function Sidebar() {
                 whileTap={{ scale: 0.98 }}
                 onClick={() => router.push('/pricing')}
                 className={cn(
-                  'w-full py-2.5 rounded-lg font-semibold text-sm transition-all duration-300',
+                  'w-full py-2.5 rounded-lg font-semibold text-sm transition-all duration-300 will-change-transform',
                   'bg-gradient-to-r from-[#5C3317] to-[#8B5A2B]',
                   'text-[#FFDAB9] shadow-lg hover:shadow-xl',
                   'hover:shadow-[0_8px_30px_rgba(92,51,23,0.4)]',
@@ -302,7 +329,7 @@ export function Sidebar() {
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.4 }}
               className={cn(
-                'flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all duration-300',
+                'flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all duration-300 will-change-transform',
                 'bg-[rgba(255,255,255,0.03)]',
                 'hover:bg-[rgba(255,255,255,0.08)]',
                 'border border-transparent hover:border-[rgba(255,218,185,0.15)]',
@@ -313,7 +340,7 @@ export function Sidebar() {
               {/* Avatar with premium gradient */}
               <motion.div
                 whileHover={{ scale: 1.05 }}
-                className="relative flex-shrink-0"
+                className="relative flex-shrink-0 will-change-transform"
               >
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#5C3317] via-[#8B5A2B] to-[#FFDAB9] p-[2px]">
                   <div className="w-full h-full rounded-[10px] bg-[#111111] flex items-center justify-center">
@@ -331,7 +358,7 @@ export function Sidebar() {
                     initial={{ opacity: 0, width: 0 }}
                     animate={{ opacity: 1, width: 'auto' }}
                     exit={{ opacity: 0, width: 0 }}
-                    className="flex-1 min-w-0"
+                    className="flex-1 min-w-0 will-change-transform"
                   >
                     <p className="text-sm font-medium text-white truncate group-hover:text-[#FFDAB9] transition-colors">
                       Alex Chen
@@ -359,8 +386,8 @@ export function Sidebar() {
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
-            onClick={() => setIsCollapsed(false)}
-            className="fixed left-[72px] top-20 z-50 p-2 rounded-lg bg-[#111111] border border-[rgba(255,218,185,0.1)] hover:border-[rgba(255,218,185,0.2)] hover:bg-[#1a1a1a] transition-all duration-300"
+            onClick={handleExpandSidebar}
+            className="fixed left-[72px] top-20 z-50 p-2 rounded-lg bg-[#111111] border border-[rgba(255,218,185,0.1)] hover:border-[rgba(255,218,185,0.2)] hover:bg-[#1a1a1a] transition-all duration-300 will-change-transform"
           >
             <ChevronRight className="w-4 h-4 text-[rgba(255,255,255,0.6)]" />
           </motion.button>
