@@ -4,14 +4,18 @@ This module defines the available AI providers and their configurations.
 """
 
 import os
-from dataclasses import dataclass
-from typing import Optional
+from dataclasses import dataclass, field
+from typing import Optional, Callable
 
-# Configuration
-OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY")
+# Configuration - these can be overridden by environment
 OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 MODEL = "qwen/qwen-turbo"
 TEMPERATURE = 0.7
+
+
+def _get_api_key() -> Optional[str]:
+    """Get API key dynamically from environment."""
+    return os.environ.get("OPENROUTER_API_KEY")
 
 
 @dataclass
@@ -19,10 +23,15 @@ class ProviderConfig:
     """Configuration for an AI provider."""
     
     name: str
-    api_key: Optional[str]
     base_url: Optional[str] = None
     model: str = MODEL
     temperature: float = TEMPERATURE
+    _api_key_func: Callable[[], Optional[str]] = field(default=_get_api_key, repr=False)
+    
+    @property
+    def api_key(self) -> Optional[str]:
+        """Get API key dynamically from the configured function."""
+        return self._api_key_func()
     
     def is_available(self) -> bool:
         """Check if the provider is configured and available."""
@@ -33,7 +42,6 @@ class ProviderConfig:
 PROVIDERS = {
     "openai": ProviderConfig(
         name="openai",
-        api_key=OPENROUTER_API_KEY,
         base_url=OPENROUTER_BASE_URL,
         model=MODEL,
         temperature=TEMPERATURE

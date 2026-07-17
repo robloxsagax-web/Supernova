@@ -288,7 +288,7 @@ def generate_script(product: Dict[str, Any], duration: int = 30, generation_type
             prompt=prompt,
             api_key=provider.api_key,
             base_url=provider.base_url,
-            system_prompt=system_prompt,
+            system=system_prompt,  # Fixed: 'system' is the correct parameter name
             temperature=provider.temperature,
             max_tokens=max_tokens
         )
