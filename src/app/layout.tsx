@@ -1,10 +1,5 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { Sidebar } from "@/components/Sidebar";
-import { PremiumAuroraBackground, FloatingOrbs } from "@/components/ui/premium-backgrounds-optimized";
-import { CustomCursor, CursorTrail } from "@/components/ui/cursor-optimized";
-import { ThemeProvider } from "@/components/ui/theme-provider";
-import { AuthProvider } from "@/lib/auth";
 
 export const metadata: Metadata = {
   title: "Supernova - AI Marketing Agent",
@@ -34,18 +29,7 @@ export default function RootLayout({
         <script src="https://js.puter.com/v2/"></script>
       </head>
       <body className="font-sans antialiased">
-        <ThemeProvider>
-          <AuthProvider>
-            <PremiumAuroraBackground />
-            <FloatingOrbs />
-            <Sidebar />
-            <main className="ml-[280px] min-h-screen transition-all duration-300 relative z-10">
-              {children}
-            </main>
-            <CustomCursor />
-            <CursorTrail />
-          </AuthProvider>
-        </ThemeProvider>
+        {children}
       </body>
     </html>
   );

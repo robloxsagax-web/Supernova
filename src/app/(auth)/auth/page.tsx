@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useEffect, useCallback, memo } from 'react';
+import { useState, useEffect, useCallback, memo, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Mail, 
   Lock, 
   User, 
-  Sparkles, 
+  Sparkle,
   Video, 
   ImageIcon, 
   Brain, 
@@ -15,8 +15,7 @@ import {
   BarChart3, 
   Cloud,
   Check,
-  AlertCircle,
-  Sparkle
+  AlertCircle
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 import { cn } from '@/lib/utils';
@@ -283,7 +282,7 @@ const FEATURES = [
   { icon: Cloud, title: 'Cloud Projects', description: 'Secure asset management', color: '#06B6D4' },
 ];
 
-export default function AuthPage() {
+function AuthPageContent() {
   const router = useRouter();
   const { isLoggedIn, isLoading, login, signup, demoLogin } = useAuth();
   const [activeTab, setActiveTab] = useState<'signin' | 'signup'>('signin');
@@ -301,7 +300,7 @@ export default function AuthPage() {
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Redirect if already logged in
+  // Redirect if already logged in (after loading is complete)
   useEffect(() => {
     if (!isLoading && isLoggedIn) {
       router.push('/dashboard');
@@ -397,24 +396,6 @@ export default function AuthPage() {
     setSuccessMessage(null);
     setErrors({});
   }, []);
-
-  // Loading state
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-[#09090B] flex items-center justify-center">
-        <motion.div
-          className="relative w-16 h-16"
-          animate={{ rotate: 360 }}
-          transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-        >
-          <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#5C3317] to-[#FFDAB9] opacity-50 blur-sm" />
-          <div className="relative w-full h-full rounded-full bg-gradient-to-br from-[#5C3317] to-[#FFDAB9] p-[3px]">
-            <div className="w-full h-full rounded-full bg-[#09090B]" />
-          </div>
-        </motion.div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-[#09090B] flex overflow-hidden">
@@ -705,7 +686,7 @@ export default function AuthPage() {
               )}
             </AnimatePresence>
 
-            {/* Remember me / Forgot password for signin */}
+            {/* Remember me for signin only */}
             <AnimatePresence mode="wait">
               {activeTab === 'signin' && (
                 <motion.div
@@ -724,13 +705,6 @@ export default function AuthPage() {
                       Remember me
                     </span>
                   </label>
-                  <button 
-                    type="button"
-                    className="text-[rgba(255,255,255,0.4)] hover:text-[#FFDAB9] transition-colors"
-                    disabled
-                  >
-                    Forgot password?
-                  </button>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -792,6 +766,94 @@ export default function AuthPage() {
           </p>
         </motion.div>
       </div>
+    </div>
+  );
+}
+
+export default function AuthPage() {
+  return (
+    <Suspense fallback={<AuthLoadingScreen />}>
+      <AuthPageContent />
+    </Suspense>
+  );
+}
+
+// Premium Loading Screen
+function AuthLoadingScreen() {
+  return (
+    <div className="min-h-screen bg-[#09090B] flex flex-col items-center justify-center">
+      {/* Background effects */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#09090B] via-[#0D0D10] to-[#09090B]" />
+        <motion.div
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full"
+          style={{
+            background: 'radial-gradient(circle, rgba(92, 51, 23, 0.3) 0%, transparent 70%)',
+            filter: 'blur(80px)',
+          }}
+          animate={{ scale: [1, 1.1, 1] }}
+          transition={{ duration: 10, repeat: Infinity }}
+        />
+      </div>
+
+      {/* Content */}
+      <motion.div
+        className="relative z-10 flex flex-col items-center"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        {/* Logo */}
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+          className="mb-8"
+        >
+          <div className="relative w-20 h-20">
+            <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#5C3317] via-[#8B5A2B] to-[#FFDAB9] opacity-50 blur-sm" />
+            <div className="relative w-full h-full rounded-full bg-gradient-to-br from-[#5C3317] via-[#8B5A2B] to-[#FFDAB9] p-[3px]">
+              <div className="w-full h-full rounded-full bg-[#09090B] flex items-center justify-center">
+                <motion.div
+                  className="relative w-8 h-8"
+                  animate={{ scale: [1, 1.1, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-br from-[#FFDAB9] to-[#5C3317] rounded-full opacity-80 blur-[2px]" />
+                  <div className="absolute inset-1 bg-[#09090B] rounded-full" />
+                  <div className="absolute inset-2 bg-gradient-to-br from-[#FFDAB9] to-[#8B5A2B] rounded-full" />
+                </motion.div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Brand name */}
+        <h1 className="text-2xl font-bold tracking-tight mb-2">
+          <span className="bg-gradient-to-r from-[#5C3317] via-[#8B5A2B] to-[#FFDAB9] bg-clip-text text-transparent">
+            SUPERNOVA
+          </span>
+        </h1>
+
+        {/* Loading text */}
+        <p className="text-sm text-[rgba(255,255,255,0.5)] mb-8">
+          Initializing AI Workspace...
+        </p>
+
+        {/* Progress bar */}
+        <div className="w-48 h-1 rounded-full bg-[rgba(255,255,255,0.1)] overflow-hidden">
+          <motion.div
+            className="h-full bg-gradient-to-r from-[#5C3317] to-[#FFDAB9]"
+            initial={{ width: '0%' }}
+            animate={{ width: '100%' }}
+            transition={{ duration: 2, ease: 'easeInOut' }}
+          />
+        </div>
+
+        {/* Please wait */}
+        <p className="text-xs text-[rgba(255,255,255,0.3)] mt-4">
+          Please wait...
+        </p>
+      </motion.div>
     </div>
   );
 }
