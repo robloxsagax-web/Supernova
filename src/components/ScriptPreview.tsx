@@ -39,42 +39,8 @@ export function ScriptPreview() {
   const isBRoll = generationType === 'b-roll';
 
   const handleGenerateVideo = async () => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      // Pass generationType to video generation API
-      const response = await fetch('/api/generate-video', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          script,
-          generationType,
-          product,
-          duration,
-          videoSettings // Include ratio for orientation filtering
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to initialize video');
-      }
-
-      const data = await response.json();
-
-      // Store b-roll config if provided (for b-roll mode)
-      if (data.bRollConfig) {
-        setBRollConfig(data.bRollConfig);
-        setProductImages(data.productImages || []);
-      }
-
-      // Explicitly advance to video step - this ensures the VideoPlayer renders
-      setStep('video');
-    } catch (error) {
-      setError(error instanceof Error ? error.message : 'Something went wrong');
-    } finally {
-      setLoading(false);
-    }
+    // Navigate to Market Intelligence step instead of directly to video
+    setStep('marketIntelligence');
   };
 
   return (
@@ -127,7 +93,7 @@ export function ScriptPreview() {
       </CardContent>
       <CardFooter>
         <Button onClick={handleGenerateVideo} className="w-full">
-          {isBRoll ? 'Open B-Roll Video Player' : 'Open Ad Video Player'}
+          {isBRoll ? 'Get Market Intelligence' : 'Get Market Intelligence'}
         </Button>
       </CardFooter>
     </Card>

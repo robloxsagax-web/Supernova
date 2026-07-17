@@ -1,4 +1,4 @@
-export type Step = 'url' | 'product' | 'script' | 'video';
+export type Step = 'url' | 'product' | 'script' | 'marketIntelligence' | 'video';
 
 export type VideoRatio = '9:16' | '16:9';
 export type VideoDuration = 15 | 30 | 45 | 60;
@@ -169,10 +169,40 @@ export interface VideoResult {
   videoUrl: string;
 }
 
+export interface MarketIntelligence {
+  target_audience: {
+    age: string;
+    gender: string;
+    income: string;
+    interests: string[];
+    pain_points: string[];
+    buying_motivation: string[];
+  };
+  competitors: Array<{
+    name: string;
+    strength: string;
+    weakness: string;
+    position: string;
+  }>;
+  marketing_angles: string[];
+  emotional_hooks: string[];
+  recommended_platforms: Array<{
+    name: string;
+    suitability: number;
+  }>;
+  campaign_strategy: {
+    primary: string;
+    secondary: string;
+    cta: string;
+  };
+  confidence_score: number;
+}
+
 export interface AppState {
   step: Step;
   product: Product | null;
   script: string | null;
+  marketIntelligence: MarketIntelligence | null;
   videoUrl: string | null;
   videoSettings: VideoSettings;
   isLoading: boolean;

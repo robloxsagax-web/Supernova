@@ -3,12 +3,13 @@
 import { motion } from 'framer-motion';
 import { useStore } from '@/lib/store';
 import { cn } from '@/lib/utils';
-import { Link, FileSearch, FileText, Film, Check } from 'lucide-react';
+import { Link, FileSearch, FileText, Brain, Film, Check } from 'lucide-react';
 
 const steps = [
   { id: 'url', label: 'Enter URL', icon: Link },
   { id: 'product', label: 'Product Details', icon: FileSearch },
   { id: 'script', label: 'Generate Script', icon: FileText },
+  { id: 'marketIntelligence', label: 'Market Intelligence', icon: Brain },
   { id: 'video', label: 'Create Video', icon: Film },
 ] as const;
 

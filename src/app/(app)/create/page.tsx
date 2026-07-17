@@ -8,6 +8,7 @@ import { useAuth } from '@/lib/auth';
 import { UrlInputForm } from '@/components/UrlInputForm';
 import { ProductPreview } from '@/components/ProductPreview';
 import { ScriptPreview } from '@/components/ScriptPreview';
+import { MarketIntelligence } from '@/components/MarketIntelligence';
 import { VideoPlayer } from '@/components/VideoPlayer';
 import { Loader } from '@/components/Loader';
 import { AIAdStudio } from '@/components/AIAdStudio';
@@ -24,10 +25,11 @@ import {
 import { PremiumStepper } from '@/components/premium/PremiumStepper';
 import { CampaignPreview } from '@/components/premium/CampaignPreview';
 
-const loadingMessages: Record<'url' | 'product' | 'script' | 'video', string> = {
+const loadingMessages: Record<'url' | 'product' | 'script' | 'marketIntelligence' | 'video', string> = {
   url: 'Analyzing product page...',
   product: 'Generating ad script...',
   script: 'Creating video...',
+  marketIntelligence: 'Generating market intelligence...',
   video: 'Processing video...',
 };
 
@@ -178,6 +180,7 @@ export default function CreatePage() {
                   {step === 'url' && <UrlInputForm />}
                   {step === 'product' && <ProductPreview />}
                   {step === 'script' && <ScriptPreview />}
+                  {step === 'marketIntelligence' && <MarketIntelligence />}
                   {step === 'video' && (
                     <div className="space-y-8">
                       <VideoPlayer />

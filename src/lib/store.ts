@@ -1,8 +1,8 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { AppState, Product, VideoSettings } from '@/types/product';
+import { AppState, Product, VideoSettings, MarketIntelligence } from '@/types/product';
 
-type Step = 'url' | 'product' | 'script' | 'video';
+type Step = 'url' | 'product' | 'script' | 'marketIntelligence' | 'video';
 type GenerationType = 'ad' | 'b-roll';
 type AssetType = 'image' | 'video' | 'script';
 type ActivityType = 'campaign_created' | 'image_generated' | 'video_generated' | 'script_generated' | 'asset_deleted' | 'project_renamed';
@@ -70,6 +70,7 @@ interface StoreState {
   step: Step;
   product: Product | null;
   script: string | null;
+  marketIntelligence: MarketIntelligence | null;
   videoUrl: string | null;
   videoSettings: VideoSettings;
   generationType: GenerationType;
@@ -84,6 +85,7 @@ interface StoreState {
   setStep: (step: Step) => void;
   setProduct: (product: Product) => void;
   setScript: (script: string) => void;
+  setMarketIntelligence: (data: MarketIntelligence) => void;
   setVideo: (videoUrl: string) => void;
   setVideoSettings: (settings: VideoSettings) => void;
   setGenerationType: (type: GenerationType) => void;
@@ -109,6 +111,7 @@ export const useStore = create<StoreState>()(
       step: 'url' as Step,
       product: null,
       script: null,
+      marketIntelligence: null,
       videoUrl: null,
       videoSettings: initialVideoSettings,
       generationType: 'ad' as GenerationType,
@@ -124,6 +127,7 @@ export const useStore = create<StoreState>()(
       setStep: (step) => set({ step }),
       setProduct: (product) => set({ product }),
       setScript: (script) => set({ script }),
+      setMarketIntelligence: (data) => set({ marketIntelligence: data }),
       setVideo: (videoUrl) => set({ videoUrl }),
       setVideoSettings: (settings) => set({ videoSettings: settings }),
       setGenerationType: (type) => set({ generationType: type }),
