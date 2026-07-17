@@ -10,7 +10,7 @@ from typing import Any, Dict, Literal
 
 from genblaze_openai import chat
 
-from app.repo.provider_catalog import get_default_provider
+from app.repo.provider_catalog import get_default_provider, get_available_models
 
 logger = logging.getLogger("api.pipelines")
 
@@ -260,6 +260,7 @@ def generate_script(product: Dict[str, Any], duration: int = 30, generation_type
     
     # Log configuration context
     log_genblaze_context(provider)
+    provider.log_config()
     
     # Normalize generation type
     gen_type: Literal["ad", "b-roll"] = "b-roll" if generation_type == "b-roll" else "ad"
@@ -279,61 +280,83 @@ def generate_script(product: Dict[str, Any], duration: int = 30, generation_type
         "base_url": provider.base_url
     })
     
-    # Generate script using Genblaze
-    try:
-        logger.info("Calling genblaze_openai.chat()...")
+    # Get list of models to try
+    models_to_try = get_available_models()
+    logger.info(f"Models available for fallback: {models_to_try}")
+    
+    last_exception = None
+    
+    # Try each model in order
+    for model in models_to_try:
+        logger.info(f"Attempting to generate script with model: {model}")
         
-        response = chat(
-            model=provider.model,
-            prompt=prompt,
-            api_key=provider.api_key,
-            base_url=provider.base_url,
-            system=system_prompt,  # Fixed: 'system' is the correct parameter name
-            temperature=provider.temperature,
-            max_tokens=max_tokens
-        )
-        
-        logger.info("genblaze_openai.chat() returned successfully")
-        logger.info(f"Response type: {type(response)}")
-        logger.info(f"Response attributes: {dir(response) if hasattr(response, '__dict__') else 'N/A'}")
-        
-        script = response.text if hasattr(response, 'text') else str(response)
-        script = script.strip() if script else ""
-        
-        if not script:
-            logger.error("Empty response from AI provider")
-            raise ValueError("Empty response from AI provider")
-        
-        logger.info("Script generated successfully", extra={
-            "script_length": len(script),
-            "script_preview": script[:100] + "..." if len(script) > 100 else script
-        })
-        
-        return script
-        
-    except Exception as e:
-        logger.error("=" * 60)
-        logger.error("SCRIPT GENERATION FAILED")
-        logger.error("=" * 60)
-        logger.error(f"Exception type: {type(e).__name__}")
-        logger.error(f"Exception message: {str(e)}")
-        logger.error(f"Exception module: {type(e).__module__}")
-        
-        # Log full traceback
-        logger.error("Full traceback:")
-        for line in traceback.format_exception(type(e), e, e.__traceback__):
-            for l in line.strip().split('\n'):
-                logger.error(f"  {l}")
-        
-        # Log context
-        logger.error("Context at time of failure:")
-        logger.error(f"  Provider: {provider.name if provider else 'None'}")
-        logger.error(f"  Model: {provider.model if provider else 'N/A'}")
-        logger.error(f"  Base URL: {provider.base_url if provider else 'N/A'}")
-        logger.error(f"  Duration: {duration}")
-        logger.error(f"  Generation type: {gen_type}")
-        logger.error(f"  Max tokens: {max_tokens}")
-        logger.error(f"  OPENROUTER_API_KEY exists: {bool(os.environ.get('OPENROUTER_API_KEY'))}")
-        logger.error("=" * 60)
-        
-        raise
+        try:
+            logger.info("Calling genblaze_openai.chat()...")
+            
+            response = chat(
+                model=model,
+                prompt=prompt,
+                api_key=provider.api_key,
+                base_url=provider.base_url,
+                system=system_prompt,
+                temperature=provider.temperature,
+                max_tokens=max_tokens
+            )
+            
+            logger.info(f"genblaze_openai.chat() returned successfully with model {model}")
+            logger.info(f"Response type: {type(response)}")
+            
+            script = response.text if hasattr(response, 'text') else str(response)
+            script = script.strip() if script else ""
+            
+            if not script:
+                logger.warning(f"Empty response from model {model}, trying next model...")
+                continue
+            
+            logger.info("Script generated successfully", extra={
+                "script_length": len(script),
+                "model_used": model,
+                "script_preview": script[:100] + "..." if len(script) > 100 else script
+            })
+            
+            return script
+            
+        except Exception as e:
+            error_str = str(e)
+            error_type = type(e).__name__
+            
+            logger.warning(f"Model {model} failed: {error_type} - {error_str}")
+            last_exception = e
+            
+            # Check if this is a model not found / 404 error that should trigger fallback
+            is_model_error = (
+                "404" in error_str or 
+                "No endpoints found" in error_str or
+                "model not found" in error_str.lower() or
+                "does not exist" in error_str.lower()
+            )
+            
+            if not is_model_error:
+                # Non-model error (auth, rate limit, etc.) - don't try other models
+                logger.error("Non-model error occurred, not attempting fallback")
+                logger.error("=" * 60)
+                logger.error("SCRIPT GENERATION FAILED (non-model error)")
+                logger.error("=" * 60)
+                logger.error(f"Exception type: {error_type}")
+                logger.error(f"Exception message: {error_str}")
+                logger.error("Full traceback:")
+                traceback.print_exc()
+                logger.error("=" * 60)
+                raise
+    
+    # All models failed
+    logger.error("=" * 60)
+    logger.error("SCRIPT GENERATION FAILED - All models exhausted")
+    logger.error("=" * 60)
+    logger.error(f"All models tried: {models_to_try}")
+    logger.error(f"Last exception type: {type(last_exception).__name__}")
+    logger.error(f"Last exception message: {str(last_exception)}")
+    logger.error("Full traceback of last exception:")
+    traceback.print_exc()
+    logger.error("=" * 60)
+    raise last_exception or ValueError("All models failed")

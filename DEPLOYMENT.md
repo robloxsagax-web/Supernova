@@ -56,7 +56,7 @@
     Genblaze SDK (genblaze_openai.chat)
            │
            ▼
-    OpenRouter API (qwen/qwen-turbo)
+    OpenRouter API (qwen/qwen3.6-flash with fallback)
            │
            ▼
     Response flows back through the chain
@@ -114,7 +114,7 @@ curl https://your-project.up.railway.app/health
 
 Expected response:
 ```json
-{"status":"healthy","provider":"Genblaze","model":"qwen/qwen-turbo"}
+{"status":"healthy","provider":"Genblaze","model":"qwen/qwen3.6-flash"}
 ```
 
 ---

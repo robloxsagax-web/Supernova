@@ -12,6 +12,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.routes import script_router
+from app.repo.provider_catalog import get_default_provider, get_available_models
 
 # Configure logging
 logging.basicConfig(
@@ -26,6 +27,19 @@ async def lifespan(app: FastAPI):
     """Application lifespan handler."""
     logger.info("Starting Genblaze API Service")
     logger.info(f"OPENROUTER_API_KEY configured: {bool(os.environ.get('OPENROUTER_API_KEY'))}")
+    
+    # Log provider configuration at startup
+    provider = get_default_provider()
+    if provider:
+        logger.info("=" * 50)
+        logger.info("PROVIDER CONFIGURATION")
+        logger.info("=" * 50)
+        logger.info(f"Provider: {provider.name}")
+        logger.info(f"Model: {provider.model}")
+        logger.info(f"Base URL: {provider.base_url}")
+        logger.info(f"Available models: {get_available_models()}")
+        logger.info("=" * 50)
+    
     yield
     logger.info("Shutting down Genblaze API Service")
 
@@ -66,8 +80,9 @@ async def root():
 @app.get("/health")
 async def health():
     """Health check endpoint."""
+    provider = get_default_provider()
     return {
         "status": "healthy",
         "provider": "Genblaze",
-        "model": "qwen/qwen-turbo"
+        "model": provider.model if provider else "unknown"
     }

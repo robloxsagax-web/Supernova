@@ -43,7 +43,7 @@ async def health_check() -> Dict[str, Any]:
     return {
         "status": "ok",
         "provider": "Genblaze",
-        "model": provider.model if provider else "qwen/qwen-turbo"
+        "model": provider.model if provider else "unknown"
     }
 
 
