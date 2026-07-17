@@ -6,7 +6,8 @@
   "installCommand": "npm install",
   "regions": ["iad1"],
   "functions": {
-    "src/app/api/generate-script/route.ts": {
+    "src/app/api/generate-script/route.py": {
+      "runtime": "python3.12",
       "memory": 512,
       "maxDuration": 30
     },
