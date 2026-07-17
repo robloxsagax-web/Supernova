@@ -1,15 +1,24 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useStore } from '@/lib/store';
+import { useAuth } from '@/lib/auth';
 import { PremiumHeroSection, AICommandCenter, AgentStatusPanel, WorkspaceHub } from '@/components/premium';
-import { PremiumAuroraBackground, FloatingOrbs } from '@/components/ui/premium-backgrounds';
 import { motion } from 'framer-motion';
 
 export default function DashboardPage() {
   const router = useRouter();
+  const { isLoggedIn, isLoading } = useAuth();
   const projects = useStore((state) => state.projects);
-  const isLoading = useStore((state) => state.isLoading);
+  const isLoadingStore = useStore((state) => state.isLoading);
+
+  // Auth protection
+  useEffect(() => {
+    if (!isLoading && !isLoggedIn) {
+      router.push('/auth');
+    }
+  }, [isLoggedIn, isLoading, router]);
 
   const handleCreateCampaign = () => {
     router.push('/create');
@@ -20,16 +29,30 @@ export default function DashboardPage() {
   };
 
   const handleSubmitUrl = (url: string) => {
-    // Navigate to create page with the URL
     router.push(`/create?url=${encodeURIComponent(url)}`);
   };
 
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#09090B] flex items-center justify-center">
+        <div className="relative w-12 h-12">
+          <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#5C3317] to-[#FFDAB9] opacity-50 blur-sm animate-pulse" />
+          <div className="relative w-full h-full rounded-full bg-gradient-to-br from-[#5C3317] to-[#FFDAB9] p-[2px]">
+            <div className="w-full h-full rounded-full bg-[#09090B]" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render if not logged in
+  if (!isLoggedIn) {
+    return null;
+  }
+
   return (
     <div className="relative min-h-screen">
-      {/* Premium Background */}
-      <PremiumAuroraBackground />
-      <FloatingOrbs />
-      
       {/* Main Content */}
       <main className="relative z-10 min-h-screen">
         <div className="max-w-[1800px] mx-auto px-6 md:px-8 py-8">
@@ -72,7 +95,7 @@ export default function DashboardPage() {
               {/* AI Command Center */}
               <AICommandCenter 
                 onSubmit={handleSubmitUrl}
-                isLoading={isLoading}
+                isLoading={isLoadingStore}
               />
               
               {/* Workspace Hub */}

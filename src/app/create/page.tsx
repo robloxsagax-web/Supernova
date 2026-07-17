@@ -1,7 +1,10 @@
 'use client';
 
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '@/lib/store';
+import { useAuth } from '@/lib/auth';
 import { UrlInputForm } from '@/components/UrlInputForm';
 import { ProductPreview } from '@/components/ProductPreview';
 import { ScriptPreview } from '@/components/ScriptPreview';
@@ -38,7 +41,35 @@ const loadingMessages: Record<'url' | 'product' | 'script' | 'video', string> = 
  * - All existing functionality preserved
  */
 export default function CreatePage() {
-  const { step, isLoading, error } = useStore();
+  const router = useRouter();
+  const { isLoggedIn, isLoading } = useAuth();
+  const { step, isLoading: isStoreLoading, error } = useStore();
+
+  // Auth protection
+  useEffect(() => {
+    if (!isLoading && !isLoggedIn) {
+      router.push('/auth');
+    }
+  }, [isLoggedIn, isLoading, router]);
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#09090B] flex items-center justify-center">
+        <div className="relative w-12 h-12">
+          <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#5C3317] to-[#FFDAB9] opacity-50 blur-sm animate-pulse" />
+          <div className="relative w-full h-full rounded-full bg-gradient-to-br from-[#5C3317] to-[#FFDAB9] p-[2px]">
+            <div className="w-full h-full rounded-full bg-[#09090B]" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't Render if not logged in
+  if (!isLoggedIn) {
+    return null;
+  }
 
   return (
     <main className="min-h-screen relative">

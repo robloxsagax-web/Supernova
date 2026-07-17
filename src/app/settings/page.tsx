@@ -1,8 +1,11 @@
 'use client';
 
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { useStore } from '@/lib/store';
+import { useAuth } from '@/lib/auth';
 import { AccessibilityPanel, useAccessibility, useApplyAccessibility } from '@/components/ui/accessibility-panel';
 import { CustomCursor, CursorTrail, useCursorVisibility } from '@/components/ui/cursor';
 import { useCursorMode } from '@/components/ui/cursor';
@@ -134,6 +137,8 @@ function ToggleSwitch({ enabled, onChange, label }: ToggleSwitchProps) {
 }
 
 export default function SettingsPage() {
+  const router = useRouter();
+  const { isLoggedIn, isLoading } = useAuth();
   const [showAccessibility, setShowAccessibility] = useState(false);
   const { settings, updateSettings } = useAccessibility();
   useApplyAccessibility(settings);
@@ -144,6 +149,32 @@ export default function SettingsPage() {
   const [notifications, setNotifications] = useState(true);
   const [autoSave, setAutoSave] = useState(true);
   const [analytics, setAnalytics] = useState(false);
+
+  // Auth protection
+  useEffect(() => {
+    if (!isLoading && !isLoggedIn) {
+      router.push('/auth');
+    }
+  }, [isLoggedIn, isLoading, router]);
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#09090B] flex items-center justify-center">
+        <div className="relative w-12 h-12">
+          <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#5C3317] to-[#FFDAB9] opacity-50 blur-sm animate-pulse" />
+          <div className="relative w-full h-full rounded-full bg-gradient-to-br from-[#5C3317] to-[#FFDAB9] p-[2px]">
+            <div className="w-full h-full rounded-full bg-[#09090B]" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't Render if not logged in
+  if (!isLoggedIn) {
+    return null;
+  }
 
   return (
     <>

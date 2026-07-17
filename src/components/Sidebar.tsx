@@ -13,10 +13,12 @@ import {
   ChevronLeft,
   ChevronRight,
   Sparkle,
-  CreditCard
+  CreditCard,
+  LogOut
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { SupernovaMinimalLogo, SupernovaTextLogo } from '@/components/ui/logo';
+import { useAuth } from '@/lib/auth';
 
 /**
  * Premium Glass Sidebar - Performance Optimized
@@ -132,6 +134,7 @@ export function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
+  const { user, logout } = useAuth();
 
   // Memoize handlers to prevent unnecessary rerenders
   const handleToggleCollapse = useCallback(() => {
@@ -141,6 +144,11 @@ export function Sidebar() {
   const handleExpandSidebar = useCallback(() => {
     setIsCollapsed(false);
   }, []);
+
+  const handleLogout = useCallback(() => {
+    logout();
+    router.push('/auth');
+  }, [logout, router]);
 
   // Memoize active states to prevent recalculation
   const activeItems = useMemo(() => {
@@ -361,7 +369,7 @@ export function Sidebar() {
                     className="flex-1 min-w-0 will-change-transform"
                   >
                     <p className="text-sm font-medium text-white truncate group-hover:text-[#FFDAB9] transition-colors">
-                      Alex Chen
+                      {user?.name || 'Guest'}
                     </p>
                     <div className="flex items-center gap-1.5">
                       <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-gradient-to-r from-[#5C3317]/50 to-[#8B5A2B]/50 text-[#FFDAB9] font-medium">
@@ -374,6 +382,21 @@ export function Sidebar() {
                   </motion.div>
                 )}
               </AnimatePresence>
+
+              {/* Logout Button */}
+              <motion.button
+                onClick={handleLogout}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+                className={cn(
+                  'p-2 rounded-lg transition-all duration-300 will-change-transform',
+                  'hover:bg-red-500/20 text-[rgba(255,255,255,0.4)] hover:text-red-400',
+                  isCollapsed ? 'mx-auto' : 'ml-auto'
+                )}
+                title="Sign Out"
+              >
+                <LogOut className="w-4 h-4" />
+              </motion.button>
             </motion.div>
           </div>
         </div>
