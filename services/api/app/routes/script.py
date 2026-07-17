@@ -1,6 +1,7 @@
 """Script generation route using Genblaze."""
 
 import logging
+import traceback
 from typing import Any, Dict, Optional
 
 from fastapi import APIRouter, HTTPException, status
@@ -59,6 +60,9 @@ async def generate_script_endpoint(request: ScriptRequest) -> ScriptResponse:
     Raises:
         HTTPException: If generation fails
     """
+    logger.info(f"Received script generation request: duration={request.duration}, type={request.generationType}")
+    logger.info(f"Product: {request.product.title}")
+    
     try:
         # Validate product
         if not request.product.title or not request.product.description:
@@ -74,19 +78,47 @@ async def generate_script_endpoint(request: ScriptRequest) -> ScriptResponse:
             generation_type=request.generationType
         )
         
+        logger.info(f"Script generated successfully: {len(script)} characters")
+        
         return ScriptResponse(
             script=script,
             generationType=request.generationType
         )
         
     except ValueError as e:
-        logger.error("Validation error", extra={"error": str(e)})
+        logger.error("=" * 60)
+        logger.error("VALIDATION ERROR in script route")
+        logger.error("=" * 60)
+        logger.error(f"Exception type: {type(e).__name__}")
+        logger.error(f"Exception message: {str(e)}")
+        logger.error("Full traceback:")
+        traceback.print_exc()
+        logger.error("=" * 60)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
         )
+    except HTTPException:
+        # Re-raise HTTP exceptions as-is
+        raise
     except Exception as e:
-        logger.error("Script generation failed", extra={"error": str(e)})
+        logger.error("=" * 60)
+        logger.error("SCRIPT GENERATION ERROR in route")
+        logger.error("=" * 60)
+        logger.error(f"Exception type: {type(e).__name__}")
+        logger.error(f"Exception message: {str(e)}")
+        logger.error(f"Exception module: {type(e).__module__}")
+        logger.error("Full traceback:")
+        traceback.print_exc()
+        
+        # Log request details for debugging
+        logger.error("Request details:")
+        logger.error(f"  Duration: {request.duration}")
+        logger.error(f"  Generation type: {request.generationType}")
+        logger.error(f"  Product title: {request.product.title}")
+        logger.error(f"  Product description length: {len(request.product.description)}")
+        
+        logger.error("=" * 60)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to generate script"
