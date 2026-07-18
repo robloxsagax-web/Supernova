@@ -4,10 +4,11 @@ This module implements the market intelligence generation logic using Genblaze
 with deepseek/deepseek-v3.2 model via OpenRouter.
 
 NEVER FAILS - Always returns valid JSON. Uses multiple fallback strategies:
-1. JSON repair on parse failure
-2. Regex extraction of JSON objects
+1. JSON schema enforcement via response_format parameter
+2. JSON repair on parse failure
 3. Retry with different model
-4. Return minimal valid object as last resort
+4. Regex extraction of JSON objects
+5. Return minimal valid object as last resort
 """
 
 import json
@@ -27,6 +28,66 @@ logger = logging.getLogger("api.market_intelligence_pipeline")
 # Market Intelligence model configuration
 MARKET_INTEL_MODEL = "deepseek/deepseek-v3.2"
 MARKET_INTEL_BASE_URL = "https://openrouter.ai/api/v1"
+
+# JSON Schema for Market Intelligence response (used with response_format parameter)
+MARKET_INTELLIGENCE_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "target_audience": {
+            "type": "object",
+            "properties": {
+                "age": {"type": "string"},
+                "gender": {"type": "string"},
+                "income": {"type": "string"},
+                "interests": {"type": "array", "items": {"type": "string"}},
+                "pain_points": {"type": "array", "items": {"type": "string"}},
+                "buying_motivation": {"type": "array", "items": {"type": "string"}}
+            },
+            "required": ["age", "gender", "income", "interests", "pain_points", "buying_motivation"]
+        },
+        "competitors": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": {"type": "string"},
+                    "strength": {"type": "string"},
+                    "weakness": {"type": "string"},
+                    "position": {"type": "string"}
+                },
+                "required": ["name", "strength", "weakness", "position"]
+            }
+        },
+        "marketing_angles": {"type": "array", "items": {"type": "string"}},
+        "emotional_hooks": {"type": "array", "items": {"type": "string"}},
+        "recommended_platforms": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": {"type": "string"},
+                    "suitability": {"type": "integer"}
+                },
+                "required": ["name", "suitability"]
+            }
+        },
+        "campaign_strategy": {
+            "type": "object",
+            "properties": {
+                "primary": {"type": "string"},
+                "secondary": {"type": "string"},
+                "cta": {"type": "string"}
+            },
+            "required": ["primary", "secondary", "cta"]
+        },
+        "confidence_score": {"type": "integer"}
+    },
+    "required": [
+        "target_audience", "competitors", "marketing_angles", 
+        "emotional_hooks", "recommended_platforms", 
+        "campaign_strategy", "confidence_score"
+    ]
+}
 
 
 def build_product_info(product: Dict[str, Any]) -> str:
@@ -165,7 +226,7 @@ def get_minimal_market_intelligence(product: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def repair_json(json_str: str) -> Optional[str]:
-    """Attempt to repair malformed JSON."""
+    """Attempt to repair malformed JSON with comprehensive strategies."""
     if not json_str:
         return None
     
@@ -179,27 +240,34 @@ def repair_json(json_str: str) -> Optional[str]:
         cleaned = cleaned[:-3]
     cleaned = cleaned.strip()
     
-    # Common JSON issues and fixes
-    fixes = [
-        # Remove trailing commas
-        (r',(\s*[}\]])', r'\1'),
-        # Fix single quotes to double quotes (simple cases)
-        (r"'([^']*)':", r'"\1":'),
-        (r':\s*\'([^\']*)\'', r': "\1"'),
-        # Fix unquoted property names
-        (r'([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)\s*:', r'\1"\2":'),
-        # Remove comments
-        (r'//.*?$', '', 0, re.MULTILINE),
-        (r'/\*.*?\*/', '', 0, re.DOTALL),
-    ]
+    # Fix trailing commas
+    cleaned = re.sub(r',(\s*[}\]])', r'\1', cleaned)
     
-    for fix in fixes:
-        if len(fix) == 2:
-            pattern, replacement = fix
-            cleaned = re.sub(pattern, replacement, cleaned)
-        else:
-            pattern, replacement, flags = fix
-            cleaned = re.sub(pattern, replacement, cleaned, flags=flags)
+    # Fix single quotes to double quotes (property names)
+    cleaned = re.sub(r"'([^']*)':", r'"\1":', cleaned)
+    
+    # Fix single quotes to double quotes (values)
+    cleaned = re.sub(r":\s*'([^']*)'", r': "\1"', cleaned)
+    
+    # Fix unquoted property names
+    cleaned = re.sub(r'([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)\s*:', r'\1"\2":', cleaned)
+    
+    # Fix boolean/number values that are quoted
+    cleaned = re.sub(r':\s*"(true|false|null)"', r': \1', cleaned, flags=re.IGNORECASE)
+    cleaned = re.sub(r':\s*"(-?\d+\.?\d*)"', r': \1', cleaned)
+    
+    # Fix JavaScript-style comments
+    cleaned = re.sub(r'//.*?$', '', cleaned, flags=re.MULTILINE)
+    cleaned = re.sub(r'/\*.*?\*/', '', cleaned, flags=re.DOTALL)
+    
+    # Fix control characters
+    cleaned = re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]', '', cleaned)
+    
+    # Fix escaped quotes that shouldn't be escaped
+    cleaned = re.sub(r'\\"', r'"', cleaned)
+    
+    # Fix backslash before valid characters
+    cleaned = re.sub(r'\\([nrt])', r'\\\1', cleaned)
     
     return cleaned
 
@@ -377,15 +445,32 @@ def generate_market_intelligence(product: Dict[str, Any], script: str) -> Dict[s
         logger.info(f"Trying model: {model}")
         
         try:
-            response = chat(
-                model=model,
-                prompt=prompt,
-                api_key=provider.api_key,
-                base_url=provider.base_url,
-                system="You are an elite AI marketing strategist. Return ONLY valid JSON with no explanations, markdown, or preamble.",
-                temperature=provider.temperature,
-                max_tokens=4000
-            )
+            # Try first WITH response_format (structured JSON)
+            logger.info(f"Attempting with response_format parameter (structured JSON)")
+            
+            try:
+                response = chat(
+                    model=model,
+                    messages=[{"role": "user", "content": prompt}],
+                    api_key=provider.api_key,
+                    base_url=provider.base_url,
+                    system="You are an elite AI marketing strategist. Return ONLY valid JSON matching the schema provided.",
+                    temperature=provider.temperature,
+                    max_tokens=4000,
+                    response_format={"type": "json_object", "schema": MARKET_INTELLIGENCE_SCHEMA}
+                )
+            except TypeError:
+                # response_format not supported by this model, try without it
+                logger.info(f"Model {model} doesn't support response_format, using prompt-only mode")
+                response = chat(
+                    model=model,
+                    prompt=prompt,
+                    api_key=provider.api_key,
+                    base_url=provider.base_url,
+                    system="You are an elite AI marketing strategist. Return ONLY valid JSON with no explanations, markdown, or preamble. The JSON must match this exact schema.",
+                    temperature=provider.temperature,
+                    max_tokens=4000
+                )
             
             model_duration = time.time() - model_start_time
             total_duration = time.time() - generation_start_time
@@ -429,18 +514,20 @@ def generate_market_intelligence(product: Dict[str, Any], script: str) -> Dict[s
             
             # Check if model not found - skip to next
             is_model_error = any(x in error_str.lower() for x in [
-                "404", "model not found", "does not exist", "no endpoints found"
+                "404", "model not found", "does not exist", "no endpoints found",
+                "not found", "invalid request error", "unknown model"
             ])
             
             if is_model_error:
                 logger.info(f"Model {model} not available, trying next...")
                 continue
             
-            # For other errors, continue to next model
+            # For other errors, continue to next model (never fail due to formatting)
             logger.warning(f"Non-fatal error from {model}: {error_str}")
             continue
     
     # All models failed or couldn't parse - return minimal valid object
+    # THIS IS THE FINAL FALLBACK - NEVER return None or raise an exception
     logger.warning("=" * 60)
     logger.warning("ALL MODELS FAILED OR COULD NOT PARSE - Returning minimal valid object")
     logger.warning("This ensures the pipeline continues without blocking the user")

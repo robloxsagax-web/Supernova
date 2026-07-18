@@ -22,8 +22,13 @@ SCRIPT_MODELS = [
 ]
 
 # Market Intelligence Model - using deepseek for structured JSON output
+# Multiple models for fallback if one fails or returns malformed JSON
 MARKET_INTEL_MODELS = [
     "deepseek/deepseek-v3.2",
+    "anthropic/claude-sonnet-4-20250514",
+    "google/gemini-2.5-flash",
+    "qwen/qwen3.6-plus",
+    "mistral/mistral-nemo",
 ]
 
 

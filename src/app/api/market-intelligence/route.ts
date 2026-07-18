@@ -13,6 +13,52 @@ interface TimingLog {
   duration_ms: number;
 }
 
+// Minimal fallback response - always valid JSON
+const FALLBACK_RESPONSE = {
+  target_audience: {
+    age: "25-45",
+    gender: "mixed",
+    income: "middle-class",
+    interests: ["e-commerce", "online shopping", "digital marketing"],
+    pain_points: ["finding quality products", "price concerns", "shipping time"],
+    buying_motivation: ["value", "quality", "convenience"]
+  },
+  competitors: [
+    {
+      name: "Generic Competitor",
+      strength: "Brand recognition",
+      weakness: "Higher prices",
+      position: "Premium positioning"
+    }
+  ],
+  marketing_angles: [
+    "Quality assurance",
+    "Best value",
+    "Fast shipping",
+    "Customer reviews",
+    "Limited time offer"
+  ],
+  emotional_hooks: [
+    "Trust and reliability",
+    "Fear of missing out",
+    "Social proof",
+    "Value proposition"
+  ],
+  recommended_platforms: [
+    { name: "Instagram", suitability: 85 },
+    { name: "TikTok", suitability: 80 },
+    { name: "Facebook", suitability: 75 }
+  ],
+  campaign_strategy: {
+    primary: "Highlight unique value proposition",
+    secondary: "Build trust through social proof",
+    cta: "Shop now and save"
+  },
+  confidence_score: 50,
+  _fallback: true,
+  _reason: "Backend unavailable, using minimal fallback"
+};
+
 export async function POST(request: Request) {
   const startTime = Date.now();
   const requestId = `req_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
@@ -21,16 +67,15 @@ export async function POST(request: Request) {
   console.log(`[${requestId}] Market intelligence request started`);
   console.log(`[${requestId}] Backend URL: ${FASTAPI_URL}`);
 
+  // If no backend configured, return fallback immediately (HTTP 200)
   if (!FASTAPI_URL) {
-    console.error(`[${requestId}] FastAPI URL not configured. Set NEXT_PUBLIC_API_URL or FASTAPI_URL environment variable.`);
-    return NextResponse.json(
-      { 
-        error: 'Backend unavailable. Please contact support.',
-        code: 'BACKEND_NOT_CONFIGURED',
-        requestId 
-      },
-      { status: 503 }
-    );
+    console.warn(`[${requestId}] FastAPI URL not configured. Returning fallback response.`);
+    return NextResponse.json({
+      ...FALLBACK_RESPONSE,
+      requestId,
+      timing: [{ stage: 'no_backend', duration_ms: Date.now() - startTime }],
+      totalDurationMs: Date.now() - startTime
+    });
   }
 
   let body: unknown;
@@ -38,14 +83,14 @@ export async function POST(request: Request) {
     body = await request.json();
     timingLog.push({ stage: 'parse_request', duration_ms: Date.now() - startTime });
   } catch {
-    return NextResponse.json(
-      { 
-        error: 'Invalid request body',
-        code: 'INVALID_REQUEST',
-        requestId 
-      },
-      { status: 400 }
-    );
+    // Invalid request body - return fallback with HTTP 200 (never fail)
+    console.warn(`[${requestId}] Invalid request body, returning fallback`);
+    return NextResponse.json({
+      ...FALLBACK_RESPONSE,
+      requestId,
+      timing: [{ stage: 'invalid_body', duration_ms: Date.now() - startTime }],
+      totalDurationMs: Date.now() - startTime
+    });
   }
 
   try {
@@ -75,55 +120,23 @@ export async function POST(request: Request) {
 
     clearTimeout(timeoutId);
 
-    // Handle different error types with detailed responses
-    if (!response.ok) {
-      let errorDetail = 'Failed to generate market intelligence';
-      let errorCode = 'GENERATION_FAILED';
-
-      try {
-        const error = await response.json();
-        errorDetail = error.detail || error.message || errorDetail;
-        errorCode = error.code || errorCode;
-      } catch {
-        // Response body is not JSON or empty
-      }
-
-      // Map HTTP status codes to error codes
-      const statusCodeMap: Record<number, string> = {
-        400: 'INVALID_REQUEST',
-        401: 'AUTHENTICATION_ERROR',
-        403: 'FORBIDDEN',
-        404: 'ENDPOINT_NOT_FOUND',
-        408: 'REQUEST_TIMEOUT',
-        422: 'VALIDATION_ERROR',
-        429: 'RATE_LIMITED',
-        500: 'INTERNAL_ERROR',
-        502: 'BAD_GATEWAY',
-        503: 'SERVICE_UNAVAILABLE',
-        504: 'GATEWAY_TIMEOUT',
-      };
-
-      const totalDuration = Date.now() - startTime;
-      console.error(`[${requestId}] Error response: ${response.status} - ${errorDetail}`);
-      console.error(`[${requestId}] Total duration: ${totalDuration}ms`);
-      console.error(`[${requestId}] Timing breakdown:`, JSON.stringify(timingLog));
-
-      return NextResponse.json(
-        { 
-          error: errorDetail,
-          code: statusCodeMap[response.status] || errorCode,
-          status: response.status,
-          requestId,
-          timing: timingLog,
-          totalDurationMs: totalDuration
-        },
-        { status: response.status }
-      );
-    }
-
+    // EVEN IF FastAPI returns non-200, try to parse the response
+    // The FastAPI backend is designed to always return valid JSON
     const parseStart = Date.now();
-    const data = await response.json();
-    timingLog.push({ stage: 'parse_response', duration_ms: Date.now() - parseStart });
+    let data;
+    try {
+      data = await response.json();
+      timingLog.push({ stage: 'parse_response', duration_ms: Date.now() - parseStart });
+    } catch {
+      // Failed to parse response - return fallback
+      console.warn(`[${requestId}] Failed to parse FastAPI response, returning fallback`);
+      return NextResponse.json({
+        ...FALLBACK_RESPONSE,
+        requestId,
+        timing: timingLog,
+        totalDurationMs: Date.now() - startTime
+      });
+    }
 
     const totalDuration = Date.now() - startTime;
     timingLog.push({ stage: 'total', duration_ms: totalDuration });
@@ -132,6 +145,7 @@ export async function POST(request: Request) {
     console.log(`[${requestId}] Total duration: ${totalDuration}ms`);
     console.log(`[${requestId}] Timing breakdown:`, JSON.stringify(timingLog));
     
+    // Always return HTTP 200 with the data (even if FastAPI returned non-200)
     return NextResponse.json({
       ...data,
       requestId,
@@ -143,35 +157,20 @@ export async function POST(request: Request) {
     const totalDuration = Date.now() - startTime;
     console.error(`[${requestId}] Market intelligence proxy error after ${totalDuration}ms:`, error);
 
-    let errorMessage = 'Backend unavailable. Please try again later.';
-    let errorCode = 'BACKEND_ERROR';
-    let statusCode = 503;
+    // Return fallback with HTTP 200 - NEVER return error status codes
+    console.warn(`[${requestId}] Returning fallback response due to error`);
+    
+    const updatedFallback = {
+      ...FALLBACK_RESPONSE,
+      _fallback: true,
+      _reason: error instanceof Error ? error.message.slice(0, 100) : 'Unknown error'
+    };
 
-    if (error instanceof Error) {
-      if (error.name === 'AbortError' || error.message.includes('aborted')) {
-        errorMessage = `Request timed out after ${REQUEST_TIMEOUT_MS / 1000} seconds. The AI generation is taking longer than expected.`;
-        errorCode = 'REQUEST_TIMEOUT';
-        statusCode = 504;
-        console.error(`[${requestId}] Timeout error detected`);
-      } else if (error.message.includes('fetch') || error.message.includes('network')) {
-        errorMessage = 'Network error connecting to backend. Please check your connection.';
-        errorCode = 'NETWORK_ERROR';
-        statusCode = 503;
-        console.error(`[${requestId}] Network error detected`);
-      }
-    }
-
-    console.error(`[${requestId}] Timing breakdown:`, JSON.stringify(timingLog));
-
-    return NextResponse.json(
-      { 
-        error: errorMessage,
-        code: errorCode,
-        requestId,
-        timing: timingLog,
-        totalDurationMs: totalDuration
-      },
-      { status: statusCode }
-    );
+    return NextResponse.json({
+      ...updatedFallback,
+      requestId,
+      timing: [...timingLog, { stage: 'error_handled', duration_ms: Date.now() - startTime }],
+      totalDurationMs: totalDuration
+    });
   }
 }
