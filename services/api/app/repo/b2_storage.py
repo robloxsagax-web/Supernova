@@ -32,6 +32,19 @@ PRESIGNED_URL_EXPIRY = 3600  # 1 hour
 # Campaign folder prefix
 CAMPAIGNS_PREFIX = "campaigns/"
 
+# Debug: Log config at module load time
+logger.info("=" * 60)
+logger.info("B2 STORAGE MODULE LOADING")
+logger.info("=" * 60)
+logger.info(f"B2_ENDPOINT: {B2_ENDPOINT}")
+logger.info(f"B2_REGION: {B2_REGION}")
+logger.info(f"B2_BUCKET_NAME: {B2_BUCKET_NAME}")
+logger.info(f"B2_ACCESS_KEY_ID env var present: {'B2_ACCESS_KEY_ID' in os.environ}")
+logger.info(f"B2_SECRET_KEY env var present: {'B2_SECRET_KEY' in os.environ}")
+logger.info(f"B2_ACCESS_KEY loaded (length): {len(B2_ACCESS_KEY) if B2_ACCESS_KEY else 0}")
+logger.info(f"B2_SECRET_KEY loaded (length): {len(B2_SECRET_KEY) if B2_SECRET_KEY else 0}")
+logger.info("=" * 60)
+
 
 @dataclass
 class CampaignMetadata:
@@ -56,6 +69,7 @@ class B2Storage:
         """Initialize B2 storage client."""
         self._client = None
         self._resource = None
+        self._validated = False
         self._validate_config()
 
     def _validate_config(self) -> None:
@@ -65,13 +79,64 @@ class B2Storage:
         else:
             logger.info("B2 storage configured")
             logger.info(f"Endpoint: {B2_ENDPOINT}")
+            logger.info(f"Region: {B2_REGION}")
             logger.info(f"Bucket: {B2_BUCKET_NAME}")
+            logger.info(f"Access Key ID (first 8 chars): {B2_ACCESS_KEY[:8] if len(B2_ACCESS_KEY) >= 8 else B2_ACCESS_KEY}...")
+            logger.info(f"Secret Key present: {bool(B2_SECRET_KEY)}")
+            
+            # Test connection on initialization
+            self._test_connection()
+
+    def _test_connection(self) -> None:
+        """Test B2 connection on startup."""
+        logger.info("Testing B2 connection...")
+        try:
+            # Create a test client
+            config = Config(
+                signature_version='s3v4',
+                retries={'max_attempts': 1, 'mode': 'standard'},
+                connect_timeout=5,
+                read_timeout=30,
+            )
+            
+            test_client = boto3.client(
+                's3',
+                endpoint_url=B2_ENDPOINT,
+                aws_access_key_id=B2_ACCESS_KEY,
+                aws_secret_access_key=B2_SECRET_KEY,
+                region_name=B2_REGION,
+                config=config
+            )
+            
+            # Try head_bucket to verify credentials
+            logger.info(f"Calling head_bucket for bucket: {B2_BUCKET_NAME}")
+            response = test_client.head_bucket(Bucket=B2_BUCKET_NAME)
+            logger.info(f"head_bucket response: {response}")
+            logger.info("B2 connection test PASSED")
+            
+        except ClientError as e:
+            error_code = e.response.get('Error', {}).get('Code', 'Unknown')
+            error_message = e.response.get('Error', {}).get('Message', 'Unknown')
+            logger.error(f"B2 connection test FAILED")
+            logger.error(f"Error Code: {error_code}")
+            logger.error(f"Error Message: {error_message}")
+            logger.error(f"Full Error Response: {e.response}")
+            logger.error(f"Access Key ID being used: {B2_ACCESS_KEY[:8]}..." if len(B2_ACCESS_KEY) >= 8 else f"Access Key ID: {B2_ACCESS_KEY}")
+            raise
+            
+        except Exception as e:
+            logger.error(f"B2 connection test FAILED with unexpected error: {type(e).__name__}: {str(e)}")
+            logger.error(f"Access Key ID being used: {B2_ACCESS_KEY[:8]}..." if len(B2_ACCESS_KEY) >= 8 else f"Access Key ID: {B2_ACCESS_KEY}")
+            raise
 
     def _get_client(self):
         """Get or create B2 S3 client."""
         if not self._client:
             if not B2_ACCESS_KEY or not B2_SECRET_KEY:
                 raise ValueError("B2 credentials not configured")
+
+            logger.info("Creating B2 S3 client...")
+            logger.info(f"Using Access Key ID: {B2_ACCESS_KEY[:8]}..." if len(B2_ACCESS_KEY) >= 8 else f"Using Access Key ID: {B2_ACCESS_KEY}")
 
             config = Config(
                 signature_version='s3v4',
@@ -88,6 +153,7 @@ class B2Storage:
                 region_name=B2_REGION,
                 config=config
             )
+            logger.info("B2 S3 client created successfully")
 
         return self._client
 
