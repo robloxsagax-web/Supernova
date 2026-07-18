@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { motion } from 'framer-motion';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useStore } from '@/lib/store';
@@ -115,13 +116,13 @@ export function VideoPlayer() {
   const totalFrames = duration * FPS;
   
   // Memoize inputProps to prevent unnecessary Player re-renders
-  // Only voiceoverUrl changes during playback, and Audio handles null src gracefully
+  // voiceoverUrl defaults to empty string to prevent Html5Audio errors
   const inputProps = useMemo(() => ({
     script,
     product,
     settings: { ratio, duration, captionStyle, brandPalette },
     brandPalette: brandPaletteObject,
-    voiceoverUrl,
+    voiceoverUrl: voiceoverUrl || '',
     backgroundMusicUrl: BACKGROUND_MUSIC_URL,
     generationType,
     bRollConfig: bRollConfig || undefined,
