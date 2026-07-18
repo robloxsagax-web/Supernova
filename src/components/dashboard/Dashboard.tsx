@@ -7,6 +7,7 @@ import { ActionCards } from '@/components/dashboard/ActionCards';
 import { AIAgentPanel } from '@/components/dashboard/AIAgentPanel';
 import { URLInputForm } from '@/components/dashboard/URLInputForm';
 import { WorkflowProgress } from '@/components/dashboard/WorkflowProgress';
+import { CampaignSave } from '@/components/dashboard/CampaignSave';
 import { useStore } from '@/lib/store';
 import { Loader } from '@/components/Loader';
 import { ProductPreview } from '@/components/ProductPreview';
@@ -119,6 +120,7 @@ export function Dashboard() {
               {/* Video Player and AI Ad Studio */}
               {step === 'video' && (
                 <div className="space-y-8">
+                  <CampaignSave />
                   <VideoPlayer />
                   <AIAdStudio />
                 </div>
