@@ -247,7 +247,7 @@ async def upload_campaign_asset(
             )
 
         # Validate asset type
-        allowed_types = ["images", "scripts", "market-insights", "audience", "competitor-analysis", "analytics", "prompt"]
+        allowed_types = ["images", "data", "scripts", "market-insights", "audience", "competitor-analysis", "analytics", "prompt"]
         if asset_type not in allowed_types:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,

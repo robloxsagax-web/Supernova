@@ -5,6 +5,9 @@ uvicorn[standard]>=0.24.0
 # Data validation
 pydantic>=2.0.0
 
+# Form data parsing (required for UploadFile)
+python-multipart>=0.0.6
+
 # Genblaze SDK for AI integration
 genblaze-core>=0.3.4
 genblaze-openai>=0.3.0

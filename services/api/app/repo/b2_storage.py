@@ -19,8 +19,9 @@ from botocore.exceptions import ClientError
 logger = logging.getLogger("api.b2_storage")
 
 # B2 Configuration from environment
-B2_ENDPOINT = os.environ.get("B2_ENDPOINT", "https://s3.backblazeb2.com")
-B2_REGION = os.environ.get("B2_REGION", "us-west-002")
+# Default endpoint is s3.us-east-005.backblazeb2.com
+B2_ENDPOINT = os.environ.get("B2_ENDPOINT", "https://s3.us-east-005.backblazeb2.com")
+B2_REGION = os.environ.get("B2_REGION", "us-east-005")
 B2_ACCESS_KEY = os.environ.get("B2_ACCESS_KEY_ID", "")
 B2_SECRET_KEY = os.environ.get("B2_SECRET_KEY", "")
 B2_BUCKET_NAME = os.environ.get("B2_BUCKET_NAME", "supernova-campaigns")
