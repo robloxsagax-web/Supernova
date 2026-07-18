@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation';
 import { Player } from '@remotion/player';
 import { VantaShowcase } from './vanta/VantaShowcase';
 import { BRAND_PALETTES, BrandPaletteId } from '@/types/product';
-import { Download, Music, Loader2, RefreshCw, CheckCircle, AlertCircle, Save, Cloud, CloudOff } from 'lucide-react';
+import { Loader2, CheckCircle, AlertCircle, Save, CloudOff, ArrowRight } from 'lucide-react';
 
 const FPS = 30;
 
@@ -77,48 +77,33 @@ export function VideoPlayer() {
   const router = useRouter();
   
   const playerRef = useRef<HTMLDivElement>(null);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const chunksRef = useRef<Blob[]>([]);
-  const streamRef = useRef<MediaStream | null>(null);
-  const audioContextRef = useRef<AudioContext | null>(null);
   const startTimeRef = useRef<number>(Date.now());
   
   const [voiceoverUrl, setVoiceoverUrl] = useState<string | null>(null);
   const [isGeneratingVoiceover, setIsGeneratingVoiceover] = useState(false);
-  const [isDownloading, setIsDownloading] = useState(false);
-  const [downloadProgress, setDownloadProgress] = useState<string>('');
-  const [recordedBlobUrl, setRecordedBlobUrl] = useState<string | null>(null);
   const [isPlayerLoaded, setIsPlayerLoaded] = useState(false);
   const [isPreparingVideo, setIsPreparingVideo] = useState(true);
   const [showBRollNote, setShowBRollNote] = useState(true);
   
   // Handle Save Campaign button
   const handleSaveCampaign = async () => {
-    console.log('[VideoPlayer] Save Campaign button clicked');
-    
-    if (!product) {
-      console.error('[VideoPlayer] Cannot save: No product');
-      return;
-    }
+    if (!product) return;
     
     const generationTime = Date.now() - startTimeRef.current;
     
     try {
-      console.log('[VideoPlayer] Saving campaign...');
       await autoSaveCampaign(generationTime);
-      console.log('[VideoPlayer] Campaign saved successfully!');
-      
       // Refresh projects list
       await loadB2Campaigns();
-      console.log('[VideoPlayer] Projects list refreshed');
-      
-      // Navigate to projects after short delay
-      setTimeout(() => {
-        router.push('/projects');
-      }, 1500);
     } catch (err) {
       console.error('[VideoPlayer] Save campaign failed:', err);
     }
+  };
+  
+  // Handle View in Projects
+  const handleViewInProjects = async () => {
+    await loadB2Campaigns();
+    router.push('/projects');
   };
   
   // Derived values
@@ -154,30 +139,6 @@ export function VideoPlayer() {
     bRollConfig, 
     productImages
   ]);
-  
-  // Cleanup recorded blob URL on unmount
-  useEffect(() => {
-    return () => {
-      if (recordedBlobUrl) {
-        URL.revokeObjectURL(recordedBlobUrl);
-      }
-    };
-  }, [recordedBlobUrl]);
-  
-  // Cleanup MediaRecorder on unmount
-  useEffect(() => {
-    return () => {
-      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-        mediaRecorderRef.current.stop();
-      }
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => track.stop());
-      }
-      if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
-        audioContextRef.current.close();
-      }
-    };
-  }, []);
   
   // Detect when player canvas is ready
   useEffect(() => {
@@ -275,268 +236,21 @@ export function VideoPlayer() {
   /**
    * Callback fired when recording is complete and blob is ready
    */
-  const onRecordingComplete = useCallback((blob: Blob, downloadUrl: string) => {
-    // Clean up previous blob URL if exists
-    if (recordedBlobUrl) {
-      URL.revokeObjectURL(recordedBlobUrl);
-    }
-
-    setRecordedBlobUrl(downloadUrl);
-    setIsDownloading(false);
-    setDownloadProgress('');
-    
-    // Add video asset to store
-    const timestamp = new Date().toISOString();
-    const assetName = `Video_${timestamp.replace(/[:.]/g, '-')}.mp4`;
-    addAsset('video', downloadUrl, assetName);
-  }, [recordedBlobUrl, addAsset]);
 
   /**
    * Trigger the actual file download and cleanup
    */
-  const triggerDownload = useCallback((downloadUrl: string) => {
-    const anchor = document.createElement('a');
-    anchor.href = downloadUrl;
-    anchor.download = 'brand-ad.mp4';
-    anchor.style.display = 'none';
-    document.body.appendChild(anchor);
-    anchor.click();
-
-    // Clean up after a short delay to ensure download starts
-    requestAnimationFrame(() => {
-      document.body.removeChild(anchor);
-      // Revoke the URL after click to free memory
-      URL.revokeObjectURL(downloadUrl);
-    });
-
-    // Clear the recorded URL state
-    setRecordedBlobUrl(null);
-  }, []);
 
   /**
    * Start the recording process
    */
-  const startRecording = useCallback(async (mimeType: string) => {
-    const container = playerRef.current;
-    if (!container) throw new Error('Player container not found');
-
-    // Wait for canvas to be available (with timeout)
-    let canvas: HTMLCanvasElement | null = null;
-    const maxWaitTime = 10000; // 10 seconds timeout
-    const checkInterval = 100;
-    const startTime = Date.now();
-
-    while (!canvas && (Date.now() - startTime) < maxWaitTime) {
-      canvas = container.querySelector('canvas') as HTMLCanvasElement;
-      if (!canvas) {
-        await new Promise(resolve => setTimeout(resolve, checkInterval));
-      }
-    }
-
-    if (!canvas) {
-      throw new Error('Canvas element not found after waiting. Please ensure the video player is fully loaded.');
-    }
-
-    // Get video stream from canvas
-    const videoStream = canvas.captureStream(FPS);
-    let combinedStream = videoStream;
-
-    // Try to add audio
-    try {
-      const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-      const audioContext = new AudioContextClass();
-      audioContextRef.current = audioContext;
-      const destination = audioContext.createMediaStreamDestination();
-
-      const audioElements = container.querySelectorAll('audio');
-
-      for (const audio of audioElements) {
-        try {
-          audio.crossOrigin = 'anonymous';
-          const source = audioContext.createMediaElementSource(audio);
-          source.connect(destination);
-        } catch {
-          // Ignore audio capture errors
-        }
-      }
-
-      const mixedStream = new MediaStream();
-      videoStream.getVideoTracks().forEach(t => mixedStream.addTrack(t));
-      destination.stream.getAudioTracks().forEach(t => mixedStream.addTrack(t));
-      combinedStream = mixedStream;
-    } catch (audioError) {
-      console.log('Audio capture not available:', audioError);
-    }
-
-    // Store stream reference for cleanup
-    streamRef.current = combinedStream;
-
-    // Create MediaRecorder
-    const mediaRecorder = new MediaRecorder(combinedStream, {
-      mimeType,
-      videoBitsPerSecond: 5000000,
-    });
-
-    mediaRecorderRef.current = mediaRecorder;
-    chunksRef.current = [];
-
-    // Set up event handlers
-    mediaRecorder.ondataavailable = (event) => {
-      if (event.data?.size > 0) {
-        chunksRef.current.push(event.data);
-      }
-    };
-
-    mediaRecorder.onerror = (event) => {
-      console.error('MediaRecorder error:', event);
-      setIsDownloading(false);
-      setDownloadProgress('');
-    };
-
-    // Start recording
-    mediaRecorder.start(1000);
-
-    return mediaRecorder;
-  }, []);
 
   /**
    * Stop recording and wait for all data to be available
    */
-  const stopRecordingAndWait = useCallback((): Promise<Blob> => {
-    return new Promise((resolve, reject) => {
-      const mediaRecorder = mediaRecorderRef.current;
-      if (!mediaRecorder) {
-        reject(new Error('MediaRecorder not initialized'));
-        return;
-      }
-
-      // Create a one-time handler for when recording stops
-      const handleStop = () => {
-        mediaRecorder.removeEventListener('stop', handleStop);
-        mediaRecorder.removeEventListener('error', handleError);
-
-        // Small delay to ensure all chunks are collected
-        setTimeout(() => {
-          try {
-            const mimeType = mediaRecorder.mimeType || 'video/webm';
-            const blob = new Blob(chunksRef.current, { type: mimeType });
-            resolve(blob);
-          } catch (error) {
-            reject(error);
-          }
-        }, 100);
-      };
-
-      const handleError = () => {
-        mediaRecorder.removeEventListener('stop', handleStop);
-        mediaRecorder.removeEventListener('error', handleError);
-        reject(new Error('MediaRecorder error event'));
-      };
-
-      mediaRecorder.addEventListener('stop', handleStop);
-      mediaRecorder.addEventListener('error', handleError);
-
-      // Stop the recording
-      if (mediaRecorder.state !== 'inactive') {
-        mediaRecorder.stop();
-      }
-
-      // Clean up tracks
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => track.stop());
-      }
-      if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
-        audioContextRef.current.close();
-      }
-    });
-  }, []);
 
   // EARLY RETURN AFTER ALL HOOKS
   if (!script || !product) return null;
-
-  // Robust video download with onRecordingComplete callback
-  const handleDownloadVideo = async () => {
-    if (!playerRef.current) {
-      alert('Player not ready. Please try again.');
-      return;
-    }
-
-    // If we already have a recording, trigger download immediately
-    if (recordedBlobUrl) {
-      triggerDownload(recordedBlobUrl);
-      return;
-    }
-
-    setIsDownloading(true);
-    setDownloadProgress('Initializing...');
-
-    try {
-      // Wait for player to be fully loaded
-      setDownloadProgress('Waiting for player...');
-      
-      // Wait until isPlayerLoaded is true
-      const maxWaitTime = 15000; // 15 seconds timeout
-      const startTime = Date.now();
-      while (!isPlayerLoaded && (Date.now() - startTime) < maxWaitTime) {
-        await new Promise(resolve => setTimeout(resolve, 100));
-      }
-
-      if (!isPlayerLoaded) {
-        throw new Error('Player did not load in time. Please try again.');
-      }
-
-      // Additional requestAnimationFrame delay to ensure canvas is painted
-      await new Promise(resolve => {
-        requestAnimationFrame(() => {
-          requestAnimationFrame(resolve);
-        });
-      });
-
-      // Small delay to ensure everything is ready
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      // Determine MIME type
-      let mimeType = 'video/webm;codecs=vp9';
-      if (!MediaRecorder.isTypeSupported(mimeType)) {
-        mimeType = 'video/webm;codecs=vp8';
-        if (!MediaRecorder.isTypeSupported(mimeType)) {
-          mimeType = 'video/webm';
-        }
-      }
-
-      setDownloadProgress('Starting recording...');
-
-      // Start the recording
-      await startRecording(mimeType);
-
-      setDownloadProgress(`Recording ${duration} seconds...`);
-
-      // Wait for the full duration
-      await new Promise(resolve => setTimeout(resolve, (duration * 1000) + 500));
-
-      setDownloadProgress('Finalizing recording...');
-
-      // Stop recording and get the blob - this waits for onstop callback
-      const blob = await stopRecordingAndWait();
-
-      setDownloadProgress('Creating file...');
-
-      // Create download URL from blob
-      const downloadUrl = URL.createObjectURL(blob);
-
-      // Call the completion callback
-      onRecordingComplete(blob, downloadUrl);
-
-      // Trigger download
-      triggerDownload(downloadUrl);
-
-    } catch (error) {
-      console.error('Download failed:', error);
-      setIsDownloading(false);
-      setDownloadProgress('');
-      alert('Download failed: ' + (error instanceof Error ? error.message : 'Unknown error'));
-    }
-  };
 
   const containerClass = isVertical 
     ? 'aspect-[9/16] max-h-[85vh] mx-auto' 
@@ -575,65 +289,112 @@ export function VideoPlayer() {
     
     return (
       <div className="w-full">
-        {/* Save Campaign Button */}
-        {!isSaved && (
-          <div className="mb-4">
+        {/* Save Campaign Success Card */}
+        {isSaved && (
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            className="mb-4 p-6 rounded-2xl glass border border-green-500/30 bg-green-50/10"
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center">
+                <CheckCircle className="w-6 h-6 text-green-500" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-green-500">Campaign Saved Successfully</h3>
+                <p className="text-sm text-muted-foreground">Your campaign has been saved to cloud storage</p>
+              </div>
+            </div>
+            <button
+              onClick={handleViewInProjects}
+              className="w-full py-3 px-6 rounded-xl bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl"
+            >
+              View in Projects
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </motion.div>
+        )}
+        
+        {/* Save Campaign Error Card */}
+        {saveError && !isSaving && (
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            className="mb-4 p-6 rounded-2xl glass border border-red-500/30 bg-red-50/10"
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center">
+                <AlertCircle className="w-6 h-6 text-red-500" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-red-500">Failed to Save Campaign</h3>
+                <p className="text-sm text-red-400/80">{saveError}</p>
+              </div>
+            </div>
             <button
               onClick={handleSaveCampaign}
               disabled={isSaving || !product}
-              className={`w-full py-3 px-6 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
-                isSaving
-                  ? 'bg-gray-400 cursor-not-allowed'
-                  : 'bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-lg hover:shadow-xl'
-              }`}
+              className="w-full py-3 px-6 rounded-xl bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <CloudOff className="w-4 h-4" />
+              Retry Save
+            </button>
+          </motion.div>
+        )}
+        
+        {/* Save Campaign Button */}
+        {!isSaved && !saveError && (
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            className="mb-4"
+          >
+            <button
+              onClick={handleSaveCampaign}
+              disabled={isSaving || !product || isPreparingVideo}
+              className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground font-bold text-lg transition-all duration-300 flex items-center justify-center gap-3 shadow-2xl hover:shadow-3xl disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSaving ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <Loader2 className="w-5 h-5 animate-spin" />
                   Saving Campaign...
-                </>
-              ) : saveError ? (
-                <>
-                  <CloudOff className="w-4 h-4" />
-                  Retry Save ({saveError})
                 </>
               ) : (
                 <>
-                  <Save className="w-4 h-4" />
-                  Save Campaign to Cloud
+                  <Save className="w-5 h-5" />
+                  💾 Save Campaign
                 </>
               )}
             </button>
-          </div>
-        )}
-        
-        {/* Save Success Notification */}
-        {isSaved && (
-          <div className="mb-4 p-4 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-xl">
-            <div className="flex items-center gap-2">
-              <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
-              <span className="text-sm text-green-900 dark:text-green-100">Campaign saved! Redirecting to Projects...</span>
-            </div>
-          </div>
+            {isPreparingVideo && (
+              <p className="text-center text-sm text-muted-foreground mt-2">
+                Preparing your video...
+              </p>
+            )}
+          </motion.div>
         )}
         
         {/* B-Roll Loading Note */}
         {showBRollNote && generationType === 'b-roll' && (
-          <div className="mb-4 p-4 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-xl">
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            className="mb-4 p-4 glass rounded-xl border border-border"
+          >
             <div className="flex items-start gap-3">
               <div className="flex-shrink-0 mt-0.5">
-                <svg className="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-5 h-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
               <div className="flex-1">
-                <p className="text-sm text-blue-900 dark:text-blue-100">
-                  <span className="font-medium">Note:</span> B-roll clips are being fetched from external sources. If the video looks empty or doesn&apos;t play smoothly, please wait a few seconds for the assets to load and play it again.
+                <p className="text-sm text-foreground/80">
+                  <span className="font-medium text-foreground">Note:</span> B-roll clips are being fetched from external sources. If the video looks empty, please wait a few seconds for assets to load.
                 </p>
               </div>
               <button
                 onClick={() => setShowBRollNote(false)}
-                className="flex-shrink-0 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200 transition-colors"
+                className="flex-shrink-0 text-muted-foreground hover:text-foreground transition-colors"
                 aria-label="Dismiss note"
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -641,14 +402,17 @@ export function VideoPlayer() {
                 </svg>
               </button>
             </div>
-          </div>
+          </motion.div>
         )}
         
         {/* Full-width transparent player container */}
-        <div 
-          ref={playerRef} 
-          className={`${containerClass} mx-auto relative overflow-hidden rounded-xl shadow-2xl`}
-          style={{ boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)' }}
+        <motion.div
+          initial={{ scale: 0.95, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.5 }}
+          ref={playerRef}
+          className={`${containerClass} mx-auto relative overflow-hidden rounded-2xl shadow-3xl`}
+          style={{ boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.8)' }}
         >
           <Player
             component={VantaShowcase}
@@ -666,38 +430,7 @@ export function VideoPlayer() {
             controls
             acknowledgeRemotionLicense={true}
           />
-        </div>
-        
-        {/* Controls below video */}
-        <div className="mt-6 flex flex-col items-center gap-4">
-          <Button
-            onClick={handleDownloadVideo}
-            disabled={isDownloading}
-            className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground font-semibold px-8 py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2"
-          >
-            {isDownloading ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                {downloadProgress || 'Recording...'}
-              </>
-            ) : (
-              <>
-                <Download className="w-4 h-4" />
-                Download Video
-              </>
-            )}
-          </Button>
-          <div className="flex items-center gap-4 text-sm text-muted-foreground">
-            <span className="flex items-center gap-1">
-              {voiceoverUrl ? '✅' : <Loader2 className="w-3 h-3 animate-spin" />}
-              Voiceover {voiceoverUrl ? 'ready' : 'generating...'}
-            </span>
-            <span className="flex items-center gap-1">
-              <Music className="w-3 h-3" />
-              Background music
-            </span>
-          </div>
-        </div>
+        </motion.div>
       </div>
     );
   }
@@ -708,52 +441,105 @@ export function VideoPlayer() {
   const saveError = b2SaveError;
   
   return (
-    <Card className="w-full max-w-2xl mx-auto">
-      <CardHeader>
-        <CardTitle>Your Generated Video Ad</CardTitle>
+    <Card className="w-full max-w-2xl mx-auto overflow-hidden">
+      <CardHeader className="glass border-b border-border">
+        <CardTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+          Your Generated Video Ad
+        </CardTitle>
       </CardHeader>
-      <CardContent>
-        {/* Save Campaign Button */}
-        {!isSaved && (
-          <div className="mb-4">
+      <CardContent className="space-y-6 p-8">
+        {/* Save Campaign Success Card */}
+        {isSaved && (
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            className="p-6 rounded-2xl glass border border-green-500/30 bg-green-50/10"
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center">
+                <CheckCircle className="w-6 h-6 text-green-500" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-green-500">Campaign Saved Successfully</h3>
+                <p className="text-sm text-muted-foreground">Your campaign has been saved to cloud storage</p>
+              </div>
+            </div>
+            <button
+              onClick={handleViewInProjects}
+              className="w-full py-3 px-6 rounded-xl bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl"
+            >
+              View in Projects
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </motion.div>
+        )}
+        
+        {/* Save Campaign Error Card */}
+        {saveError && !isSaving && (
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            className="p-6 rounded-2xl glass border border-red-500/30 bg-red-50/10"
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center">
+                <AlertCircle className="w-6 h-6 text-red-500" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-red-500">Failed to Save Campaign</h3>
+                <p className="text-sm text-red-400/80">{saveError}</p>
+              </div>
+            </div>
             <button
               onClick={handleSaveCampaign}
               disabled={isSaving || !product}
-              className={`w-full py-3 px-6 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
-                isSaving
-                  ? 'bg-gray-400 cursor-not-allowed'
-                  : 'bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-lg hover:shadow-xl'
-              }`}
+              className="w-full py-3 px-6 rounded-xl bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <CloudOff className="w-4 h-4" />
+              Retry Save
+            </button>
+          </motion.div>
+        )}
+        
+        {/* Save Campaign Button */}
+        {!isSaved && !saveError && (
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+          >
+            <button
+              onClick={handleSaveCampaign}
+              disabled={isSaving || !product || isPreparingVideo}
+              className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground font-bold text-lg transition-all duration-300 flex items-center justify-center gap-3 shadow-2xl hover:shadow-3xl disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSaving ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <Loader2 className="w-5 h-5 animate-spin" />
                   Saving Campaign...
-                </>
-              ) : saveError ? (
-                <>
-                  <CloudOff className="w-4 h-4" />
-                  Retry Save ({saveError})
                 </>
               ) : (
                 <>
-                  <Save className="w-4 h-4" />
-                  Save Campaign to Cloud
+                  <Save className="w-5 h-5" />
+                  💾 Save Campaign
                 </>
               )}
             </button>
-          </div>
+            {isPreparingVideo && (
+              <p className="text-center text-sm text-muted-foreground mt-2">
+                Preparing your video...
+              </p>
+            )}
+          </motion.div>
         )}
         
-        {/* Save Success Notification */}
-        {isSaved && (
-          <div className="mb-4 p-3 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-xl flex items-center gap-2">
-            <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
-            <span className="text-sm text-green-900 dark:text-green-100">Campaign saved! Redirecting to Projects...</span>
-          </div>
-        )}
-        
-        <div ref={playerRef} className={`${containerClass} relative bg-black rounded-lg overflow-hidden`}>
+        {/* Video Player */}
+        <motion.div
+          initial={{ scale: 0.95, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.5 }}
+          ref={playerRef}
+          className={`${containerClass} relative bg-black rounded-xl overflow-hidden shadow-2xl`}
+        >
           <Player
             component={VantaShowcase}
             durationInFrames={totalFrames}
@@ -770,44 +556,22 @@ export function VideoPlayer() {
             controls
             acknowledgeRemotionLicense={true}
           />
-        </div>
-        
-        <div className="mt-4 flex justify-center">
-          <Button
-            onClick={handleDownloadVideo}
-            disabled={isDownloading}
-            className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground font-semibold px-6 py-2 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2"
-          >
-            {isDownloading ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                {downloadProgress || 'Recording...'}
-              </>
-            ) : (
-              <>
-                <Download className="w-4 h-4" />
-                Download Video (MP4)
-              </>
-            )}
-          </Button>
-        </div>
+        </motion.div>
       </CardContent>
-      <CardFooter>
-        <div className="flex flex-col items-center gap-2 w-full text-sm text-muted-foreground">
-          <div className="flex items-center gap-2">
-            {isGeneratingVoiceover ? (
-              <span className="flex items-center gap-1">
-                <Loader2 className="w-3 h-3 animate-spin" />
-                Generating voiceover...
-              </span>
-            ) : voiceoverUrl ? (
-              <span>ElevenLabs voiceover ready</span>
-            ) : null}
-          </div>
-          <div className="flex items-center gap-2">
-            <Music className="w-3 h-3" />
-            <span>Background music enabled</span>
-          </div>
+      <CardFooter className="glass border-t border-border p-6">
+        <div className="flex items-center justify-center gap-6 w-full text-sm text-muted-foreground">
+          {isGeneratingVoiceover && (
+            <span className="flex items-center gap-2">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Generating voiceover...
+            </span>
+          )}
+          {voiceoverUrl && (
+            <span className="flex items-center gap-2">
+              <CheckCircle className="w-4 h-4 text-green-500" />
+              Voiceover ready
+            </span>
+          )}
         </div>
       </CardFooter>
     </Card>
