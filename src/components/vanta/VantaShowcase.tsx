@@ -1127,17 +1127,22 @@ export const VantaShowcase: React.FC<{
 
   return (
     <AbsoluteFill style={{ backgroundColor: isBRollMode ? 'transparent' : brandPalette.secondary }}>
-      {/* Background music - low volume, looping */}
-      {backgroundMusicUrl && (
-        <Audio
-          src={backgroundMusicUrl}
-          volume={isBRoll ? 0.08 : 0.12}
-          loop={true}
-        />
-      )}
+      {/* Background music - always rendered for stable ref, src can be null initially */}
+      <Audio
+        src={backgroundMusicUrl || null}
+        volume={isBRoll ? 0.08 : 0.12}
+        loop={true}
+        // Allow missing src to not throw - Remotion handles null src gracefully
+        onlyFullPrecision={false}
+      />
 
-      {/* Voiceover - full volume with fade out, this is our MASTER CLOCK */}
-      {voiceoverUrl && <Audio src={voiceoverUrl} volume={audioFade} />}
+      {/* Voiceover - always rendered for stable ref lifecycle */}
+      <Audio 
+        src={voiceoverUrl || null} 
+        volume={audioFade}
+        // Allow missing src to not throw
+        onlyFullPrecision={false}
+      />
 
       {/* B-ROLL MODE: Video layer with crossfade transitions */}
       {isBRollMode && (
