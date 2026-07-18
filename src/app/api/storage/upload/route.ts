@@ -48,7 +48,17 @@ export async function POST(request: Request) {
 
   const { campaignId, productTitle, productDescription, prompt, aiProvider, generationTime, script, marketIntelligence, audience, competitorAnalysis, images } = body;
 
+  console.log(`[Upload] Request received:`, {
+    requestId,
+    campaignId,
+    productTitle,
+    hasScript: !!script,
+    hasMarketIntelligence: !!marketIntelligence,
+    imagesCount: images?.length || 0
+  });
+
   if (!campaignId || !productTitle) {
+    console.warn(`[Upload] Missing required fields: campaignId=${!!campaignId}, productTitle=${!!productTitle}`);
     return NextResponse.json(
       { 
         error: 'Missing required fields',

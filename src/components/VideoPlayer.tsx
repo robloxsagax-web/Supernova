@@ -94,23 +94,47 @@ export function VideoPlayer() {
   
   // Auto-save when video is ready
   useEffect(() => {
-    if (isPlayerLoaded && !isPreparingVideo && !hasAutoSaved.current && product) {
+    console.log('[VideoPlayer] Auto-save check:', {
+      isPlayerLoaded,
+      isPreparingVideo,
+      hasAutoSaved: hasAutoSaved.current,
+      hasProduct: !!product,
+      hasScript: !!script
+    });
+    
+    if (isPlayerLoaded && !hasAutoSaved.current && product) {
       hasAutoSaved.current = true;
       const generationTime = Date.now() - startTimeRef.current;
-      console.log('[VideoPlayer] Campaign generation started, video ready - triggering auto-save');
-      console.log('[VideoPlayer] Generation time:', generationTime, 'ms');
+      
+      console.log('[SAVE] Starting auto-save');
+      console.log('[SAVE] Generation time:', generationTime, 'ms');
+      console.log('[SAVE] Product:', product?.title);
+      console.log('[SAVE] Script length:', script?.length || 0);
+      console.log('[SAVE] Ad images:', adImages.length);
       
       autoSaveCampaign(generationTime)
         .then(() => {
-          console.log('[VideoPlayer] Auto-save completed successfully');
-          console.log('[VideoPlayer] Campaign saved with ID:', store.b2LastSavedId);
+          console.log('[SAVE] ✓ Auto-save completed successfully');
+          console.log('[SAVE] Campaign ID:', store.b2LastSavedId);
         })
         .catch(err => {
-          console.error('[VideoPlayer] Auto-save failed:', err);
+          console.error('[SAVE] ✗ Auto-save failed:', err);
+          console.error('[SAVE] Error message:', err instanceof Error ? err.message : 'Unknown error');
           setShowSaveRetry(true);
         });
+    } else {
+      // Log why auto-save was skipped
+      if (!isPlayerLoaded) {
+        console.log('[SAVE] Skipping: Video player not loaded yet (waiting for canvas)');
+      }
+      if (hasAutoSaved.current) {
+        console.log('[SAVE] Skipping: Already auto-saved this session');
+      }
+      if (!product) {
+        console.log('[SAVE] Skipping: No product data available');
+      }
     }
-  }, [isPlayerLoaded, isPreparingVideo, product, autoSaveCampaign]);
+  }, [isPlayerLoaded, product, script, adImages.length]);
   
   // Handle save retry
   const handleRetrySave = async () => {
