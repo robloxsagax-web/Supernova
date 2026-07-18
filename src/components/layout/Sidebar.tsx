@@ -8,7 +8,8 @@ import {
   ArrowUpCircle,
   User,
   Accessibility,
-  CreditCard
+  CreditCard,
+  FolderOpen
 } from 'lucide-react';
 import { Logo } from '@/components/ui/logo';
 import { NavItem, NavGroup } from '@/components/ui/navigation';
@@ -19,6 +20,7 @@ import { AccessibilityPanel, useAccessibility, useApplyAccessibility } from '@/c
 const mainNavItems = [
   { icon: LayoutDashboard, label: 'Dashboard', href: '/dashboard' },
   { icon: Plus, label: 'Create Campaign', href: '/create' },
+  { icon: FolderOpen, label: 'Gallery', href: '/projects' },
   { icon: CreditCard, label: 'Pricing', href: '/pricing' },
 ];
 
@@ -36,6 +38,7 @@ export function Sidebar() {
   const getActiveItem = () => {
     if (pathname === '/dashboard') return 'Dashboard';
     if (pathname === '/create') return 'Create Campaign';
+    if (pathname === '/projects') return 'Gallery';
     if (pathname === '/pricing') return 'Pricing';
     return 'Dashboard';
   };
