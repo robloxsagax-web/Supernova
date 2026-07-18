@@ -25,7 +25,14 @@ export default function ProjectsPage() {
   // Load campaigns on mount
   useEffect(() => {
     if (isLoggedIn) {
-      loadB2Campaigns();
+      console.log('[Gallery] Loading campaigns from B2...');
+      loadB2Campaigns()
+        .then(() => {
+          console.log('[Gallery] Campaigns loaded successfully, count:', b2Campaigns.length);
+        })
+        .catch((error) => {
+          console.error('[Gallery] Failed to load campaigns:', error);
+        });
     }
   }, [isLoggedIn, loadB2Campaigns]);
 
@@ -73,15 +80,21 @@ export default function ProjectsPage() {
   }, [b2Campaigns, searchQuery, sortBy, statusFilter]);
 
   const handleDelete = async (campaignId: string) => {
+    console.log('[Gallery] Delete requested for campaign:', campaignId);
+    
     if (!confirm('Are you sure you want to delete this campaign? This cannot be undone.')) {
+      console.log('[Gallery] Delete cancelled by user');
       return;
     }
 
     setDeletingId(campaignId);
+    console.log('[Gallery] Deleting campaign:', campaignId);
+    
     try {
       await deleteCampaignFromB2(campaignId);
+      console.log('[Gallery] Campaign deleted successfully:', campaignId);
     } catch (error) {
-      console.error('Failed to delete campaign:', error);
+      console.error('[Gallery] Failed to delete campaign:', error);
       alert('Failed to delete campaign. Please try again.');
     } finally {
       setDeletingId(null);
@@ -89,8 +102,13 @@ export default function ProjectsPage() {
   };
 
   const handleDownload = async (campaignId: string) => {
+    console.log('[Gallery] Download requested for campaign:', campaignId);
+    
     try {
+      console.log('[Gallery] Starting ZIP download for:', campaignId);
       const blob = await storageService.downloadCampaignZip(campaignId);
+      console.log('[Gallery] ZIP received, size:', blob.size, 'bytes');
+      
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -99,8 +117,10 @@ export default function ProjectsPage() {
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
+      
+      console.log('[Gallery] Download completed for:', campaignId);
     } catch (error) {
-      console.error('Failed to download:', error);
+      console.error('[Gallery] Failed to download:', error);
       alert('Failed to download campaign. Please try again.');
     }
   };

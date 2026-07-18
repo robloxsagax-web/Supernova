@@ -7,7 +7,7 @@ import { useStore } from '@/lib/store';
 import { Player } from '@remotion/player';
 import { VantaShowcase } from './vanta/VantaShowcase';
 import { BRAND_PALETTES, BrandPaletteId } from '@/types/product';
-import { Download, Music, Loader2 } from 'lucide-react';
+import { Download, Music, Loader2, RefreshCw, CheckCircle, AlertCircle } from 'lucide-react';
 
 const FPS = 30;
 
@@ -71,7 +71,7 @@ function cleanScriptForVoiceover(rawScript: string): string {
 export function VideoPlayer() {
   // ALL HOOKS AT TOP LEVEL
   const store = useStore();
-  const { bRollConfig, productImages, addAsset, createProject, autoSaveCampaign, b2SaveStatus } = store;
+  const { bRollConfig, productImages, addAsset, createProject, autoSaveCampaign, retrySaveCampaign, b2SaveStatus, b2SaveError, b2LastSavedId, loadB2Campaigns } = store;
   const { script, product, videoSettings, generationType } = store;
   
   const playerRef = useRef<HTMLDivElement>(null);
@@ -90,17 +90,44 @@ export function VideoPlayer() {
   const [isPlayerLoaded, setIsPlayerLoaded] = useState(false);
   const [isPreparingVideo, setIsPreparingVideo] = useState(true);
   const [showBRollNote, setShowBRollNote] = useState(true);
+  const [showSaveRetry, setShowSaveRetry] = useState(false);
   
   // Auto-save when video is ready
   useEffect(() => {
     if (isPlayerLoaded && !isPreparingVideo && !hasAutoSaved.current && product) {
       hasAutoSaved.current = true;
       const generationTime = Date.now() - startTimeRef.current;
-      autoSaveCampaign(generationTime).catch(err => {
-        console.error('Auto-save failed:', err);
-      });
+      console.log('[VideoPlayer] Campaign generation started, video ready - triggering auto-save');
+      console.log('[VideoPlayer] Generation time:', generationTime, 'ms');
+      
+      autoSaveCampaign(generationTime)
+        .then(() => {
+          console.log('[VideoPlayer] Auto-save completed successfully');
+          console.log('[VideoPlayer] Campaign saved with ID:', store.b2LastSavedId);
+        })
+        .catch(err => {
+          console.error('[VideoPlayer] Auto-save failed:', err);
+          setShowSaveRetry(true);
+        });
     }
   }, [isPlayerLoaded, isPreparingVideo, product, autoSaveCampaign]);
+  
+  // Handle save retry
+  const handleRetrySave = async () => {
+    console.log('[VideoPlayer] Retrying auto-save...');
+    setShowSaveRetry(false);
+    const generationTime = Date.now() - startTimeRef.current;
+    
+    try {
+      await retrySaveCampaign(generationTime);
+      console.log('[VideoPlayer] Retry save completed successfully');
+      // Refresh gallery
+      loadB2Campaigns();
+    } catch (err) {
+      console.error('[VideoPlayer] Retry save failed:', err);
+      setShowSaveRetry(true);
+    }
+  };
   
   // Derived values
   const { ratio, duration, captionStyle, brandPalette } = videoSettings;
@@ -552,6 +579,39 @@ export function VideoPlayer() {
   if (isBRoll) {
     return (
       <div className="w-full">
+        {/* Save Retry Notification */}
+        {showSaveRetry && (
+          <div className="mb-4 p-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl">
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0 mt-0.5">
+                <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm text-amber-900 dark:text-amber-100">
+                  <span className="font-medium">Save failed:</span> Could not save to cloud storage. Your campaign is ready but not backed up.
+                </p>
+              </div>
+              <button
+                onClick={handleRetrySave}
+                className="flex-shrink-0 p-1.5 rounded-lg bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 hover:bg-amber-200 dark:hover:bg-amber-800/50 transition-colors"
+                title="Retry save"
+              >
+                <RefreshCw className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
+        
+        {/* Save Success Notification */}
+        {b2SaveStatus === 'saved' && !showSaveRetry && (
+          <div className="mb-4 p-4 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-xl">
+            <div className="flex items-center gap-2">
+              <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
+              <span className="text-sm text-green-900 dark:text-green-100">Campaign saved to cloud storage</span>
+            </div>
+          </div>
+        )}
+        
         {/* B-Roll Loading Note */}
         {showBRollNote && generationType === 'b-roll' && (
           <div className="mb-4 p-4 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-xl">
@@ -644,6 +704,31 @@ export function VideoPlayer() {
         <CardTitle>Your Generated Video Ad</CardTitle>
       </CardHeader>
       <CardContent>
+        {/* Save Retry Notification */}
+        {showSaveRetry && (
+          <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+              <span className="text-sm text-amber-900 dark:text-amber-100">Save failed - not backed up</span>
+            </div>
+            <button
+              onClick={handleRetrySave}
+              className="p-1.5 rounded-lg bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 hover:bg-amber-200 dark:hover:bg-amber-800/50 transition-colors"
+              title="Retry save"
+            >
+              <RefreshCw className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+        
+        {/* Save Success Notification */}
+        {b2SaveStatus === 'saved' && !showSaveRetry && (
+          <div className="mb-4 p-3 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-xl flex items-center gap-2">
+            <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
+            <span className="text-sm text-green-900 dark:text-green-100">Saved to cloud</span>
+          </div>
+        )}
+        
         <div ref={playerRef} className={`${containerClass} relative bg-black rounded-lg overflow-hidden`}>
           <Player
             component={VantaShowcase}

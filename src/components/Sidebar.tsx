@@ -34,9 +34,9 @@ import { useAuth } from '@/lib/auth';
 // Memoized navigation items
 const NAV_ITEMS = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/create', label: 'Create', icon: Sparkles },
+  { href: '/create', label: 'Create Campaign', icon: Sparkles },
   { href: '/pricing', label: 'Pricing', icon: CreditCard },
-  { href: '/gallery', label: 'Gallery', icon: FolderOpen },
+  { href: '/projects', label: 'Projects', icon: FolderOpen },
 ] as const;
 
 const BOTTOM_NAV_ITEMS = [

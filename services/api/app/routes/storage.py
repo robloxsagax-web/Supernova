@@ -55,17 +55,22 @@ async def list_campaigns(
     max_keys: int = Query(default=100, ge=1, le=500)
 ) -> Dict[str, Any]:
     """List all campaigns."""
-    logger.info("Listing campaigns")
+    logger.info(f"Campaign list request received: max_keys={max_keys}")
 
     try:
         storage = get_storage()
         if not storage.is_available():
+            logger.error("Storage not available for list campaigns")
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                 detail="Storage not configured"
             )
 
         campaign_ids = storage.list_campaigns(max_keys=max_keys)
+        logger.info(f"Campaigns listed: count={len(campaign_ids)}")
+        for campaign in campaign_ids:
+            logger.info(f"  - {campaign.get('campaign_id', 'N/A')}: {campaign.get('product_title', 'N/A')}")
+        
         return {"campaigns": campaign_ids, "count": len(campaign_ids)}
 
     except HTTPException:
@@ -150,17 +155,20 @@ async def get_campaign(campaign_id: str) -> Dict[str, Any]:
 @router.delete("/campaigns/{campaign_id}")
 async def delete_campaign(campaign_id: str) -> Dict[str, Any]:
     """Delete a campaign and all its assets."""
-    logger.info(f"Deleting campaign: {campaign_id}")
+    logger.info(f"Delete campaign request received: {campaign_id}")
 
     try:
         storage = get_storage()
         if not storage.is_available():
+            logger.error(f"Storage not available for delete: {campaign_id}")
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                 detail="Storage not configured"
             )
 
         deleted_count = storage.delete_campaign(campaign_id)
+        logger.info(f"Campaign deleted: {campaign_id}, objects_removed={deleted_count}")
+        
         return {
             "success": True,
             "campaign_id": campaign_id,
@@ -170,7 +178,7 @@ async def delete_campaign(campaign_id: str) -> Dict[str, Any]:
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Delete campaign failed: {e}")
+        logger.error(f"Delete campaign failed: {campaign_id}, error={e}")
         traceback.print_exc()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -303,11 +311,13 @@ async def upload_campaign_json(
     data: Dict[str, Any]
 ) -> Dict[str, Any]:
     """Upload JSON data to a campaign."""
-    logger.info(f"Uploading JSON: campaign={campaign_id}, file={filename}")
-
+    logger.info(f"Upload JSON request received: campaign={campaign_id}, file={filename}")
+    logger.info(f"JSON data keys: {list(data.keys()) if isinstance(data, dict) else 'N/A'}")
+    
     try:
         storage = get_storage()
         if not storage.is_available():
+            logger.error(f"Storage not available for campaign {campaign_id}")
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                 detail="Storage not configured"
@@ -318,6 +328,8 @@ async def upload_campaign_json(
             data=data,
             filename=filename
         )
+        
+        logger.info(f"Script uploaded successfully: campaign={campaign_id}, key={object_key}")
 
         return {
             "success": True,
@@ -327,7 +339,7 @@ async def upload_campaign_json(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Upload JSON failed: {e}")
+        logger.error(f"Upload JSON failed: campaign={campaign_id}, file={filename}, error={e}")
         traceback.print_exc()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -341,11 +353,13 @@ async def finalize_campaign(
     metadata: Dict[str, Any]
 ) -> Dict[str, Any]:
     """Finalize campaign upload (update metadata with completion info)."""
-    logger.info(f"Finalizing campaign: {campaign_id}")
+    logger.info(f"Campaign finalized request received: {campaign_id}")
+    logger.info(f"Metadata: product_title={metadata.get('product_title', 'N/A')}, status={metadata.get('status', 'N/A')}")
 
     try:
         storage = get_storage()
         if not storage.is_available():
+            logger.error(f"Storage not available for finalize: {campaign_id}")
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                 detail="Storage not configured"
@@ -357,6 +371,10 @@ async def finalize_campaign(
             data=metadata,
             filename="metadata.json"
         )
+        
+        logger.info(f"Campaign finalized successfully: {campaign_id}")
+        logger.info(f"Metadata uploaded: {metadata_key}")
+        logger.info(f"Object keys: {metadata.get('object_keys', [])}")
 
         return {
             "success": True,
@@ -367,7 +385,7 @@ async def finalize_campaign(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Finalize campaign failed: {e}")
+        logger.error(f"Finalize campaign failed: {campaign_id}, error={e}")
         traceback.print_exc()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
