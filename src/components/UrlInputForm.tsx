@@ -16,9 +16,11 @@ import {
   Rocket,
   Check,
   Film,
-  Image
+  Image,
+  Loader2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { cleanProduct } from '@/lib/productCleaner';
 
 type GenerationType = 'ad' | 'b-roll';
 
@@ -57,13 +59,15 @@ export function UrlInputForm() {
   const [duration, setDuration] = useState<VideoDuration>(30);
   const [brandPalette, setBrandPalette] = useState<BrandPaletteId>('noir-gold');
   const [isFocused, setIsFocused] = useState(false);
-  const { setLoading, setError, setProduct, setStep, setVideoSettings, setGenerationType: setStoreGenerationType, createProject } = useStore();
+  const { setLoading, setError, setProduct, setStep, setVideoSettings, setGenerationType: setStoreGenerationType, createProject, isLoading } = useStore();
 
   // Detect platform from URL
   const detectedPlatform = platforms.find(p => url.toLowerCase().includes(p.name.toLowerCase()));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isLoading) return; // Prevent duplicate requests
+    
     setLoading(true);
     setError(null);
 
@@ -78,10 +82,22 @@ export function UrlInputForm() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to scrape product data');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to scrape product data');
       }
 
-      const product = await response.json();
+      const rawProduct = await response.json();
+      
+      // Clean product data before storing
+      const product = {
+        ...rawProduct,
+        ...cleanProduct(rawProduct),
+        // Preserve original images if cleaned result is empty
+        images: rawProduct.images?.length > 0 ? rawProduct.images : cleanProduct(rawProduct).images,
+        // Preserve original features if cleaned result is empty
+        features: rawProduct.features?.length > 0 ? rawProduct.features : cleanProduct(rawProduct).features,
+      };
+      
       setProduct(product);
       
       const campaignName = product.title || `Campaign ${new Date().toLocaleDateString()}`;
@@ -491,41 +507,58 @@ export function UrlInputForm() {
             {/* Generate Button - Premium */}
             <motion.button
               type="submit"
-              whileHover={{ scale: 1.01, y: -2 }}
-              whileTap={{ scale: 0.99 }}
-              className="relative w-full py-5 rounded-2xl font-bold text-lg overflow-hidden group"
+              disabled={isLoading}
+              whileHover={!isLoading ? { scale: 1.01, y: -2 } : {}}
+              whileTap={!isLoading ? { scale: 0.99 } : {}}
+              className={cn(
+                'relative w-full py-5 rounded-2xl font-bold text-lg overflow-hidden group transition-all duration-300',
+                isLoading && 'opacity-80 cursor-not-allowed'
+              )}
               style={{
                 background: 'linear-gradient(135deg, #5C3317 0%, #8B5A2B 50%, #5C3317 100%)',
                 boxShadow: '0 0 40px rgba(92, 51, 23, 0.4), 0 20px 40px rgba(0, 0, 0, 0.3)',
               }}
             >
-              {/* Shimmer effect */}
-              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                <div 
-                  className="absolute inset-0"
-                  style={{
-                    background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.15) 50%, transparent 100%)',
-                    transform: 'translateX(-100%)',
-                    animation: 'shimmer 2s ease-in-out infinite',
-                  }}
-                />
-              </div>
+              {/* Shimmer effect - only when not loading */}
+              {!isLoading && (
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                  <div 
+                    className="absolute inset-0"
+                    style={{
+                      background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.15) 50%, transparent 100%)',
+                      transform: 'translateX(-100%)',
+                      animation: 'shimmer 2s ease-in-out infinite',
+                    }}
+                  />
+                </div>
+              )}
               
               {/* Glow pulse */}
-              <div className="absolute inset-0 opacity-50">
-                <div 
-                  className="absolute inset-0"
-                  style={{
-                    boxShadow: '0 0 60px rgba(255, 218, 185, 0.3)',
-                    animation: 'pulse 3s ease-in-out infinite',
-                  }}
-                />
-              </div>
+              {!isLoading && (
+                <div className="absolute inset-0 opacity-50">
+                  <div 
+                    className="absolute inset-0"
+                    style={{
+                      boxShadow: '0 0 60px rgba(255, 218, 185, 0.3)',
+                      animation: 'pulse 3s ease-in-out infinite',
+                    }}
+                  />
+                </div>
+              )}
               
               <span className="relative flex items-center justify-center gap-3 text-[#FFDAB9]">
-                <Sparkles className="w-5 h-5" />
-                {selectedType?.type === 'b-roll' ? 'Generate B-Roll Video' : 'Generate Video Ad'}
-                <Zap className="w-5 h-5" />
+                {isLoading ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Scraping Product...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-5 h-5" />
+                    {selectedType?.type === 'b-roll' ? 'Generate B-Roll Video' : 'Generate Video Ad'}
+                    <Zap className="w-5 h-5" />
+                  </>
+                )}
               </span>
             </motion.button>
           </form>

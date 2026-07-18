@@ -23,6 +23,7 @@ import {
   Check
 } from 'lucide-react';
 import { PremiumStepper } from '@/components/premium/PremiumStepper';
+import { GenerationProgress } from '@/components/premium/GenerationProgress';
 import { CampaignPreview } from '@/components/premium/CampaignPreview';
 
 const loadingMessages: Record<'url' | 'product' | 'script' | 'marketIntelligence' | 'video', string> = {
@@ -135,10 +136,13 @@ export default function CreatePage() {
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="mb-10"
+              className="mb-6"
             >
               <PremiumStepper />
             </motion.div>
+
+            {/* Generation Progress - Shows multi-stage progress during loading */}
+            <GenerationProgress />
 
             {/* Error Message */}
             <AnimatePresence>

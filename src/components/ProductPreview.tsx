@@ -2,13 +2,16 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { useStore } from '@/lib/store';
+import { Loader2 } from 'lucide-react';
 
 export function ProductPreview() {
-  const { product, videoSettings, generationType, setLoading, setError, setScript, setStep } = useStore();
+  const { product, videoSettings, generationType, setLoading, setError, setScript, setStep, isLoading } = useStore();
 
   if (!product) return null;
 
   const handleGenerateScript = async () => {
+    if (isLoading) return; // Prevent duplicate requests
+    
     setLoading(true);
     setError(null);
 
@@ -25,7 +28,8 @@ export function ProductPreview() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to generate script');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to generate script');
       }
 
       const { script } = await response.json();
@@ -86,8 +90,19 @@ export function ProductPreview() {
         </div>
       </CardContent>
       <CardFooter>
-        <Button onClick={handleGenerateScript} className="w-full">
-          {isBRoll ? 'Generate B-Roll Script' : 'Generate Ad Script'}
+        <Button 
+          onClick={handleGenerateScript} 
+          className="w-full"
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              Generating AI Script...
+            </>
+          ) : (
+            isBRoll ? 'Generate B-Roll Script' : 'Generate Ad Script'
+          )}
         </Button>
       </CardFooter>
     </Card>

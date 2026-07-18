@@ -513,12 +513,23 @@ export function MarketIntelligence() {
             {/* Continue Button */}
             <Button
               onClick={handleContinue}
-              className="w-full h-16 rounded-2xl text-xl font-bold bg-gradient-to-r from-[#5C3317] to-[#FFDAB9] hover:opacity-90 transition-all"
+              disabled={isLoading}
+              className="w-full h-16 rounded-2xl text-xl font-bold bg-gradient-to-r from-[#5C3317] to-[#FFDAB9] hover:opacity-90 transition-all disabled:opacity-70"
               style={{
                 boxShadow: '0 0 30px rgba(92, 51, 23, 0.5)',
               }}
             >
-              Continue to Video Generation
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-6 h-6 mr-3 animate-spin" />
+                  {generationType === 'b-roll' ? 'Finding B-Roll Clips...' : 'Building Video...'}
+                </>
+              ) : (
+                <>
+                  <Rocket className="w-6 h-6 mr-3" />
+                  Continue to Video Generation
+                </>
+              )}
             </Button>
           </motion.div>
         )}

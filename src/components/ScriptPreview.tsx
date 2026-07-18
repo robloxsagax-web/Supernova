@@ -4,6 +4,7 @@ import { useStore } from '@/lib/store';
 import { Player } from '@remotion/player';
 import { VantaShowcase } from './vanta/VantaShowcase';
 import { BRAND_PALETTES, BrandPaletteId } from '@/types/product';
+import { Loader2 } from 'lucide-react';
 
 export function ScriptPreview() {
   const { 
@@ -17,7 +18,8 @@ export function ScriptPreview() {
     setError, 
     setStep,
     setBRollConfig,
-    setProductImages
+    setProductImages,
+    isLoading
   } = useStore();
 
   if (!script || !product) return null;
@@ -39,7 +41,8 @@ export function ScriptPreview() {
   const isBRoll = generationType === 'b-roll';
 
   const handleGenerateVideo = async () => {
-    // Navigate to Market Intelligence step instead of directly to video
+    if (isLoading) return; // Prevent duplicate requests
+    // Navigate to Market Intelligence step
     setStep('marketIntelligence');
   };
 
@@ -92,8 +95,15 @@ export function ScriptPreview() {
         </div>
       </CardContent>
       <CardFooter>
-        <Button onClick={handleGenerateVideo} className="w-full">
-          {isBRoll ? 'Get Market Intelligence' : 'Get Market Intelligence'}
+        <Button onClick={handleGenerateVideo} className="w-full" disabled={isLoading}>
+          {isLoading ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              Processing...
+            </>
+          ) : (
+            'Continue to Market Intelligence'
+          )}
         </Button>
       </CardFooter>
     </Card>
