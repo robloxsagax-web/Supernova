@@ -199,8 +199,8 @@ class StorageService {
    * Download campaign as ZIP
    */
   async downloadCampaignZip(campaignId: string): Promise<Blob> {
-    const apiUrl = getApiUrl();
-    const response = await fetch(`${apiUrl}/storage/campaigns/${campaignId}/download`);
+    // Use /api prefix for Next.js API route
+    const response = await fetch(`/api/storage/campaigns/${campaignId}/download`);
     
     if (!response.ok) {
       const error = await response.json();
