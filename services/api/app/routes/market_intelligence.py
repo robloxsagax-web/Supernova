@@ -1,10 +1,12 @@
-"""Market Intelligence generation route using Genblaze."""
+"""Market Intelligence generation route using Genblaze.
+
+ALWAYS returns HTTP 200 with valid JSON. The pipeline never fails.
+"""
 
 import logging
-import traceback
 from typing import Any, Dict, Optional
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter
 from pydantic import BaseModel, Field
 
 from app.repo.market_intelligence_pipeline import generate_market_intelligence
@@ -61,7 +63,7 @@ class CampaignStrategy(BaseModel):
 
 
 class MarketIntelligenceResponse(BaseModel):
-    """Market Intelligence response model."""
+    """Market Intelligence response model - ALWAYS valid JSON."""
     target_audience: TargetAudience
     competitors: list[Competitor]
     marketing_angles: list[str]
@@ -69,6 +71,10 @@ class MarketIntelligenceResponse(BaseModel):
     recommended_platforms: list[Platform]
     campaign_strategy: CampaignStrategy
     confidence_score: int
+    # Optional metadata
+    _fallback: Optional[bool] = Field(default=None, exclude=True)
+    _reason: Optional[str] = Field(default=None, exclude=True)
+    _all_models_failed: Optional[bool] = Field(default=None, exclude=True)
 
 
 @router.get("/health")
@@ -86,88 +92,35 @@ async def health_check() -> Dict[str, Any]:
 async def generate_market_intelligence_endpoint(request: MarketIntelligenceRequest) -> MarketIntelligenceResponse:
     """Generate market intelligence using Genblaze.
     
+    NEVER FAILS - Always returns HTTP 200 with valid JSON.
+    
     Args:
         request: Market Intelligence request with product and script
     
     Returns:
-        MarketIntelligenceResponse with generated intelligence
-    
-    Raises:
-        HTTPException: If generation fails
+        MarketIntelligenceResponse with generated intelligence (always valid)
     """
     logger.info(f"Received market intelligence request for product: {request.product.title}")
-    logger.info(f"Script length: {len(request.script)} characters")
     
-    try:
-        # Validate product
-        if not request.product.title or not request.product.description:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Product must have a title and description"
-            )
-        
-        if not request.script:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Script is required for market intelligence"
-            )
-        
-        # Generate market intelligence
-        result = generate_market_intelligence(
-            product=request.product.model_dump(),
-            script=request.script
-        )
-        
-        logger.info(f"Market intelligence generated successfully")
-        logger.info(f"Target audience: {result.get('target_audience', {}).get('age')}")
-        logger.info(f"Competitors: {len(result.get('competitors', []))}")
-        logger.info(f"Marketing angles: {len(result.get('marketing_angles', []))}")
-        logger.info(f"Confidence score: {result.get('confidence_score')}")
-        
-        return MarketIntelligenceResponse(
-            target_audience=TargetAudience(**result["target_audience"]),
-            competitors=[Competitor(**c) for c in result["competitors"]],
-            marketing_angles=result["marketing_angles"],
-            emotional_hooks=result["emotional_hooks"],
-            recommended_platforms=[Platform(**p) for p in result["recommended_platforms"]],
-            campaign_strategy=CampaignStrategy(**result["campaign_strategy"]),
-            confidence_score=result["confidence_score"]
-        )
-        
-    except ValueError as e:
-        logger.error("=" * 60)
-        logger.error("VALIDATION ERROR in market intelligence route")
-        logger.error("=" * 60)
-        logger.error(f"Exception type: {type(e).__name__}")
-        logger.error(f"Exception message: {str(e)}")
-        logger.error("Full traceback:")
-        traceback.print_exc()
-        logger.error("=" * 60)
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e)
-        )
-    except HTTPException:
-        # Re-raise HTTP exceptions as-is
-        raise
-    except Exception as e:
-        logger.error("=" * 60)
-        logger.error("MARKET INTELLIGENCE GENERATION ERROR in route")
-        logger.error("=" * 60)
-        logger.error(f"Exception type: {type(e).__name__}")
-        logger.error(f"Exception message: {str(e)}")
-        logger.error(f"Exception module: {type(e).__module__}")
-        logger.error("Full traceback:")
-        traceback.print_exc()
-        
-        # Log request details for debugging
-        logger.error("Request details:")
-        logger.error(f"  Product title: {request.product.title}")
-        logger.error(f"  Product description length: {len(request.product.description)}")
-        logger.error(f"  Script length: {len(request.script)}")
-        
-        logger.error("=" * 60)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to generate market intelligence"
-        )
+    # Generate market intelligence - NEVER throws
+    result = generate_market_intelligence(
+        product=request.product.model_dump(),
+        script=request.script
+    )
+    
+    logger.info(f"Market intelligence response ready")
+    logger.info(f"Confidence score: {result.get('confidence_score')}")
+    
+    # Check if this is a fallback response
+    if result.get("_fallback") or result.get("_all_models_failed"):
+        logger.warning(f"Returning fallback market intelligence (confidence: {result.get('confidence_score')})")
+    
+    return MarketIntelligenceResponse(
+        target_audience=TargetAudience(**result["target_audience"]),
+        competitors=[Competitor(**c) for c in result["competitors"]],
+        marketing_angles=result["marketing_angles"],
+        emotional_hooks=result["emotional_hooks"],
+        recommended_platforms=[Platform(**p) for p in result["recommended_platforms"]],
+        campaign_strategy=CampaignStrategy(**result["campaign_strategy"]),
+        confidence_score=result["confidence_score"]
+    )

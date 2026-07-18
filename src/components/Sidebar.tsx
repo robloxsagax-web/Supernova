@@ -14,7 +14,8 @@ import {
   ChevronRight,
   Sparkle,
   CreditCard,
-  LogOut
+  LogOut,
+  FolderOpen
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { SupernovaMinimalLogo, SupernovaTextLogo } from '@/components/ui/logo';
@@ -35,6 +36,7 @@ const NAV_ITEMS = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/create', label: 'Create', icon: Sparkles },
   { href: '/pricing', label: 'Pricing', icon: CreditCard },
+  { href: '/gallery', label: 'Gallery', icon: FolderOpen },
 ] as const;
 
 const BOTTOM_NAV_ITEMS = [
