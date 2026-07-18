@@ -1,6 +1,6 @@
 """Genblaze API Service - Main Application.
 
-FastAPI application for script generation using Genblaze.
+FastAPI application for script generation and market intelligence using Genblaze.
 Deployed separately from Next.js frontend on Vercel.
 """
 
@@ -11,8 +11,8 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routes import script_router
-from app.repo.provider_catalog import get_default_provider, get_available_models
+from app.routes import script_router, market_intelligence_router
+from app.repo.provider_catalog import get_default_provider, get_available_models, get_market_intel_provider, get_market_intel_models
 
 # Configure logging
 logging.basicConfig(
@@ -28,16 +28,28 @@ async def lifespan(app: FastAPI):
     logger.info("Starting Genblaze API Service")
     logger.info(f"OPENROUTER_API_KEY configured: {bool(os.environ.get('OPENROUTER_API_KEY'))}")
     
-    # Log provider configuration at startup
+    # Log script provider configuration at startup
     provider = get_default_provider()
     if provider:
         logger.info("=" * 50)
-        logger.info("PROVIDER CONFIGURATION")
+        logger.info("SCRIPT PROVIDER CONFIGURATION")
         logger.info("=" * 50)
         logger.info(f"Provider: {provider.name}")
         logger.info(f"Model: {provider.model}")
         logger.info(f"Base URL: {provider.base_url}")
         logger.info(f"Available models: {get_available_models()}")
+        logger.info("=" * 50)
+    
+    # Log market intelligence provider configuration at startup
+    market_provider = get_market_intel_provider()
+    if market_provider:
+        logger.info("=" * 50)
+        logger.info("MARKET INTELLIGENCE PROVIDER CONFIGURATION")
+        logger.info("=" * 50)
+        logger.info(f"Provider: {market_provider.name}")
+        logger.info(f"Model: {market_provider.model}")
+        logger.info(f"Base URL: {market_provider.base_url}")
+        logger.info(f"Available models: {get_market_intel_models()}")
         logger.info("=" * 50)
     
     yield
@@ -46,9 +58,9 @@ async def lifespan(app: FastAPI):
 
 # Create FastAPI application
 app = FastAPI(
-    title="Genblaze Script Generation API",
-    description="Marketing script generation service using Genblaze and OpenRouter",
-    version="1.0.0",
+    title="Genblaze API Service",
+    description="Marketing script generation and market intelligence service using Genblaze and OpenRouter",
+    version="1.1.0",
     lifespan=lifespan
 )
 
@@ -65,15 +77,17 @@ app.add_middleware(
 
 # Include routers
 app.include_router(script_router)
+app.include_router(market_intelligence_router)
 
 
 @app.get("/")
 async def root():
     """Root endpoint."""
     return {
-        "service": "Genblaze Script Generation API",
-        "version": "1.0.0",
-        "status": "running"
+        "service": "Genblaze API Service",
+        "version": "1.1.0",
+        "status": "running",
+        "endpoints": ["/script", "/market-intelligence"]
     }
 
 
@@ -81,8 +95,10 @@ async def root():
 async def health():
     """Health check endpoint."""
     provider = get_default_provider()
+    market_provider = get_market_intel_provider()
     return {
         "status": "healthy",
         "provider": "Genblaze",
-        "model": provider.model if provider else "unknown"
+        "script_model": provider.model if provider else "unknown",
+        "market_intel_model": market_provider.model if market_provider else "unknown"
     }
