@@ -1,7 +1,8 @@
 """Backblaze B2 Storage module for campaign assets.
 
 This module provides AWS S3-compatible storage using Backblaze B2
-for storing non-video campaign assets.
+for storing non-video campaign assets. B2 is optional - API will start
+even if B2 is unavailable.
 """
 
 import io
@@ -19,12 +20,11 @@ from botocore.exceptions import ClientError
 logger = logging.getLogger("api.b2_storage")
 
 # B2 Configuration from environment
-# Default endpoint is s3.us-east-005.backblazeb2.com
 B2_ENDPOINT = os.environ.get("B2_ENDPOINT", "https://s3.us-east-005.backblazeb2.com")
 B2_REGION = os.environ.get("B2_REGION", "us-east-005")
 B2_ACCESS_KEY = os.environ.get("B2_ACCESS_KEY_ID", "")
 B2_SECRET_KEY = os.environ.get("B2_SECRET_KEY", "")
-B2_BUCKET_NAME = os.environ.get("B2_BUCKET_NAME", "supernova-campaigns")
+B2_BUCKET_NAME = os.environ.get("B2_BUCKET_NAME", "Supernova1231")
 
 # Presigned URL expiration (seconds)
 PRESIGNED_URL_EXPIRY = 3600  # 1 hour
@@ -32,7 +32,7 @@ PRESIGNED_URL_EXPIRY = 3600  # 1 hour
 # Campaign folder prefix
 CAMPAIGNS_PREFIX = "campaigns/"
 
-# Debug: Log config at module load time
+# Log config at module load
 logger.info("=" * 60)
 logger.info("B2 STORAGE MODULE LOADING")
 logger.info("=" * 60)
@@ -41,8 +41,15 @@ logger.info(f"B2_REGION: {B2_REGION}")
 logger.info(f"B2_BUCKET_NAME: {B2_BUCKET_NAME}")
 logger.info(f"B2_ACCESS_KEY_ID env var present: {'B2_ACCESS_KEY_ID' in os.environ}")
 logger.info(f"B2_SECRET_KEY env var present: {'B2_SECRET_KEY' in os.environ}")
-logger.info(f"B2_ACCESS_KEY loaded (length): {len(B2_ACCESS_KEY) if B2_ACCESS_KEY else 0}")
-logger.info(f"B2_SECRET_KEY loaded (length): {len(B2_SECRET_KEY) if B2_SECRET_KEY else 0}")
+if B2_ACCESS_KEY:
+    logger.info(f"B2_ACCESS_KEY loaded (length): {len(B2_ACCESS_KEY)}")
+    logger.info(f"B2_ACCESS_KEY (first 8 chars): {B2_ACCESS_KEY[:8]}...")
+else:
+    logger.info("B2_ACCESS_KEY: NOT SET")
+if B2_SECRET_KEY:
+    logger.info(f"B2_SECRET_KEY loaded (length): {len(B2_SECRET_KEY)}")
+else:
+    logger.info("B2_SECRET_KEY: NOT SET")
 logger.info("=" * 60)
 
 
@@ -69,29 +76,22 @@ class B2Storage:
         """Initialize B2 storage client."""
         self._client = None
         self._resource = None
-        self._validated = False
-        self._validate_config()
+        self._available = False
+        self._auth_error = None
+        
+        # Try to connect, but don't fail startup
+        self._connect()
 
-    def _validate_config(self) -> None:
-        """Validate B2 configuration."""
+    def _connect(self) -> None:
+        """Connect to B2 and test credentials. Sets _available flag."""
         if not B2_ACCESS_KEY or not B2_SECRET_KEY:
-            logger.warning("B2 credentials not configured - storage operations will fail")
-        else:
-            logger.info("B2 storage configured")
-            logger.info(f"Endpoint: {B2_ENDPOINT}")
-            logger.info(f"Region: {B2_REGION}")
-            logger.info(f"Bucket: {B2_BUCKET_NAME}")
-            logger.info(f"Access Key ID (first 8 chars): {B2_ACCESS_KEY[:8] if len(B2_ACCESS_KEY) >= 8 else B2_ACCESS_KEY}...")
-            logger.info(f"Secret Key present: {bool(B2_SECRET_KEY)}")
-            
-            # Test connection on initialization
-            self._test_connection()
+            logger.warning("B2 credentials not configured - storage will be unavailable")
+            self._available = False
+            return
 
-    def _test_connection(self) -> None:
-        """Test B2 connection on startup."""
         logger.info("Testing B2 connection...")
+        
         try:
-            # Create a test client
             config = Config(
                 signature_version='s3v4',
                 retries={'max_attempts': 1, 'mode': 'standard'},
@@ -108,36 +108,73 @@ class B2Storage:
                 config=config
             )
             
-            # Try head_bucket to verify credentials
+            # Test with head_bucket
             logger.info(f"Calling head_bucket for bucket: {B2_BUCKET_NAME}")
             response = test_client.head_bucket(Bucket=B2_BUCKET_NAME)
             logger.info(f"head_bucket response: {response}")
-            logger.info("B2 connection test PASSED")
+            
+            # Try to get bucket location to check IAM capabilities
+            try:
+                location_response = test_client.get_bucket_location(Bucket=B2_BUCKET_NAME)
+                logger.info(f"Bucket location: {location_response.get('LocationConstraint')}")
+            except Exception as e:
+                logger.warning(f"Could not get bucket location: {e}")
+            
+            # Try list_objects_v2 to verify read permissions
+            try:
+                list_response = test_client.list_objects_v2(Bucket=B2_BUCKET_NAME, MaxKeys=1)
+                logger.info(f"list_objects_v2 succeeded - read access confirmed")
+                logger.info(f"Listed {list_response.get('KeyCount', 0)} objects")
+            except ClientError as list_err:
+                if list_err.response['Error']['Code'] == 'AccessDenied':
+                    logger.warning("Access denied for list_objects_v2 - limited permissions")
+                else:
+                    logger.warning(f"list_objects_v2 error: {list_err}")
+            
+            self._available = True
+            self._client = test_client
+            logger.info("=" * 60)
+            logger.info("B2 CONNECTION SUCCESSFUL")
+            logger.info(f"Endpoint: {B2_ENDPOINT}")
+            logger.info(f"Bucket: {B2_BUCKET_NAME}")
+            logger.info(f"Access Key ID: {B2_ACCESS_KEY[:8]}...")
+            logger.info("IAM Capabilities: READ, WRITE (if tested)")
+            logger.info("=" * 60)
             
         except ClientError as e:
             error_code = e.response.get('Error', {}).get('Code', 'Unknown')
             error_message = e.response.get('Error', {}).get('Message', 'Unknown')
-            logger.error(f"B2 connection test FAILED")
+            self._auth_error = f"{error_code}: {error_message}"
+            
+            logger.error("=" * 60)
+            logger.error("B2 CONNECTION FAILED")
             logger.error(f"Error Code: {error_code}")
             logger.error(f"Error Message: {error_message}")
-            logger.error(f"Full Error Response: {e.response}")
-            logger.error(f"Access Key ID being used: {B2_ACCESS_KEY[:8]}..." if len(B2_ACCESS_KEY) >= 8 else f"Access Key ID: {B2_ACCESS_KEY}")
-            raise
+            logger.error(f"Access Key ID used: {B2_ACCESS_KEY[:8]}..." if B2_ACCESS_KEY else "N/A")
+            logger.error("=" * 60)
+            logger.error("B2 is OPTIONAL - API will continue starting")
+            logger.error("Set correct B2_ACCESS_KEY_ID and B2_SECRET_KEY to enable storage")
+            
+            self._available = False
             
         except Exception as e:
-            logger.error(f"B2 connection test FAILED with unexpected error: {type(e).__name__}: {str(e)}")
-            logger.error(f"Access Key ID being used: {B2_ACCESS_KEY[:8]}..." if len(B2_ACCESS_KEY) >= 8 else f"Access Key ID: {B2_ACCESS_KEY}")
-            raise
+            self._auth_error = f"{type(e).__name__}: {str(e)}"
+            
+            logger.error("=" * 60)
+            logger.error("B2 CONNECTION FAILED")
+            logger.error(f"Error: {type(e).__name__}: {str(e)}")
+            logger.error(f"Access Key ID used: {B2_ACCESS_KEY[:8]}..." if B2_ACCESS_KEY else "N/A")
+            logger.error("=" * 60)
+            logger.error("B2 is OPTIONAL - API will continue starting")
+            
+            self._available = False
 
     def _get_client(self):
         """Get or create B2 S3 client."""
+        if not self._available:
+            raise ValueError("B2 storage not available. Check credentials and bucket permissions.")
+        
         if not self._client:
-            if not B2_ACCESS_KEY or not B2_SECRET_KEY:
-                raise ValueError("B2 credentials not configured")
-
-            logger.info("Creating B2 S3 client...")
-            logger.info(f"Using Access Key ID: {B2_ACCESS_KEY[:8]}..." if len(B2_ACCESS_KEY) >= 8 else f"Using Access Key ID: {B2_ACCESS_KEY}")
-
             config = Config(
                 signature_version='s3v4',
                 retries={'max_attempts': 3, 'mode': 'standard'},
@@ -153,7 +190,6 @@ class B2Storage:
                 region_name=B2_REGION,
                 config=config
             )
-            logger.info("B2 S3 client created successfully")
 
         return self._client
 
@@ -183,7 +219,11 @@ class B2Storage:
 
     def is_available(self) -> bool:
         """Check if B2 storage is available."""
-        return bool(B2_ACCESS_KEY and B2_SECRET_KEY)
+        return self._available
+
+    def get_auth_error(self) -> Optional[str]:
+        """Get the authentication error if any."""
+        return self._auth_error
 
     def upload_asset(
         self,
