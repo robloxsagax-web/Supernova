@@ -29,8 +29,52 @@ B2_BUCKET_NAME = os.environ.get("B2_BUCKET_NAME", "Supernova1231")
 # Presigned URL expiration (seconds)
 PRESIGNED_URL_EXPIRY = 3600  # 1 hour
 
+# =============================================================================
+# CENTRALIZED STORAGE PATH CONSTANTS
+# =============================================================================
+# All storage paths must use these constants. No hardcoded strings allowed.
+
 # Campaign folder prefix
-CAMPAIGNS_PREFIX = "campaigns/"
+CAMPAIGN_PREFIX = "campaigns/"
+
+# Subfolder prefixes within a campaign
+DATA_PREFIX = "data/"
+IMAGE_PREFIX = "images/"
+VIDEO_PREFIX = "videos/"
+AUDIO_PREFIX = "audio/"
+
+# Metadata file name
+METADATA_FILE = "metadata.json"
+
+def campaign_folder(campaign_id: str) -> str:
+    """Get the full folder path for a campaign."""
+    return f"{CAMPAIGN_PREFIX}{campaign_id}/"
+
+def metadata_key(campaign_id: str) -> str:
+    """Get the full object key for a campaign's metadata.json."""
+    return f"{campaign_folder(campaign_id)}{METADATA_FILE}"
+
+def data_key(campaign_id: str, filename: str) -> str:
+    """Get the full object key for a data file."""
+    # filename may include subpath like "data/script.json" - strip any leading data/ to avoid duplication
+    if filename.startswith(DATA_PREFIX):
+        filename = filename[len(DATA_PREFIX):]
+    return f"{campaign_folder(campaign_id)}{DATA_PREFIX}{filename}"
+
+def image_key(campaign_id: str, filename: str) -> str:
+    """Get the full object key for an image file."""
+    return f"{campaign_folder(campaign_id)}{IMAGE_PREFIX}{filename}"
+
+def video_key(campaign_id: str, filename: str) -> str:
+    """Get the full object key for a video file."""
+    return f"{campaign_folder(campaign_id)}{VIDEO_PREFIX}{filename}"
+
+def audio_key(campaign_id: str, filename: str) -> str:
+    """Get the full object key for an audio file."""
+    return f"{campaign_folder(campaign_id)}{AUDIO_PREFIX}{filename}"
+
+# Backward compatibility alias
+CAMPAIGNS_PREFIX = CAMPAIGN_PREFIX
 
 # Log config at module load
 logger.info("=" * 60)
@@ -238,8 +282,8 @@ class B2Storage:
 
         Args:
             campaign_id: Campaign identifier
-            asset_type: Type of asset (images, scripts, etc.)
-            filename: Name of the file
+            asset_type: Type of asset (images, videos, data, etc.)
+            filename: Name of the file (may include subpath like "data/script.json")
             content: File content as bytes or file-like object
             content_type: MIME type
             metadata: Optional metadata dict
@@ -254,11 +298,22 @@ class B2Storage:
         if not self.is_available():
             raise ValueError("B2 storage not configured")
 
-        # Build object key
+        # Build object key using centralized path functions
         if asset_type == "images":
-            object_key = f"{CAMPAIGNS_PREFIX}{campaign_id}/images/{filename}"
+            object_key = image_key(campaign_id, filename)
+        elif asset_type == "videos":
+            object_key = video_key(campaign_id, filename)
+        elif asset_type == "audio":
+            object_key = audio_key(campaign_id, filename)
+        elif asset_type == "data":
+            # Handle both "data/script.json" and "script.json" formats
+            object_key = data_key(campaign_id, filename)
+        elif filename == METADATA_FILE:
+            # Special case for metadata.json - always at root of campaign folder
+            object_key = metadata_key(campaign_id)
         else:
-            object_key = f"{CAMPAIGNS_PREFIX}{campaign_id}/{asset_type}/{filename}"
+            # Generic fallback
+            object_key = f"{campaign_folder(campaign_id)}{filename}"
 
         extra_args = {"ContentType": content_type}
 
@@ -303,20 +358,38 @@ class B2Storage:
         Args:
             campaign_id: Campaign identifier
             data: JSON-serializable data
-            filename: Name of JSON file (e.g., metadata.json)
+            filename: Name of JSON file (e.g., metadata.json, data/script.json)
 
         Returns:
             Object key in B2
         """
         content = json.dumps(data, indent=2).encode('utf-8')
-        return self.upload_asset(
-            campaign_id=campaign_id,
-            asset_type="data",
-            filename=filename,
-            content=content,
-            content_type="application/json",
-            metadata={"campaign_id": campaign_id}
-        )
+        
+        # Determine proper object key
+        if filename == METADATA_FILE:
+            # metadata.json goes to campaign root, not data/ folder
+            object_key = metadata_key(campaign_id)
+        else:
+            # Other JSON files go to data/ folder
+            object_key = data_key(campaign_id, filename)
+        
+        logger.info(f"Uploading JSON to B2: {object_key}")
+        
+        try:
+            client = self._get_client()
+            client.put_object(
+                Bucket=B2_BUCKET_NAME,
+                Key=object_key,
+                Body=content,
+                ContentType="application/json",
+                Metadata={"campaign_id": campaign_id}
+            )
+            logger.info(f"JSON uploaded successfully: {object_key}")
+            return object_key
+            
+        except ClientError as e:
+            logger.error(f"JSON upload failed: {e}")
+            raise
 
     def generate_presigned_url(
         self,
@@ -598,9 +671,12 @@ class B2Storage:
                     continue
 
                 try:
-                    # Try to get metadata.json
-                    metadata_key = f"{CAMPAIGNS_PREFIX}{campaign_id}/metadata.json"
-                    metadata = self.download_json(metadata_key)
+                    # Try to get metadata.json using centralized path
+                    mkey = metadata_key(campaign_id)
+                    metadata = self.download_json(mkey)
+                    # Ensure campaign_id is in metadata
+                    if 'campaign_id' not in metadata:
+                        metadata['campaign_id'] = campaign_id
 
                     # Apply filters
                     if search_term:
@@ -657,9 +733,9 @@ class B2Storage:
             raise ValueError("B2 storage not configured")
 
         try:
-            # Get metadata
-            metadata_key = f"{CAMPAIGNS_PREFIX}{campaign_id}/metadata.json"
-            metadata = self.download_json(metadata_key)
+            # Get metadata using centralized path
+            mkey = metadata_key(campaign_id)
+            metadata = self.download_json(mkey)
 
             # Get all object keys
             objects = self.list_campaign_objects(campaign_id)
@@ -667,7 +743,7 @@ class B2Storage:
             # Generate presigned URLs for each object
             object_urls = {}
             for obj in objects:
-                if obj['key'] != metadata_key:  # Don't include metadata URL
+                if obj['key'] != mkey:  # Don't include metadata URL
                     object_urls[obj['key']] = {
                         'url': self.generate_presigned_url(obj['key']),
                         'size': obj['size'],

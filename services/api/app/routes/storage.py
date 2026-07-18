@@ -9,11 +9,20 @@ import zipfile
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, HTTPException, status, UploadFile, File, Form, Query
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, JSONResponse
 from pydantic import BaseModel, Field
 from botocore.exceptions import ClientError
 
-from app.repo.b2_storage import get_storage, CampaignMetadata, CAMPAIGNS_PREFIX
+from app.repo.b2_storage import (
+    get_storage, 
+    CampaignMetadata, 
+    CAMPAIGN_PREFIX, 
+    CAMPAIGNS_PREFIX,
+    METADATA_FILE,
+    metadata_key,
+    data_key,
+    campaign_folder
+)
 
 logger = logging.getLogger("api.routes.storage")
 
@@ -75,8 +84,10 @@ async def list_campaigns(
         campaigns = []
         for campaign_id in campaign_ids:
             try:
-                # Try to get metadata.json for this campaign
-                metadata = storage.download_json(f"{CAMPAIGNS_PREFIX}{campaign_id}/metadata.json")
+                # Try to get metadata.json for this campaign using centralized path
+                metadata_path = metadata_key(campaign_id)
+                logger.info(f"Looking for metadata at: {metadata_path}")
+                metadata = storage.download_json(metadata_path)
                 # Ensure campaign_id is in metadata
                 if 'campaign_id' not in metadata:
                     metadata['campaign_id'] = campaign_id
@@ -119,9 +130,9 @@ async def list_campaigns(
     except Exception as e:
         logger.error(f"List campaigns failed: {e}")
         traceback.print_exc()
-        raise HTTPException(
+        return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to list campaigns"
+            content={"error": f"Failed to list campaigns: {str(e)}", "campaigns": [], "count": 0}
         )
 
 
@@ -154,9 +165,9 @@ async def search_campaigns(request: CampaignSearchRequest) -> Dict[str, Any]:
     except Exception as e:
         logger.error(f"Search campaigns failed: {e}")
         traceback.print_exc()
-        raise HTTPException(
+        return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to search campaigns"
+            content={"error": f"Failed to search campaigns: {str(e)}", "campaigns": [], "count": 0}
         )
 
 
@@ -175,9 +186,9 @@ async def get_campaign(campaign_id: str) -> Dict[str, Any]:
 
         campaign = storage.get_campaign(campaign_id)
         if not campaign:
-            raise HTTPException(
+            return JSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="Campaign not found"
+                content={"error": "Campaign not found"}
             )
 
         return campaign
@@ -187,9 +198,9 @@ async def get_campaign(campaign_id: str) -> Dict[str, Any]:
     except Exception as e:
         logger.error(f"Get campaign failed: {e}")
         traceback.print_exc()
-        raise HTTPException(
+        return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to get campaign"
+            content={"error": f"Failed to get campaign: {str(e)}"}
         )
 
 
@@ -202,9 +213,9 @@ async def delete_campaign(campaign_id: str) -> Dict[str, Any]:
         storage = get_storage()
         if not storage.is_available():
             logger.error(f"Storage not available for delete: {campaign_id}")
-            raise HTTPException(
+            return JSONResponse(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                detail="Storage not configured"
+                content={"error": "Storage not configured"}
             )
 
         deleted_count = storage.delete_campaign(campaign_id)
@@ -216,14 +227,12 @@ async def delete_campaign(campaign_id: str) -> Dict[str, Any]:
             "deleted_count": deleted_count
         }
 
-    except HTTPException:
-        raise
     except Exception as e:
         logger.error(f"Delete campaign failed: {campaign_id}, error={e}")
         traceback.print_exc()
-        raise HTTPException(
+        return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to delete campaign"
+            content={"error": f"Failed to delete campaign: {str(e)}"}
         )
 
 
@@ -235,9 +244,9 @@ async def upload_campaign(request: CampaignUploadRequest) -> Dict[str, Any]:
     try:
         storage = get_storage()
         if not storage.is_available():
-            raise HTTPException(
+            return JSONResponse(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                detail="Storage not configured"
+                content={"error": "Storage not configured"}
             )
 
         now = time.time()
@@ -265,14 +274,12 @@ async def upload_campaign(request: CampaignUploadRequest) -> Dict[str, Any]:
             "metadata_key": metadata_key
         }
 
-    except HTTPException:
-        raise
     except Exception as e:
         logger.error(f"Initialize campaign upload failed: {e}")
         traceback.print_exc()
-        raise HTTPException(
+        return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to initialize campaign upload"
+            content={"error": f"Failed to initialize campaign upload: {str(e)}"}
         )
 
 
@@ -290,17 +297,17 @@ async def upload_campaign_asset(
     try:
         storage = get_storage()
         if not storage.is_available():
-            raise HTTPException(
+            return JSONResponse(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                detail="Storage not configured"
+                content={"error": "Storage not configured"}
             )
 
         # Validate asset type
         allowed_types = ["images", "data", "scripts", "market-insights", "audience", "competitor-analysis", "analytics", "prompt"]
         if asset_type not in allowed_types:
-            raise HTTPException(
+            return JSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Invalid asset type. Allowed: {allowed_types}"
+                content={"error": f"Invalid asset type. Allowed: {allowed_types}"}
             )
 
         # Read content
@@ -334,14 +341,12 @@ async def upload_campaign_asset(
             "object_key": object_key
         }
 
-    except HTTPException:
-        raise
     except Exception as e:
         logger.error(f"Upload asset failed: {e}")
         traceback.print_exc()
-        raise HTTPException(
+        return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to upload asset"
+            content={"error": f"Failed to upload asset: {str(e)}"}
         )
 
 
@@ -359,9 +364,9 @@ async def upload_campaign_json(
         storage = get_storage()
         if not storage.is_available():
             logger.error(f"Storage not available for campaign {campaign_id}")
-            raise HTTPException(
+            return JSONResponse(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                detail="Storage not configured"
+                content={"error": "Storage not configured"}
             )
 
         object_key = storage.upload_json(
@@ -377,14 +382,12 @@ async def upload_campaign_json(
             "object_key": object_key
         }
 
-    except HTTPException:
-        raise
     except Exception as e:
         logger.error(f"Upload JSON failed: campaign={campaign_id}, file={filename}, error={e}")
         traceback.print_exc()
-        raise HTTPException(
+        return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to upload JSON"
+            content={"error": f"Failed to upload JSON: {str(e)}"}
         )
 
 
@@ -401,9 +404,9 @@ async def finalize_campaign(
         storage = get_storage()
         if not storage.is_available():
             logger.error(f"Storage not available for finalize: {campaign_id}")
-            raise HTTPException(
+            return JSONResponse(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                detail="Storage not configured"
+                content={"error": "Storage not configured"}
             )
 
         # Update metadata
@@ -423,14 +426,12 @@ async def finalize_campaign(
             "metadata_key": metadata_key
         }
 
-    except HTTPException:
-        raise
     except Exception as e:
         logger.error(f"Finalize campaign failed: {campaign_id}, error={e}")
         traceback.print_exc()
-        raise HTTPException(
+        return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to finalize campaign"
+            content={"error": f"Failed to finalize campaign: {str(e)}"}
         )
 
 
@@ -442,17 +443,17 @@ async def download_campaign_zip(campaign_id: str) -> StreamingResponse:
     try:
         storage = get_storage()
         if not storage.is_available():
-            raise HTTPException(
+            return JSONResponse(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                detail="Storage not configured"
+                content={"error": "Storage not configured"}
             )
 
         # Get campaign data
         campaign = storage.get_campaign(campaign_id)
         if not campaign:
-            raise HTTPException(
+            return JSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="Campaign not found"
+                content={"error": "Campaign not found"}
             )
 
         # Create ZIP in memory
@@ -484,14 +485,12 @@ async def download_campaign_zip(campaign_id: str) -> StreamingResponse:
             }
         )
 
-    except HTTPException:
-        raise
     except Exception as e:
         logger.error(f"Download campaign ZIP failed: {e}")
         traceback.print_exc()
-        raise HTTPException(
+        return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to download campaign"
+            content={"error": f"Failed to download campaign: {str(e)}"}
         )
 
 
@@ -506,9 +505,9 @@ async def get_presigned_url(
     try:
         storage = get_storage()
         if not storage.is_available():
-            raise HTTPException(
+            return JSONResponse(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                detail="Storage not configured"
+                content={"error": "Storage not configured"}
             )
 
         url = storage.generate_presigned_url(object_key, expiry_seconds=expiry)
@@ -518,12 +517,10 @@ async def get_presigned_url(
             "object_key": object_key
         }
 
-    except HTTPException:
-        raise
     except Exception as e:
         logger.error(f"Generate presigned URL failed: {e}")
         traceback.print_exc()
-        raise HTTPException(
+        return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to generate presigned URL"
+            content={"error": f"Failed to generate presigned URL: {str(e)}"}
         )
