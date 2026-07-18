@@ -23,5 +23,9 @@ typing-extensions>=4.8.0
 # Image processing (required by genblaze-core)
 pillow>=10.0.0
 
+# AWS S3 SDK for Backblaze B2
+boto3>=1.28.0
+botocore>=1.31.0
+
 # Optional: Production server
 gunicorn>=21.0.0

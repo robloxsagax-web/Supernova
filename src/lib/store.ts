@@ -1,11 +1,12 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { AppState, Product, VideoSettings, MarketIntelligence } from '@/types/product';
+import { storageService, CampaignMetadata } from './storage';
 
 type Step = 'url' | 'product' | 'script' | 'marketIntelligence' | 'video';
 type GenerationType = 'ad' | 'b-roll';
 type AssetType = 'image' | 'video' | 'script';
-type ActivityType = 'campaign_created' | 'image_generated' | 'video_generated' | 'script_generated' | 'asset_deleted' | 'project_renamed';
+type ActivityType = 'campaign_created' | 'image_generated' | 'video_generated' | 'script_generated' | 'asset_deleted' | 'project_renamed' | 'campaign_saved' | 'campaign_deleted';
 
 export interface BRollClip {
   id: number;
@@ -82,6 +83,10 @@ interface StoreState {
   projects: Project[];
   assets: Asset[];
   activities: Activity[];
+  // B2 storage related
+  b2Campaigns: CampaignMetadata[];
+  b2Loading: boolean;
+  b2Error: string | null;
   setStep: (step: Step) => void;
   setProduct: (product: Product) => void;
   setScript: (script: string) => void;
@@ -103,6 +108,11 @@ interface StoreState {
   addAsset: (type: AssetType, url: string, name: string, projectId?: string) => Asset;
   deleteAsset: (id: string) => void;
   addActivity: (type: ActivityType, description: string) => void;
+  // B2 storage methods
+  loadB2Campaigns: (filters?: any) => Promise<void>;
+  saveCampaignToB2: (generationTime?: number) => Promise<void>;
+  deleteCampaignFromB2: (campaignId: string) => Promise<void>;
+  clearB2Cache: () => void;
 }
 
 export const useStore = create<StoreState>()(
@@ -123,6 +133,10 @@ export const useStore = create<StoreState>()(
       projects: [],
       assets: [],
       activities: [],
+      // B2 storage state
+      b2Campaigns: [],
+      b2Loading: false,
+      b2Error: null,
 
       setStep: (step) => set({ step }),
       setProduct: (product) => set({ product }),
@@ -225,6 +239,72 @@ export const useStore = create<StoreState>()(
         set((state) => ({
           activities: [newActivity, ...state.activities].slice(0, 50),
         }));
+      },
+
+      // B2 storage methods
+      loadB2Campaigns: async (filters) => {
+        set({ b2Loading: true, b2Error: null });
+        try {
+          const campaigns = await storageService.listCampaigns(filters);
+          set({ b2Campaigns: campaigns, b2Loading: false });
+        } catch (error) {
+          console.error('Failed to load B2 campaigns:', error);
+          set({ 
+            b2Error: error instanceof Error ? error.message : 'Failed to load campaigns',
+            b2Loading: false 
+          });
+        }
+      },
+
+      saveCampaignToB2: async (generationTime) => {
+        const state = get();
+        const { product, script, marketIntelligence, adImages } = state;
+        
+        if (!product) {
+          throw new Error('No product to save');
+        }
+
+        const campaignId = generateId();
+        
+        try {
+          await storageService.saveCampaign({
+            campaignId,
+            productTitle: product.title,
+            productDescription: product.description,
+            prompt: product.features?.join(', ') || '',
+            aiProvider: 'genblaze',
+            generationTime: generationTime || 0,
+            script: script || undefined,
+            marketIntelligence: marketIntelligence || undefined,
+            images: adImages.length > 0 ? adImages : undefined,
+          });
+          
+          // Reload campaigns
+          await get().loadB2Campaigns();
+          
+          get().addActivity('campaign_saved', `Saved campaign: ${product.title}`);
+        } catch (error) {
+          console.error('Failed to save campaign to B2:', error);
+          throw error;
+        }
+      },
+
+      deleteCampaignFromB2: async (campaignId) => {
+        try {
+          await storageService.deleteCampaign(campaignId);
+          
+          // Reload campaigns
+          await get().loadB2Campaigns();
+          
+          get().addActivity('campaign_deleted', `Deleted campaign: ${campaignId}`);
+        } catch (error) {
+          console.error('Failed to delete campaign from B2:', error);
+          throw error;
+        }
+      },
+
+      clearB2Cache: () => {
+        storageService.clearCache();
       },
     }),
     {
