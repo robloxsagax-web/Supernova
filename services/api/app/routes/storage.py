@@ -84,36 +84,55 @@ async def list_campaigns(
         campaigns = []
         for campaign_id in campaign_ids:
             try:
-                # Try to get metadata.json for this campaign using centralized path
-                metadata_path = metadata_key(campaign_id)
-                logger.info(f"Looking for metadata at: {metadata_path}")
-                metadata = storage.download_json(metadata_path)
+                # Try to get metadata.json - check both locations for backward compatibility
+                canonical_path = metadata_key(campaign_id)
+                legacy_path = f"{campaign_folder(campaign_id)}data/{METADATA_FILE}"
+                metadata = None
+                
+                try:
+                    metadata = storage.download_json(canonical_path)
+                    logger.info(f"Found metadata at canonical location: {canonical_path}")
+                except ClientError as e:
+                    if e.response['Error']['Code'] == 'NoSuchKey':
+                        # Try legacy location
+                        logger.warning(f"Metadata not at {canonical_path}, trying legacy: {legacy_path}")
+                        try:
+                            metadata = storage.download_json(legacy_path)
+                            logger.info(f"Found metadata at legacy location: {legacy_path}")
+                            # Migrate to canonical location for future reads
+                            try:
+                                storage.upload_json(campaign_id, metadata, METADATA_FILE)
+                                logger.info(f"Migrated metadata to canonical location")
+                            except Exception as migrate_err:
+                                logger.warning(f"Could not migrate metadata: {migrate_err}")
+                        except ClientError:
+                            # No metadata at either location - create minimal entry
+                            logger.warning(f"Campaign {campaign_id} has no metadata.json, creating minimal entry")
+                            campaigns.append({
+                                'campaign_id': campaign_id,
+                                'product_title': campaign_id,
+                                'product_description': '',
+                                'prompt': '',
+                                'status': 'incomplete',
+                                'created_at': '',
+                                'updated_at': '',
+                                'ai_provider': 'genblaze',
+                                'image_count': 0,
+                                'generation_time': 0.0,
+                                'object_keys': []
+                            })
+                            continue
+                    else:
+                        raise
+                
+                if not metadata:
+                    continue
+                    
                 # Ensure campaign_id is in metadata
                 if 'campaign_id' not in metadata:
                     metadata['campaign_id'] = campaign_id
                 campaigns.append(metadata)
                 logger.info(f"  - {campaign_id}: {metadata.get('product_title', 'N/A')} (status: {metadata.get('status', 'N/A')})")
-            except ClientError as e:
-                if e.response['Error']['Code'] == 'NoSuchKey':
-                    # No metadata.json yet - create minimal entry from folder
-                    logger.warning(f"Campaign {campaign_id} has no metadata.json, creating minimal entry")
-                    campaigns.append({
-                        'campaign_id': campaign_id,
-                        'product_title': campaign_id,
-                        'product_description': '',
-                        'prompt': '',
-                        'status': 'incomplete',
-                        'created_at': '',
-                        'updated_at': '',
-                        'ai_provider': 'genblaze',
-                        'image_count': 0,
-                        'generation_time': 0.0,
-                        'object_keys': []
-                    })
-                else:
-                    logger.error(f"Error fetching metadata for {campaign_id}: {e}")
-                    # Skip corrupted campaigns instead of crashing
-                    continue
             except Exception as e:
                 logger.error(f"Unexpected error for campaign {campaign_id}: {e}")
                 # Skip corrupted campaigns instead of crashing

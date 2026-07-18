@@ -671,9 +671,31 @@ class B2Storage:
                     continue
 
                 try:
-                    # Try to get metadata.json using centralized path
+                    # Try to get metadata.json - check both locations for backward compatibility
                     mkey = metadata_key(campaign_id)
-                    metadata = self.download_json(mkey)
+                    metadata = None
+                    
+                    try:
+                        metadata = self.download_json(mkey)
+                    except ClientError as e:
+                        if e.response['Error']['Code'] == 'NoSuchKey':
+                            # Try legacy location
+                            legacy_mkey = f"{campaign_folder(campaign_id)}{DATA_PREFIX}{METADATA_FILE}"
+                            try:
+                                metadata = self.download_json(legacy_mkey)
+                                # Migrate for future reads
+                                try:
+                                    self.upload_json(campaign_id, metadata, METADATA_FILE)
+                                except:
+                                    pass
+                            except ClientError:
+                                continue  # Skip campaigns without metadata
+                        else:
+                            raise
+                    
+                    if not metadata:
+                        continue
+                    
                     # Ensure campaign_id is in metadata
                     if 'campaign_id' not in metadata:
                         metadata['campaign_id'] = campaign_id
@@ -733,9 +755,37 @@ class B2Storage:
             raise ValueError("B2 storage not configured")
 
         try:
-            # Get metadata using centralized path
+            # Try to get metadata - check both locations for backward compatibility
             mkey = metadata_key(campaign_id)
-            metadata = self.download_json(mkey)
+            metadata = None
+            
+            try:
+                metadata = self.download_json(mkey)
+                logger.info(f"Found metadata at canonical location: {mkey}")
+            except ClientError as e:
+                if e.response['Error']['Code'] == 'NoSuchKey':
+                    # Try legacy location (in data/ folder)
+                    legacy_mkey = f"{campaign_folder(campaign_id)}{DATA_PREFIX}{METADATA_FILE}"
+                    logger.warning(f"Metadata not at {mkey}, trying legacy location: {legacy_mkey}")
+                    try:
+                        metadata = self.download_json(legacy_mkey)
+                        logger.info(f"Found metadata at legacy location: {legacy_mkey}")
+                        # Update to canonical location for future reads
+                        try:
+                            self.upload_json(campaign_id, metadata, METADATA_FILE)
+                            logger.info(f"Migrated metadata from legacy to canonical location")
+                        except Exception as migrate_err:
+                            logger.warning(f"Could not migrate metadata: {migrate_err}")
+                    except ClientError:
+                        # Metadata not found at either location
+                        logger.error(f"Metadata not found at either location for campaign {campaign_id}")
+                        return None
+                else:
+                    raise
+            
+            # Ensure campaign_id is in metadata
+            if metadata and 'campaign_id' not in metadata:
+                metadata['campaign_id'] = campaign_id
 
             # Get all object keys
             objects = self.list_campaign_objects(campaign_id)
@@ -743,7 +793,7 @@ class B2Storage:
             # Generate presigned URLs for each object
             object_urls = {}
             for obj in objects:
-                if obj['key'] != mkey:  # Don't include metadata URL
+                if obj['key'] not in [mkey, f"{campaign_folder(campaign_id)}{DATA_PREFIX}{METADATA_FILE}"]:
                     object_urls[obj['key']] = {
                         'url': self.generate_presigned_url(obj['key']),
                         'size': obj['size'],
