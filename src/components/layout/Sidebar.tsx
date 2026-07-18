@@ -20,8 +20,8 @@ import { AccessibilityPanel, useAccessibility, useApplyAccessibility } from '@/c
 const mainNavItems = [
   { icon: LayoutDashboard, label: 'Dashboard', href: '/dashboard' },
   { icon: Plus, label: 'Create Campaign', href: '/create' },
-  { icon: FolderOpen, label: 'Gallery', href: '/projects' },
   { icon: CreditCard, label: 'Pricing', href: '/pricing' },
+  { icon: FolderOpen, label: 'Gallery', href: '/projects' },
 ];
 
 const bottomNavItems = [

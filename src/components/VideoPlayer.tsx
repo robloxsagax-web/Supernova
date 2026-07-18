@@ -71,7 +71,7 @@ function cleanScriptForVoiceover(rawScript: string): string {
 export function VideoPlayer() {
   // ALL HOOKS AT TOP LEVEL
   const store = useStore();
-  const { bRollConfig, productImages, addAsset, createProject } = store;
+  const { bRollConfig, productImages, addAsset, createProject, autoSaveCampaign, b2SaveStatus } = store;
   const { script, product, videoSettings, generationType } = store;
   
   const playerRef = useRef<HTMLDivElement>(null);
@@ -79,6 +79,8 @@ export function VideoPlayer() {
   const chunksRef = useRef<Blob[]>([]);
   const streamRef = useRef<MediaStream | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
+  const hasAutoSaved = useRef(false);
+  const startTimeRef = useRef<number>(Date.now());
   
   const [voiceoverUrl, setVoiceoverUrl] = useState<string | null>(null);
   const [isGeneratingVoiceover, setIsGeneratingVoiceover] = useState(false);
@@ -88,6 +90,17 @@ export function VideoPlayer() {
   const [isPlayerLoaded, setIsPlayerLoaded] = useState(false);
   const [isPreparingVideo, setIsPreparingVideo] = useState(true);
   const [showBRollNote, setShowBRollNote] = useState(true);
+  
+  // Auto-save when video is ready
+  useEffect(() => {
+    if (isPlayerLoaded && !isPreparingVideo && !hasAutoSaved.current && product) {
+      hasAutoSaved.current = true;
+      const generationTime = Date.now() - startTimeRef.current;
+      autoSaveCampaign(generationTime).catch(err => {
+        console.error('Auto-save failed:', err);
+      });
+    }
+  }, [isPlayerLoaded, isPreparingVideo, product, autoSaveCampaign]);
   
   // Derived values
   const { ratio, duration, captionStyle, brandPalette } = videoSettings;
