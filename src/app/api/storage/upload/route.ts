@@ -48,17 +48,7 @@ export async function POST(request: Request) {
 
   const { campaignId, productTitle, productDescription, prompt, aiProvider, generationTime, script, marketIntelligence, audience, competitorAnalysis, images } = body;
 
-  console.log(`[Upload] Request received:`, {
-    requestId,
-    campaignId,
-    productTitle,
-    hasScript: !!script,
-    hasMarketIntelligence: !!marketIntelligence,
-    imagesCount: images?.length || 0
-  });
-
   if (!campaignId || !productTitle) {
-    console.warn(`[Upload] Missing required fields: campaignId=${!!campaignId}, productTitle=${!!productTitle}`);
     return NextResponse.json(
       { 
         error: 'Missing required fields',
@@ -84,32 +74,26 @@ export async function POST(request: Request) {
       generation_time: generationTime || 0,
       object_keys: [] as string[]
     };
-    
-    console.log(`[Upload] Processing campaign: ${campaignId}, product: ${productTitle}`);
 
     // Upload script to data/script.json
     if (script) {
-      console.log(`[Upload] Uploading script for campaign: ${campaignId}`);
       const result = await uploadJson(`${FASTAPI_URL}/storage/campaigns/${campaignId}/upload-json/data/script.json`, {
         content: script,
         timestamp: new Date().toISOString()
       });
       if (result.success) {
         finalizeData.object_keys.push(`${campaignId}/data/script.json`);
-        console.log(`[Upload] Script uploaded successfully: ${campaignId}/data/script.json`);
       }
     }
 
     // Upload market intelligence to data/market-insights.json
     if (marketIntelligence) {
-      console.log(`[Upload] Uploading market intelligence for campaign: ${campaignId}`);
       const result = await uploadJson(`${FASTAPI_URL}/storage/campaigns/${campaignId}/upload-json/data/market-insights.json`, {
         ...marketIntelligence,
         timestamp: new Date().toISOString()
       });
       if (result.success) {
         finalizeData.object_keys.push(`${campaignId}/data/market-insights.json`);
-        console.log(`[Upload] Market intelligence uploaded successfully: ${campaignId}/data/market-insights.json`);
       }
     }
 
@@ -140,12 +124,9 @@ export async function POST(request: Request) {
     // Upload images in parallel
     const imageKeys: string[] = [];
     if (images && Array.isArray(images)) {
-      console.log(`[Upload] Starting image upload: ${images.length} images for campaign ${campaignId}`);
-      
       const imageUploadPromises = images.map(async (imageUrl: string, i: number) => {
         const filename = `image-${i + 1}.png`;
         try {
-          console.log(`[Upload] Fetching image ${i + 1}/${images.length}: ${filename}`);
           const response = await fetch(imageUrl);
           const blob = await response.blob();
           
@@ -153,7 +134,6 @@ export async function POST(request: Request) {
           formData.append('filename', filename);
           formData.append('content', blob);
           
-          console.log(`[Upload] Uploading image ${i + 1}/${images.length}: ${filename}`);
           const uploadResponse = await fetch(`${FASTAPI_URL}/storage/campaigns/${campaignId}/upload/images`, {
             method: 'POST',
             body: formData,
@@ -161,17 +141,15 @@ export async function POST(request: Request) {
           
           if (uploadResponse.ok) {
             imageKeys.push(`${campaignId}/images/${filename}`);
-            console.log(`[Upload] Image uploaded successfully: ${filename}`);
             return { success: true };
           }
         } catch (err) {
-          console.error(`[Upload] Image upload error for ${filename}:`, err);
+          console.error(`Image upload error for ${filename}:`, err);
         }
         return { success: false };
       });
 
       await Promise.all(imageUploadPromises);
-      console.log(`[Upload] Image upload complete: ${imageKeys.length}/${images.length} successful`);
     }
 
     finalizeData.object_keys.push(...imageKeys);
@@ -180,7 +158,6 @@ export async function POST(request: Request) {
     timingLog.push({ stage: 'upload_images', duration_ms: Date.now() - startTime });
 
     // Finalize campaign with metadata
-    console.log(`[Upload] Finalizing campaign: ${campaignId}`);
     const finalizeResponse = await fetch(`${FASTAPI_URL}/storage/campaigns/${campaignId}/finalize`, {
       method: 'POST',
       headers: {
@@ -194,7 +171,6 @@ export async function POST(request: Request) {
     }
 
     const totalDuration = Date.now() - startTime;
-    console.log(`[Upload] Campaign finalized successfully: ${campaignId}, duration: ${totalDuration}ms`);
 
     return NextResponse.json({
       success: true,
@@ -206,7 +182,6 @@ export async function POST(request: Request) {
 
   } catch (error) {
     const totalDuration = Date.now() - startTime;
-    console.error(`[Upload] Campaign upload failed:`, error);
 
     let errorMessage = 'Failed to upload campaign';
     let statusCode = 500;
@@ -219,8 +194,6 @@ export async function POST(request: Request) {
         errorMessage = error.message;
       }
     }
-    
-    console.error(`[Upload] Error details: ${errorMessage}, campaign: ${campaignId || 'N/A'}`);
 
     return NextResponse.json(
       { 
@@ -250,7 +223,7 @@ async function uploadJson(url: string, data: any): Promise<{success: boolean; ob
 
     return await response.json();
   } catch (error) {
-    console.error(`[Upload] JSON upload error to ${url}:`, error);
+    console.error(`JSON upload error to ${url}:`, error);
     return { success: false };
   }
 }

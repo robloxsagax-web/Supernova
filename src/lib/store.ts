@@ -115,7 +115,6 @@ interface StoreState {
   // B2 storage methods
   loadB2Campaigns: (filters?: any) => Promise<void>;
   autoSaveCampaign: (generationTime?: number) => Promise<void>;
-  retrySaveCampaign: (generationTime?: number) => Promise<void>;
   deleteCampaignFromB2: (campaignId: string) => Promise<void>;
   clearB2Cache: () => void;
   resetSaveStatus: () => void;
@@ -266,33 +265,20 @@ export const useStore = create<StoreState>()(
       },
 
       autoSaveCampaign: async (generationTime) => {
-        console.log('[STORE] autoSaveCampaign called');
         const state = get();
         const { product, script, marketIntelligence, adImages } = state;
         
-        console.log('[STORE] Product:', !!product, product?.title);
-        console.log('[STORE] Script:', !!script, script?.substring(0, 50));
-        console.log('[STORE] Market Intelligence:', !!marketIntelligence);
-        console.log('[STORE] Ad Images:', adImages.length);
-        
         if (!product) {
-          console.error('[STORE] Cannot save: No product');
           throw new Error('No product to save');
         }
 
         const campaignId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-        console.log('[STORE] Campaign ID:', campaignId);
         
         // Set saving status
         set({ b2SaveStatus: 'saving' as SaveStatus, b2SaveError: null });
-        console.log('[STORE] Status set to: saving');
 
         try {
           // Call the storage upload API
-          const FASTAPI_URL = process.env.NEXT_PUBLIC_API_URL || process.env.FASTAPI_URL || '';
-          console.log('[STORE] API URL:', FASTAPI_URL || '(using default /api/storage/upload)');
-          
-          console.log('[STORE] Sending POST /api/storage/upload');
           const response = await fetch('/api/storage/upload', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -308,34 +294,23 @@ export const useStore = create<StoreState>()(
               images: adImages.length > 0 ? adImages : undefined,
             }),
           });
-          
-          console.log('[STORE] Response status:', response.status);
-          
+
           if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
-            console.error('[STORE] Upload failed:', response.status, errorData);
             throw new Error(errorData.error || 'Failed to save campaign');
           }
 
           // Success
-          console.log('[STORE] Upload successful!');
           set({ b2SaveStatus: 'saved' as SaveStatus, b2LastSavedId: campaignId });
           get().addActivity('campaign_saved', `Saved campaign: ${product.title}`);
           
         } catch (error) {
-          console.error('[STORE] Auto-save failed:', error);
           set({ 
             b2SaveStatus: 'error' as SaveStatus,
             b2SaveError: error instanceof Error ? error.message : 'Failed to save campaign'
           });
           throw error;
         }
-      },
-
-      retrySaveCampaign: async (generationTime) => {
-        // Reset status and try again
-        set({ b2SaveStatus: 'idle' as SaveStatus, b2SaveError: null });
-        await get().autoSaveCampaign(generationTime);
       },
 
       deleteCampaignFromB2: async (campaignId) => {

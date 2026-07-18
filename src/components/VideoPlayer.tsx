@@ -4,10 +4,11 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useStore } from '@/lib/store';
+import { useRouter } from 'next/navigation';
 import { Player } from '@remotion/player';
 import { VantaShowcase } from './vanta/VantaShowcase';
 import { BRAND_PALETTES, BrandPaletteId } from '@/types/product';
-import { Download, Music, Loader2, RefreshCw, CheckCircle, AlertCircle } from 'lucide-react';
+import { Download, Music, Loader2, RefreshCw, CheckCircle, AlertCircle, Save, Cloud, CloudOff } from 'lucide-react';
 
 const FPS = 30;
 
@@ -71,15 +72,15 @@ function cleanScriptForVoiceover(rawScript: string): string {
 export function VideoPlayer() {
   // ALL HOOKS AT TOP LEVEL
   const store = useStore();
-  const { bRollConfig, productImages, addAsset, createProject, autoSaveCampaign, retrySaveCampaign, b2SaveStatus, b2SaveError, b2LastSavedId, loadB2Campaigns } = store;
-  const { script, product, videoSettings, generationType } = store;
+  const { bRollConfig, productImages, addAsset, createProject, autoSaveCampaign, b2SaveStatus, b2SaveError, b2LastSavedId, loadB2Campaigns } = store;
+  const { script, product, videoSettings, generationType, adImages } = store;
+  const router = useRouter();
   
   const playerRef = useRef<HTMLDivElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const streamRef = useRef<MediaStream | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
-  const hasAutoSaved = useRef(false);
   const startTimeRef = useRef<number>(Date.now());
   
   const [voiceoverUrl, setVoiceoverUrl] = useState<string | null>(null);
@@ -90,66 +91,33 @@ export function VideoPlayer() {
   const [isPlayerLoaded, setIsPlayerLoaded] = useState(false);
   const [isPreparingVideo, setIsPreparingVideo] = useState(true);
   const [showBRollNote, setShowBRollNote] = useState(true);
-  const [showSaveRetry, setShowSaveRetry] = useState(false);
   
-  // Auto-save when video is ready
-  useEffect(() => {
-    console.log('[VideoPlayer] Auto-save check:', {
-      isPlayerLoaded,
-      isPreparingVideo,
-      hasAutoSaved: hasAutoSaved.current,
-      hasProduct: !!product,
-      hasScript: !!script
-    });
+  // Handle Save Campaign button
+  const handleSaveCampaign = async () => {
+    console.log('[VideoPlayer] Save Campaign button clicked');
     
-    if (isPlayerLoaded && !hasAutoSaved.current && product) {
-      hasAutoSaved.current = true;
-      const generationTime = Date.now() - startTimeRef.current;
-      
-      console.log('[SAVE] Starting auto-save');
-      console.log('[SAVE] Generation time:', generationTime, 'ms');
-      console.log('[SAVE] Product:', product?.title);
-      console.log('[SAVE] Script length:', script?.length || 0);
-      console.log('[SAVE] Ad images:', adImages.length);
-      
-      autoSaveCampaign(generationTime)
-        .then(() => {
-          console.log('[SAVE] ✓ Auto-save completed successfully');
-          console.log('[SAVE] Campaign ID:', store.b2LastSavedId);
-        })
-        .catch(err => {
-          console.error('[SAVE] ✗ Auto-save failed:', err);
-          console.error('[SAVE] Error message:', err instanceof Error ? err.message : 'Unknown error');
-          setShowSaveRetry(true);
-        });
-    } else {
-      // Log why auto-save was skipped
-      if (!isPlayerLoaded) {
-        console.log('[SAVE] Skipping: Video player not loaded yet (waiting for canvas)');
-      }
-      if (hasAutoSaved.current) {
-        console.log('[SAVE] Skipping: Already auto-saved this session');
-      }
-      if (!product) {
-        console.log('[SAVE] Skipping: No product data available');
-      }
+    if (!product) {
+      console.error('[VideoPlayer] Cannot save: No product');
+      return;
     }
-  }, [isPlayerLoaded, product, script, adImages.length]);
-  
-  // Handle save retry
-  const handleRetrySave = async () => {
-    console.log('[VideoPlayer] Retrying auto-save...');
-    setShowSaveRetry(false);
+    
     const generationTime = Date.now() - startTimeRef.current;
     
     try {
-      await retrySaveCampaign(generationTime);
-      console.log('[VideoPlayer] Retry save completed successfully');
-      // Refresh gallery
-      loadB2Campaigns();
+      console.log('[VideoPlayer] Saving campaign...');
+      await autoSaveCampaign(generationTime);
+      console.log('[VideoPlayer] Campaign saved successfully!');
+      
+      // Refresh projects list
+      await loadB2Campaigns();
+      console.log('[VideoPlayer] Projects list refreshed');
+      
+      // Navigate to projects after short delay
+      setTimeout(() => {
+        router.push('/projects');
+      }, 1500);
     } catch (err) {
-      console.error('[VideoPlayer] Retry save failed:', err);
-      setShowSaveRetry(true);
+      console.error('[VideoPlayer] Save campaign failed:', err);
     }
   };
   
@@ -601,37 +569,50 @@ export function VideoPlayer() {
 
   // B-Roll mode: transparent container, no card wrapper
   if (isBRoll) {
+    const isSaving = b2SaveStatus === 'saving';
+    const isSaved = b2SaveStatus === 'saved';
+    const saveError = b2SaveError;
+    
     return (
       <div className="w-full">
-        {/* Save Retry Notification */}
-        {showSaveRetry && (
-          <div className="mb-4 p-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl">
-            <div className="flex items-start gap-3">
-              <div className="flex-shrink-0 mt-0.5">
-                <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-              </div>
-              <div className="flex-1">
-                <p className="text-sm text-amber-900 dark:text-amber-100">
-                  <span className="font-medium">Save failed:</span> Could not save to cloud storage. Your campaign is ready but not backed up.
-                </p>
-              </div>
-              <button
-                onClick={handleRetrySave}
-                className="flex-shrink-0 p-1.5 rounded-lg bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 hover:bg-amber-200 dark:hover:bg-amber-800/50 transition-colors"
-                title="Retry save"
-              >
-                <RefreshCw className="w-4 h-4" />
-              </button>
-            </div>
+        {/* Save Campaign Button */}
+        {!isSaved && (
+          <div className="mb-4">
+            <button
+              onClick={handleSaveCampaign}
+              disabled={isSaving || !product}
+              className={`w-full py-3 px-6 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
+                isSaving
+                  ? 'bg-gray-400 cursor-not-allowed'
+                  : 'bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-lg hover:shadow-xl'
+              }`}
+            >
+              {isSaving ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Saving Campaign...
+                </>
+              ) : saveError ? (
+                <>
+                  <CloudOff className="w-4 h-4" />
+                  Retry Save ({saveError})
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4" />
+                  Save Campaign to Cloud
+                </>
+              )}
+            </button>
           </div>
         )}
         
         {/* Save Success Notification */}
-        {b2SaveStatus === 'saved' && !showSaveRetry && (
+        {isSaved && (
           <div className="mb-4 p-4 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-xl">
             <div className="flex items-center gap-2">
               <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
-              <span className="text-sm text-green-900 dark:text-green-100">Campaign saved to cloud storage</span>
+              <span className="text-sm text-green-900 dark:text-green-100">Campaign saved! Redirecting to Projects...</span>
             </div>
           </div>
         )}
@@ -722,34 +703,53 @@ export function VideoPlayer() {
   }
 
   // AD mode: traditional card layout
+  const isSaving = b2SaveStatus === 'saving';
+  const isSaved = b2SaveStatus === 'saved';
+  const saveError = b2SaveError;
+  
   return (
     <Card className="w-full max-w-2xl mx-auto">
       <CardHeader>
         <CardTitle>Your Generated Video Ad</CardTitle>
       </CardHeader>
       <CardContent>
-        {/* Save Retry Notification */}
-        {showSaveRetry && (
-          <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-              <span className="text-sm text-amber-900 dark:text-amber-100">Save failed - not backed up</span>
-            </div>
+        {/* Save Campaign Button */}
+        {!isSaved && (
+          <div className="mb-4">
             <button
-              onClick={handleRetrySave}
-              className="p-1.5 rounded-lg bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 hover:bg-amber-200 dark:hover:bg-amber-800/50 transition-colors"
-              title="Retry save"
+              onClick={handleSaveCampaign}
+              disabled={isSaving || !product}
+              className={`w-full py-3 px-6 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
+                isSaving
+                  ? 'bg-gray-400 cursor-not-allowed'
+                  : 'bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-lg hover:shadow-xl'
+              }`}
             >
-              <RefreshCw className="w-4 h-4" />
+              {isSaving ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Saving Campaign...
+                </>
+              ) : saveError ? (
+                <>
+                  <CloudOff className="w-4 h-4" />
+                  Retry Save ({saveError})
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4" />
+                  Save Campaign to Cloud
+                </>
+              )}
             </button>
           </div>
         )}
         
         {/* Save Success Notification */}
-        {b2SaveStatus === 'saved' && !showSaveRetry && (
+        {isSaved && (
           <div className="mb-4 p-3 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-xl flex items-center gap-2">
             <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
-            <span className="text-sm text-green-900 dark:text-green-100">Saved to cloud</span>
+            <span className="text-sm text-green-900 dark:text-green-100">Campaign saved! Redirecting to Projects...</span>
           </div>
         )}
         
