@@ -11,8 +11,9 @@ from typing import Any, Dict, List, Optional
 from fastapi import APIRouter, HTTPException, status, UploadFile, File, Form, Query
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
+from botocore.exceptions import ClientError
 
-from app.repo.b2_storage import get_storage, CampaignMetadata
+from app.repo.b2_storage import get_storage, CampaignMetadata, CAMPAIGNS_PREFIX
 
 logger = logging.getLogger("api.routes.storage")
 
@@ -54,7 +55,7 @@ async def health_check() -> Dict[str, Any]:
 async def list_campaigns(
     max_keys: int = Query(default=100, ge=1, le=500)
 ) -> Dict[str, Any]:
-    """List all campaigns."""
+    """List all campaigns with full metadata."""
     logger.info(f"Campaign list request received: max_keys={max_keys}")
 
     try:
@@ -66,12 +67,52 @@ async def list_campaigns(
                 detail="Storage not configured"
             )
 
+        # Get campaign IDs first
         campaign_ids = storage.list_campaigns(max_keys=max_keys)
-        logger.info(f"Campaigns listed: count={len(campaign_ids)}")
-        for campaign in campaign_ids:
-            logger.info(f"  - {campaign.get('campaign_id', 'N/A')}: {campaign.get('product_title', 'N/A')}")
+        logger.info(f"Found {len(campaign_ids)} campaign folders in B2")
         
-        return {"campaigns": campaign_ids, "count": len(campaign_ids)}
+        # Now fetch metadata for each campaign
+        campaigns = []
+        for campaign_id in campaign_ids:
+            try:
+                # Try to get metadata.json for this campaign
+                metadata = storage.download_json(f"{CAMPAIGNS_PREFIX}{campaign_id}/metadata.json")
+                # Ensure campaign_id is in metadata
+                if 'campaign_id' not in metadata:
+                    metadata['campaign_id'] = campaign_id
+                campaigns.append(metadata)
+                logger.info(f"  - {campaign_id}: {metadata.get('product_title', 'N/A')} (status: {metadata.get('status', 'N/A')})")
+            except ClientError as e:
+                if e.response['Error']['Code'] == 'NoSuchKey':
+                    # No metadata.json yet - create minimal entry from folder
+                    logger.warning(f"Campaign {campaign_id} has no metadata.json, creating minimal entry")
+                    campaigns.append({
+                        'campaign_id': campaign_id,
+                        'product_title': campaign_id,
+                        'product_description': '',
+                        'prompt': '',
+                        'status': 'incomplete',
+                        'created_at': '',
+                        'updated_at': '',
+                        'ai_provider': 'genblaze',
+                        'image_count': 0,
+                        'generation_time': 0.0,
+                        'object_keys': []
+                    })
+                else:
+                    logger.error(f"Error fetching metadata for {campaign_id}: {e}")
+                    # Skip corrupted campaigns instead of crashing
+                    continue
+            except Exception as e:
+                logger.error(f"Unexpected error for campaign {campaign_id}: {e}")
+                # Skip corrupted campaigns instead of crashing
+                continue
+        
+        # Sort by created_at descending (newest first)
+        campaigns.sort(key=lambda x: x.get('created_at', ''), reverse=True)
+        
+        logger.info(f"Returning {len(campaigns)} campaigns with full metadata")
+        return {"campaigns": campaigns, "count": len(campaigns)}
 
     except HTTPException:
         raise
@@ -304,7 +345,7 @@ async def upload_campaign_asset(
         )
 
 
-@router.post("/campaigns/{campaign_id}/upload-json/{filename}")
+@router.post("/campaigns/{campaign_id}/upload-json/{filename:path}")
 async def upload_campaign_json(
     campaign_id: str,
     filename: str,
@@ -329,7 +370,7 @@ async def upload_campaign_json(
             filename=filename
         )
         
-        logger.info(f"Script uploaded successfully: campaign={campaign_id}, key={object_key}")
+        logger.info(f"JSON uploaded successfully: campaign={campaign_id}, key={object_key}")
 
         return {
             "success": True,
