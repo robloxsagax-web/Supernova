@@ -73,8 +73,12 @@ export function MarketIntelligence() {
   const { 
     product, 
     script, 
-    marketIntelligence, 
+    marketIntelligence,
+    videoSettings,
+    generationType,
     setMarketIntelligence,
+    setBRollConfig,
+    setProductImages,
     setLoading, 
     setError, 
     setStep,
@@ -119,7 +123,39 @@ export function MarketIntelligence() {
     }
   };
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Fetch video/BRoll config before navigating to video step
+      const videoResponse = await fetch('/api/generate-video', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          script,
+          generationType,
+          product,
+          duration: videoSettings.duration,
+          videoSettings
+        }),
+      });
+
+      if (videoResponse.ok) {
+        const videoData = await videoResponse.json();
+        // Store B-roll config if provided (for b-roll mode)
+        if (videoData.bRollConfig) {
+          setBRollConfig(videoData.bRollConfig);
+          setProductImages(videoData.productImages || []);
+        }
+      }
+    } catch (err) {
+      // Log error but don't block navigation - video will still play with fallback content
+      console.error('Video initialization error:', err);
+    } finally {
+      setLoading(false);
+    }
+
     setStep('video');
   };
 
