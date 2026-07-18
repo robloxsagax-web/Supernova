@@ -73,7 +73,7 @@ function cleanScriptForVoiceover(rawScript: string): string {
 export function VideoPlayer() {
   // ALL HOOKS AT TOP LEVEL
   const store = useStore();
-  const { bRollConfig, productImages, addAsset, createProject, autoSaveCampaign, b2SaveStatus, b2SaveError, b2LastSavedId, loadB2Campaigns } = store;
+  const { bRollConfig, productImages, addAsset, createProject, autoSaveCampaign, b2SaveStatus, b2SaveError, b2LastSavedId, loadB2Campaigns, narrationUrl, setNarration } = store;
   const { script, product, videoSettings, generationType, adImages } = store;
   const router = useRouter();
   
@@ -218,6 +218,8 @@ export function VideoPlayer() {
           const blob = await response.blob();
           currentUrl = URL.createObjectURL(blob);
           setVoiceoverUrl(currentUrl);
+          // Also save to store for campaign persistence
+          setNarration(currentUrl);
         }
       } catch (error) {
         console.log('Voiceover generation failed:', error);

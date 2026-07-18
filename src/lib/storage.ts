@@ -163,6 +163,8 @@ class StorageService {
     audience?: any;
     competitorAnalysis?: any;
     images?: string[];
+    video?: string;      // Base64 or URL of the final merged video
+    audio?: string;      // Base64 or URL of the narration audio
   }): Promise<void> {
     const response = await fetch('/api/storage/upload', {
       method: 'POST',

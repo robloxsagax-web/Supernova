@@ -74,6 +74,7 @@ interface StoreState {
   script: string | null;
   marketIntelligence: MarketIntelligence | null;
   videoUrl: string | null;
+  narrationUrl: string | null;  // Audio narration URL
   videoSettings: VideoSettings;
   generationType: GenerationType;
   bRollConfig: BRollConfig | null;
@@ -96,6 +97,7 @@ interface StoreState {
   setScript: (script: string) => void;
   setMarketIntelligence: (data: MarketIntelligence) => void;
   setVideo: (videoUrl: string) => void;
+  setNarration: (narrationUrl: string) => void;
   setVideoSettings: (settings: VideoSettings) => void;
   setGenerationType: (type: GenerationType) => void;
   setBRollConfig: (config: BRollConfig | null) => void;
@@ -128,6 +130,7 @@ export const useStore = create<StoreState>()(
       script: null,
       marketIntelligence: null,
       videoUrl: null,
+      narrationUrl: null,
       videoSettings: initialVideoSettings,
       generationType: 'ad' as GenerationType,
       bRollConfig: null,
@@ -151,6 +154,7 @@ export const useStore = create<StoreState>()(
       setScript: (script) => set({ script }),
       setMarketIntelligence: (data) => set({ marketIntelligence: data }),
       setVideo: (videoUrl) => set({ videoUrl }),
+      setNarration: (narrationUrl) => set({ narrationUrl }),
       setVideoSettings: (settings) => set({ videoSettings: settings }),
       setGenerationType: (type) => set({ generationType: type }),
       setBRollConfig: (config) => set({ bRollConfig: config }),
@@ -164,6 +168,7 @@ export const useStore = create<StoreState>()(
         product: null,
         script: null,
         videoUrl: null,
+        narrationUrl: null,
         isLoading: false,
         error: null,
       }),
@@ -266,7 +271,7 @@ export const useStore = create<StoreState>()(
 
       autoSaveCampaign: async (generationTime) => {
         const state = get();
-        const { product, script, marketIntelligence, adImages } = state;
+        const { product, script, marketIntelligence, adImages, videoUrl, narrationUrl } = state;
         
         if (!product) {
           throw new Error('No product to save');
@@ -292,6 +297,10 @@ export const useStore = create<StoreState>()(
               script: script || undefined,
               marketIntelligence: marketIntelligence || undefined,
               images: adImages.length > 0 ? adImages : undefined,
+              // Include video URL (blob URL or remote URL)
+              video: videoUrl || undefined,
+              // Include narration audio URL
+              audio: narrationUrl || undefined,
             }),
           });
 
