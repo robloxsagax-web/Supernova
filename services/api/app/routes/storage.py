@@ -416,28 +416,28 @@ async def finalize_campaign(
     metadata: Dict[str, Any]
 ) -> Dict[str, Any]:
     """Finalize campaign upload (update metadata with completion info)."""
-    logger.info(f"Campaign finalized request received: {campaign_id}")
-    logger.info(f"Metadata: product_title={metadata.get('product_title', 'N/A')}, status={metadata.get('status', 'N/A')}")
+    logger.info(f"[FINALIZE] Campaign finalized request received: {campaign_id}")
+    logger.info(f"[FINALIZE] Metadata: product_title={metadata.get('product_title', 'N/A')}, status={metadata.get('status', 'N/A')}")
 
     try:
         storage = get_storage()
         if not storage.is_available():
-            logger.error(f"Storage not available for finalize: {campaign_id}")
+            logger.error(f"[FINALIZE] Storage not available for finalize: {campaign_id}")
             return JSONResponse(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                 content={"error": "Storage not configured"}
             )
 
-        # Update metadata
+        # Update metadata - using "metadata.json" which should go to campaigns/{id}/metadata.json
         metadata_key = storage.upload_json(
             campaign_id=campaign_id,
             data=metadata,
             filename="metadata.json"
         )
         
-        logger.info(f"Campaign finalized successfully: {campaign_id}")
-        logger.info(f"Metadata uploaded: {metadata_key}")
-        logger.info(f"Object keys: {metadata.get('object_keys', [])}")
+        logger.info(f"[FINALIZE] Campaign finalized successfully: {campaign_id}")
+        logger.info(f"[FINALIZE] Metadata uploaded to: {metadata_key}")
+        logger.info(f"[FINALIZE] Object keys: {metadata.get('object_keys', [])}")
 
         return {
             "success": True,
@@ -446,7 +446,7 @@ async def finalize_campaign(
         }
 
     except Exception as e:
-        logger.error(f"Finalize campaign failed: {campaign_id}, error={e}")
+        logger.error(f"[FINALIZE] Finalize campaign failed: {campaign_id}, error={e}")
         traceback.print_exc()
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -457,11 +457,14 @@ async def finalize_campaign(
 @router.get("/campaigns/{campaign_id}/download")
 async def download_campaign_zip(campaign_id: str) -> StreamingResponse:
     """Download all campaign assets as a ZIP file."""
-    logger.info(f"Downloading campaign as ZIP: {campaign_id}")
+    logger.info(f"[DOWNLOAD] Request received for campaign: {campaign_id}")
 
     try:
         storage = get_storage()
+        logger.info(f"[DOWNLOAD] Storage available: {storage.is_available()}")
+        
         if not storage.is_available():
+            logger.warning(f"[DOWNLOAD] Storage not available, returning 503")
             return JSONResponse(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                 content={"error": "Storage not configured"}
@@ -469,7 +472,10 @@ async def download_campaign_zip(campaign_id: str) -> StreamingResponse:
 
         # Get campaign data
         campaign = storage.get_campaign(campaign_id)
+        logger.info(f"[DOWNLOAD] Campaign found: {campaign is not None}")
+        
         if not campaign:
+            logger.warning(f"[DOWNLOAD] Campaign not found: {campaign_id}, returning 404")
             return JSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
                 content={"error": "Campaign not found"}
@@ -481,8 +487,10 @@ async def download_campaign_zip(campaign_id: str) -> StreamingResponse:
             # Add metadata
             metadata_content = json.dumps(campaign['metadata'], indent=2)
             zip_file.writestr("metadata.json", metadata_content)
+            logger.info(f"[DOWNLOAD] Added metadata.json to ZIP")
 
             # Add all objects
+            object_count = 0
             for object_key, obj_info in campaign['objects'].items():
                 # Download and add to ZIP
                 try:
@@ -490,11 +498,15 @@ async def download_campaign_zip(campaign_id: str) -> StreamingResponse:
                     # Extract relative path within campaign folder
                     relative_path = object_key.split(f"{campaign_id}/", 1)[-1]
                     zip_file.writestr(relative_path, content)
+                    object_count += 1
                 except Exception as e:
-                    logger.warning(f"Failed to add {object_key} to ZIP: {e}")
+                    logger.warning(f"[DOWNLOAD] Failed to add {object_key} to ZIP: {e}")
                     continue
+            
+            logger.info(f"[DOWNLOAD] Added {object_count} objects to ZIP")
 
         zip_buffer.seek(0)
+        logger.info(f"[DOWNLOAD] Returning ZIP for campaign: {campaign_id}")
 
         return StreamingResponse(
             zip_buffer,
@@ -505,7 +517,7 @@ async def download_campaign_zip(campaign_id: str) -> StreamingResponse:
         )
 
     except Exception as e:
-        logger.error(f"Download campaign ZIP failed: {e}")
+        logger.error(f"[DOWNLOAD] Download campaign ZIP failed: {e}")
         traceback.print_exc()
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
