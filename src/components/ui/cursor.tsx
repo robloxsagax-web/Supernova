@@ -13,36 +13,12 @@ interface CustomCursorProps {
 }
 
 const cursorStyles = {
-  default: {
-    size: 16,
-    borderColor: '#FFDAB9',
-    backgroundColor: 'rgba(255, 218, 185, 0.1)',
-  },
-  edit: {
-    size: 20,
-    borderColor: '#5C3317',
-    backgroundColor: 'rgba(92, 51, 23, 0.2)',
-  },
-  pen: {
-    size: 18,
-    borderColor: '#FFDAB9',
-    backgroundColor: 'rgba(255, 218, 185, 0.3)',
-  },
-  crosshair: {
-    size: 20,
-    borderColor: '#FFDAB9',
-    backgroundColor: 'transparent',
-  },
-  grab: {
-    size: 24,
-    borderColor: '#FFDAB9',
-    backgroundColor: 'rgba(255, 218, 185, 0.15)',
-  },
-  pointer: {
-    size: 18,
-    borderColor: '#FFDAB9',
-    backgroundColor: 'rgba(255, 218, 185, 0.2)',
-  },
+  default: { size: 16, borderColor: '#FFDAB9', backgroundColor: 'rgba(255, 218, 185, 0.1)' },
+  edit: { size: 20, borderColor: '#5C3317', backgroundColor: 'rgba(92, 51, 23, 0.2)' },
+  pen: { size: 18, borderColor: '#FFDAB9', backgroundColor: 'rgba(255, 218, 185, 0.3)' },
+  crosshair: { size: 20, borderColor: '#FFDAB9', backgroundColor: 'transparent' },
+  grab: { size: 24, borderColor: '#FFDAB9', backgroundColor: 'rgba(255, 218, 185, 0.15)' },
+  pointer: { size: 18, borderColor: '#FFDAB9', backgroundColor: 'rgba(255, 218, 185, 0.2)' },
 };
 
 export function CustomCursor({ mode = 'default', className }: CustomCursorProps) {
@@ -53,24 +29,18 @@ export function CustomCursor({ mode = 'default', className }: CustomCursorProps)
 
   const cursorX = useMotionValue(-100);
   const cursorY = useMotionValue(-100);
-
-  const springConfig = { damping: 25, stiffness: 700 };
-  const cursorXSpring = useSpring(cursorX, springConfig);
-  const cursorYSpring = useSpring(cursorY, springConfig);
+  const cursorXSpring = useSpring(cursorX, { damping: 25, stiffness: 700 });
+  const cursorYSpring = useSpring(cursorY, { damping: 25, stiffness: 700 });
 
   useEffect(() => {
     const checkCursorVisibility = () => {
       const stored = localStorage.getItem('supernova-cursor-enabled');
-      if (stored !== null) {
-        setCursorEnabled(stored === 'true');
-      }
+      if (stored !== null) setCursorEnabled(stored === 'true');
     };
     
     const checkCursorStyle = () => {
       const stored = localStorage.getItem('supernova_cursor_style');
-      if (stored) {
-        setCursorStyle(stored as CursorStyle);
-      }
+      if (stored) setCursorStyle(stored as CursorStyle);
     };
     
     checkCursorVisibility();
@@ -80,6 +50,7 @@ export function CustomCursor({ mode = 'default', className }: CustomCursorProps)
       checkCursorVisibility();
       checkCursorStyle();
     };
+    
     window.addEventListener('storage', handleStorageChange);
     window.addEventListener('cursor-settings-changed', handleStorageChange);
 
@@ -89,25 +60,12 @@ export function CustomCursor({ mode = 'default', className }: CustomCursorProps)
       if (!isVisible) setIsVisible(true);
     };
 
-    const handleMouseEnter = () => setIsHovered(true);
-    const handleMouseLeave = () => setIsHovered(false);
-
     window.addEventListener('mousemove', moveCursor);
-
-    const interactiveElements = document.querySelectorAll('button, a, input, textarea, [role="button"]');
-    interactiveElements.forEach(el => {
-      el.addEventListener('mouseenter', handleMouseEnter);
-      el.addEventListener('mouseleave', handleMouseLeave);
-    });
 
     return () => {
       window.removeEventListener('mousemove', moveCursor);
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('cursor-settings-changed', handleStorageChange);
-      interactiveElements.forEach(el => {
-        el.removeEventListener('mouseenter', handleMouseEnter);
-        el.removeEventListener('mouseleave', handleMouseLeave);
-      });
     };
   }, [cursorX, cursorY, isVisible]);
 
@@ -210,9 +168,7 @@ export function CursorTrail() {
   useEffect(() => {
     const checkCursorVisibility = () => {
       const stored = localStorage.getItem('supernova-cursor-enabled');
-      if (stored !== null) {
-        setCursorEnabled(stored === 'true');
-      }
+      if (stored !== null) setCursorEnabled(stored === 'true');
     };
     checkCursorVisibility();
 
@@ -276,9 +232,7 @@ export function useCursorVisibility() {
 
   useEffect(() => {
     const stored = localStorage.getItem('supernova-cursor-enabled');
-    if (stored !== null) {
-      setIsEnabled(stored === 'true');
-    }
+    if (stored !== null) setIsEnabled(stored === 'true');
   }, []);
 
   const toggleCursor = () => {
