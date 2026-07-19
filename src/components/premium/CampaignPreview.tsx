@@ -17,7 +17,8 @@ import {
   Sparkles,
   Monitor,
   Smartphone,
-  Sparkle
+  Sparkle,
+  TrendingUp
 } from 'lucide-react';
 import { BRAND_PALETTES, BrandPaletteId } from '@/types/product';
 
@@ -34,6 +35,7 @@ const workflowSteps = [
   { id: 'url', label: 'URL', icon: Link, description: 'Paste product URL' },
   { id: 'research', label: 'Research', icon: Search, description: 'AI analyzes page' },
   { id: 'copy', label: 'Copy', icon: FileText, description: 'Generate script' },
+  { id: 'marketIntelligence', label: 'Market Intel', icon: TrendingUp, description: 'Analyze competitors & audience' },
   { id: 'images', label: 'Images', icon: Image, description: 'Create visuals' },
   { id: 'video', label: 'Video', icon: Film, description: 'Render video' },
   { id: 'publish', label: 'Publish', icon: Rocket, description: 'Download & share' },
@@ -89,11 +91,11 @@ export function CampaignPreview() {
 
   return (
     <div className="h-full flex flex-col">
-      {/* Header - stays fixed at top */}
+      {/* Header */}
       <motion.div
         initial={{ y: -10, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="flex-shrink-0 mb-4"
+        className="mb-6"
       >
         <div className="flex items-center gap-2 mb-2">
           <div className="w-2 h-2 rounded-full bg-[#22C55E] animate-pulse" />
@@ -106,24 +108,20 @@ export function CampaignPreview() {
         </h3>
       </motion.div>
 
-      {/* Scrollable Content Container - flex: 1 1 0% with overflow-y: auto */}
-      <div className="flex-1 overflow-y-auto min-h-0" style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,218,185,0.2) transparent' }}>
-        {/* Workflow Pipeline */}
+      {/* Workflow Pipeline */}
       <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.1 }}
-        className="mb-6 p-5 rounded-2xl overflow-hidden"
+        className="mb-6 p-5 rounded-2xl"
         style={{
           background: 'rgba(17, 17, 17, 0.6)',
           backdropFilter: 'blur(24px)',
           border: '1px solid rgba(255, 218, 185, 0.08)',
         }}
       >
-        {/* Scrollable container with custom scrollbar */}
-        <div className="max-h-[420px] overflow-y-auto scrollbar-thin scrollbar-thumb-[rgba(255,218,185,0.2)] scrollbar-track-transparent hover:scrollbar-thumb-[rgba(255,218,185,0.3)] transition-colors" style={{ scrollBehavior: 'smooth' }}>
-          {/* Vertical workflow */}
-          <div className="relative">
+        {/* Vertical workflow */}
+        <div className="relative">
           {workflowSteps.map((item, idx) => {
             const isActive = idx === currentStepIndex;
             const isCompleted = idx < currentStepIndex;
@@ -149,7 +147,7 @@ export function CampaignPreview() {
                   initial={{ x: -10, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ delay: idx * 0.1 }}
-                  className="flex items-start gap-4 pb-8 last:pb-4"
+                  className="flex items-start gap-4 pb-6 last:pb-0"
                 >
                   {/* Icon circle */}
                   <motion.div
@@ -209,15 +207,14 @@ export function CampaignPreview() {
             );
           })}
         </div>
-        </div>
       </motion.div>
 
-      {/* Estimated Output */}
+      {/* Default Output */}
       <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.2 }}
-        className="mb-6 p-5 rounded-2xl overflow-hidden"
+        className="mb-6 p-5 rounded-2xl"
         style={{
           background: 'linear-gradient(135deg, rgba(92, 51, 23, 0.15) 0%, rgba(255, 218, 185, 0.05) 100%)',
           border: '1px solid rgba(255, 218, 185, 0.1)',
@@ -226,7 +223,7 @@ export function CampaignPreview() {
         <div className="flex items-center gap-2 mb-4">
           <Sparkles className="w-4 h-4 text-[#FFDAB9]" />
           <span className="text-xs text-[rgba(255,218,185,0.8)] uppercase tracking-wider font-medium">
-            Estimated Output
+            Default Output
           </span>
         </div>
         
@@ -341,14 +338,13 @@ export function CampaignPreview() {
           ))}
         </div>
       </motion.div>
-      </div>
 
       {/* Footer hint */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.5 }}
-        className="flex-shrink-0 mt-4 text-center"
+        className="mt-6 text-center"
       >
         <p className="text-xs text-[rgba(255,255,255,0.3)]">
           Hover over steps for details
