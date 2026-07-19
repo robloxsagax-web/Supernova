@@ -779,6 +779,7 @@ export default function SettingsPage() {
                           onClick={() => {
                             setCursorStyle('nova-glow');
                             localStorage.setItem('supernova_cursor_style', 'nova-glow');
+                            window.dispatchEvent(new Event('cursor-settings-changed'));
                           }}
                           delay={0.4}
                         />
@@ -791,6 +792,7 @@ export default function SettingsPage() {
                           onClick={() => {
                             setCursorStyle('orbit-ring');
                             localStorage.setItem('supernova_cursor_style', 'orbit-ring');
+                            window.dispatchEvent(new Event('cursor-settings-changed'));
                           }}
                           delay={0.45}
                         />
@@ -803,6 +805,7 @@ export default function SettingsPage() {
                           onClick={() => {
                             setCursorStyle('energy-pulse');
                             localStorage.setItem('supernova_cursor_style', 'energy-pulse');
+                            window.dispatchEvent(new Event('cursor-settings-changed'));
                           }}
                           delay={0.5}
                         />
