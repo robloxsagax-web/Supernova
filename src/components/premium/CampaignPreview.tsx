@@ -17,7 +17,8 @@ import {
   Sparkles,
   Monitor,
   Smartphone,
-  Sparkle
+  Sparkle,
+  TrendingUp
 } from 'lucide-react';
 import { BRAND_PALETTES, BrandPaletteId } from '@/types/product';
 
@@ -34,6 +35,7 @@ const workflowSteps = [
   { id: 'url', label: 'URL', icon: Link, description: 'Paste product URL' },
   { id: 'research', label: 'Research', icon: Search, description: 'AI analyzes page' },
   { id: 'copy', label: 'Copy', icon: FileText, description: 'Generate script' },
+  { id: 'marketIntelligence', label: 'Market Intel', icon: TrendingUp, description: 'Analyze competitors & audience' },
   { id: 'images', label: 'Images', icon: Image, description: 'Create visuals' },
   { id: 'video', label: 'Video', icon: Film, description: 'Render video' },
   { id: 'publish', label: 'Publish', icon: Rocket, description: 'Download & share' },

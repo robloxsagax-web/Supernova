@@ -23,7 +23,6 @@ import {
   Check
 } from 'lucide-react';
 import { PremiumStepper } from '@/components/premium/PremiumStepper';
-import { PremiumWorkflowTimeline } from '@/components/premium/PremiumWorkflowTimeline';
 import { CampaignPreview } from '@/components/premium/CampaignPreview';
 
 const loadingMessages: Record<'url' | 'product' | 'script' | 'marketIntelligence' | 'video', string> = {
@@ -140,9 +139,6 @@ export default function CreatePage() {
             >
               <PremiumStepper />
             </motion.div>
-
-            {/* Premium Workflow Timeline */}
-            <PremiumWorkflowTimeline />
 
             {/* Error Message */}
             <AnimatePresence>
