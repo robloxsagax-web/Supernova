@@ -391,14 +391,52 @@ export default function SettingsPage() {
                   description="Profile information and account settings" 
                   delay={0.1}
                 />
-                <SettingCard 
-                  icon={Bell} 
-                  title="Notifications" 
-                  description="Email and push notification preferences"
-                  badge={notifications || pushNotifications ? "Enabled" : "Disabled"}
-                  badgeColor={notifications || pushNotifications ? "#22C55E" : undefined}
-                  delay={0.15}
-                />
+                
+                {/* AI Engine Card */}
+                <motion.div
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.15, duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+                  className="w-full p-5 rounded-2xl text-left transition-all duration-300 group relative overflow-hidden"
+                  style={{
+                    background: 'rgba(17, 17, 17, 0.6)',
+                    backdropFilter: 'blur(24px)',
+                    border: '1px solid rgba(255, 218, 185, 0.08)',
+                  }}
+                >
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-r from-[#5C3317]/10 to-transparent" />
+                  
+                  <div className="relative z-10 flex items-start gap-4">
+                    <motion.div
+                      whileHover={{ scale: 1.1, rotate: 5 }}
+                      className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
+                      style={{
+                        background: 'linear-gradient(135deg, #5C3317 0%, #8B5A2B 100%)',
+                        boxShadow: '0 4px 15px rgba(92, 51, 23, 0.3)',
+                      }}
+                    >
+                      <Sparkles className="w-6 h-6 text-[#FFDAB9]" />
+                    </motion.div>
+                    
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="text-base font-semibold text-white group-hover:text-[#FFDAB9] transition-colors">
+                          AI Engine
+                        </h3>
+                        <span className="flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-[#22C55E] animate-pulse" />
+                          <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold uppercase" style={{ background: 'rgba(34, 197, 94, 0.2)', color: '#22C55E' }}>
+                            6 Active
+                          </span>
+                        </span>
+                      </div>
+                      <p className="text-sm text-[rgba(255,255,255,0.5)] mb-2">All AI services connected and operational</p>
+                      <p className="text-xs text-[rgba(255,218,185,0.6)] tracking-wide">
+                        OpenRouter · ElevenLabs · JINA · Pexels · B2 · Genblaze
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
               </div>
             </section>
 
