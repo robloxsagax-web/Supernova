@@ -721,13 +721,15 @@ function AuthPageContent() {
 
           {/* Demo Login */}
           <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-[rgba(255,255,255,0.08)]" />
-              </div>
-              <div className="relative flex justify-center text-xs">
-                <span className="px-4 bg-transparent text-[rgba(255,255,255,0.3)]">or continue with</span>
-              </div>
+            <div className="relative flex items-center gap-4">
+              {/* Left line fragment */}
+              <div className="flex-1 h-px bg-[rgba(255,255,255,0.08)]" />
+              
+              {/* Text with transparent background */}
+              <span className="text-xs text-[rgba(255,255,255,0.3)] whitespace-nowrap">or continue with</span>
+              
+              {/* Right line fragment */}
+              <div className="flex-1 h-px bg-[rgba(255,255,255,0.08)]" />
             </div>
             
             <PremiumButton
