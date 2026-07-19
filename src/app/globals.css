@@ -1341,3 +1341,55 @@
   color: #FFDAB9;
   z-index: 9999;
 }
+
+/* ============================================
+   CUSTOM SCROLLBAR STYLES
+   ============================================ */
+
+/* Thin scrollbar for workflow containers */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 218, 185, 0.2) transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 3px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: rgba(255, 218, 185, 0.2);
+  border-radius: 3px;
+  transition: background-color 0.3s ease;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 218, 185, 0.3);
+}
+
+/* Premium thin scrollbar with orange accent */
+.scrollbar-thumb-\[rgba\(255\,218\,185\,0\.2\)\] {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 218, 185, 0.2) transparent;
+}
+
+.scrollbar-thumb-\[rgba\(255\,218\,185\,0\.2\)\]::-webkit-scrollbar {
+  width: 4px;
+}
+
+.scrollbar-thumb-\[rgba\(255\,218\,185\,0\.2\)\]::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thumb-\[rgba\(255\,218\,185\,0\.2\)\]::-webkit-scrollbar-thumb {
+  background: rgba(255, 218, 185, 0.2);
+  border-radius: 2px;
+}
+
+.scrollbar-thumb-\[rgba\(255\,218\,185\,0\.2\)\]:hover::-webkit-scrollbar-thumb {
+  background: rgba(255, 218, 185, 0.4);
+}

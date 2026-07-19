@@ -225,23 +225,6 @@ export function Sidebar() {
             </div>
           </div>
 
-          {/* Online Status Badge */}
-          <AnimatePresence>
-            {!isCollapsed && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="px-4 pb-3 will-change-transform"
-              >
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[rgba(34,197,94,0.1)] border border-[rgba(34,197,94,0.2)]">
-                  <div className="w-2 h-2 rounded-full bg-[#22C55E] animate-pulse" />
-                  <span className="text-xs text-[rgba(255,255,255,0.6)]">All systems operational</span>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
           {/* Navigation */}
           <nav className="flex-1 py-2 px-3 overflow-y-auto">
             <div className="space-y-1">

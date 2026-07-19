@@ -113,93 +113,95 @@ export function CampaignPreview() {
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.1 }}
-        className="mb-6 p-5 rounded-2xl"
+        className="mb-6 p-5 rounded-2xl overflow-hidden"
         style={{
           background: 'rgba(17, 17, 17, 0.6)',
           backdropFilter: 'blur(24px)',
           border: '1px solid rgba(255, 218, 185, 0.08)',
         }}
       >
-        {/* Vertical workflow */}
-        <div className="relative">
-          {workflowSteps.map((item, idx) => {
-            const isActive = idx === currentStepIndex;
-            const isCompleted = idx < currentStepIndex;
-            const Icon = item.icon;
-            
-            return (
-              <div key={item.id} className="relative">
-                {/* Connector line */}
-                {idx < workflowSteps.length - 1 && (
-                  <div className="absolute left-[27px] top-14 bottom-0 w-0.5">
-                    <motion.div
-                      initial={{ scaleY: 0 }}
-                      animate={{ scaleY: isCompleted ? 1 : isActive ? 0.5 : 0 }}
-                      transition={{ duration: 0.5 }}
-                      style={{ transformOrigin: 'top' }}
-                      className="w-full h-full bg-gradient-to-b from-[#5C3317] to-[#FFDAB9] rounded-full"
-                    />
-                  </div>
-                )}
-                
-                {/* Step item */}
-                <motion.div
-                  initial={{ x: -10, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  transition={{ delay: idx * 0.1 }}
-                  className="flex items-start gap-4 pb-6 last:pb-0"
-                >
-                  {/* Icon circle */}
+        {/* Scrollable container with custom scrollbar */}
+        <div className="max-h-[420px] overflow-y-auto scrollbar-thin scrollbar-thumb-[rgba(255,218,185,0.2)] scrollbar-track-transparent hover:scrollbar-thumb-[rgba(255,218,185,0.3)] transition-colors" style={{ scrollBehavior: 'smooth' }}>
+          {/* Vertical workflow */}
+          <div className="relative">
+            {workflowSteps.map((item, idx) => {
+              const isActive = idx === currentStepIndex;
+              const isCompleted = idx < currentStepIndex;
+              const Icon = item.icon;
+              
+              return (
+                <div key={item.id} className="relative">
+                  {/* Connector line */}
+                  {idx < workflowSteps.length - 1 && (
+                    <div className="absolute left-[27px] top-14 bottom-0 w-0.5">
+                      <motion.div
+                        initial={{ scaleY: 0 }}
+                        animate={{ scaleY: isCompleted ? 1 : isActive ? 0.5 : 0 }}
+                        transition={{ duration: 0.5 }}
+                        style={{ transformOrigin: 'top' }}
+                        className="w-full h-full bg-gradient-to-b from-[#5C3317] to-[#FFDAB9] rounded-full"
+                      />
+                    </div>
+                  )}
+                  
+                  {/* Step item with improved spacing */}
                   <motion.div
-                    whileHover={{ scale: 1.1 }}
-                    className={cn(
-                      'relative w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-300',
-                      isCompleted && 'bg-gradient-to-br from-[#5C3317] to-[#8B5A2B] shadow-lg',
-                      isActive && 'bg-gradient-to-br from-[#5C3317] to-[#FFDAB9] shadow-[0_0_25px_rgba(92,51,23,0.4)]',
-                      !isCompleted && !isActive && 'bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)]'
-                    )}
+                    initial={{ x: -10, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    transition={{ delay: idx * 0.1 }}
+                    className="flex items-start gap-4 pb-8 last:pb-4"
                   >
-                    {isCompleted ? (
-                      <Check className="w-6 h-6 text-[#FFDAB9]" />
-                    ) : (
-                      <Icon className={cn(
-                        'w-6 h-6 transition-colors duration-300',
-                        isActive ? 'text-[#09090B]' : 'text-[rgba(255,255,255,0.4)]'
-                      )} />
-                    )}
+                    {/* Icon circle */}
+                    <motion.div
+                      whileHover={{ scale: 1.1 }}
+                      className={cn(
+                        'relative w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-300',
+                        isCompleted && 'bg-gradient-to-br from-[#5C3317] to-[#8B5A2B] shadow-lg',
+                        isActive && 'bg-gradient-to-br from-[#5C3317] to-[#FFDAB9] shadow-[0_0_25px_rgba(92,51,23,0.4)]',
+                        !isCompleted && !isActive && 'bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)]'
+                      )}
+                    >
+                      {isCompleted ? (
+                        <Check className="w-6 h-6 text-[#FFDAB9]" />
+                      ) : (
+                        <Icon className={cn(
+                          'w-6 h-6 transition-colors duration-300',
+                          isActive ? 'text-[#09090B]' : 'text-[rgba(255,255,255,0.4)]'
+                        )} />
+                      )}
+                      
+                      {/* Pulse for active */}
+                      {isActive && (
+                        <motion.div
+                          animate={{ scale: [1, 1.5, 1], opacity: [1, 0, 1] }}
+                          transition={{ duration: 2, repeat: Infinity }}
+                          className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-[#22C55E]"
+                        />
+                      )}
+                    </motion.div>
                     
-                    {/* Pulse for active */}
+                    {/* Content */}
+                    <div className="flex-1 pt-1">
+                      <p className={cn(
+                        'font-medium text-sm transition-colors duration-300',
+                        (isCompleted || isActive) && 'text-white',
+                        !isCompleted && !isActive && 'text-[rgba(255,255,255,0.4)]'
+                      )}>
+                        {item.label}
+                      </p>
+                      <p className="text-xs text-[rgba(255,255,255,0.4)] mt-0.5">
+                        {item.description}
+                      </p>
+                    </div>
+                    
+                    {/* Arrow */}
                     {isActive && (
                       <motion.div
-                        animate={{ scale: [1, 1.5, 1], opacity: [1, 0, 1] }}
-                        transition={{ duration: 2, repeat: Infinity }}
-                        className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-[#22C55E]"
-                      />
-                    )}
-                  </motion.div>
-                  
-                  {/* Content */}
-                  <div className="flex-1 pt-1">
-                    <p className={cn(
-                      'font-medium text-sm transition-colors duration-300',
-                      (isCompleted || isActive) && 'text-white',
-                      !isCompleted && !isActive && 'text-[rgba(255,255,255,0.4)]'
-                    )}>
-                      {item.label}
-                    </p>
-                    <p className="text-xs text-[rgba(255,255,255,0.4)] mt-0.5">
-                      {item.description}
-                    </p>
-                  </div>
-                  
-                  {/* Arrow */}
-                  {isActive && (
-                    <motion.div
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      className="flex items-center"
-                    >
-                      <ChevronRight className="w-5 h-5 text-[#FFDAB9]" />
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className="flex items-center"
+                      >
+                        <ChevronRight className="w-5 h-5 text-[#FFDAB9]" />
                     </motion.div>
                   )}
                 </motion.div>
