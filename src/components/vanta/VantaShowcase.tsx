@@ -44,7 +44,7 @@ export interface CaptionSegment {
   endFrame: number;
 }
 
-// Default props
+// Default props - voiceoverUrl and backgroundMusicUrl intentionally undefined for safety
 const defaultProps: {
   product?: {
     title: string;
@@ -74,6 +74,7 @@ const defaultProps: {
     captionStyle: 'feature_badge',
     brandPalette: 'noir-gold',
   },
+  // voiceoverUrl and backgroundMusicUrl intentionally undefined - Audio components check before rendering
 };
 
 // Comprehensive text cleaner
@@ -1127,22 +1128,24 @@ export const VantaShowcase: React.FC<{
 
   return (
     <AbsoluteFill style={{ backgroundColor: isBRollMode ? 'transparent' : brandPalette.secondary }}>
-      {/* Background music - always rendered for stable ref, src can be null initially */}
-      <Audio
-        src={backgroundMusicUrl || null}
-        volume={isBRoll ? 0.08 : 0.12}
-        loop={true}
-        // Allow missing src to not throw - Remotion handles null src gracefully
-        onlyFullPrecision={false}
-      />
+      {/* Background music - only render if we have a valid URL string */}
+      {typeof backgroundMusicUrl === 'string' && backgroundMusicUrl.length > 0 && (
+        <Audio
+          src={backgroundMusicUrl}
+          volume={isBRoll ? 0.08 : 0.12}
+          loop={true}
+          onlyFullPrecision={false}
+        />
+      )}
 
-      {/* Voiceover - always rendered for stable ref lifecycle */}
-      <Audio 
-        src={voiceoverUrl || null} 
-        volume={audioFade}
-        // Allow missing src to not throw
-        onlyFullPrecision={false}
-      />
+      {/* Voiceover - only render if we have a valid URL string */}
+      {typeof voiceoverUrl === 'string' && voiceoverUrl.length > 0 && (
+        <Audio 
+          src={voiceoverUrl} 
+          volume={audioFade}
+          onlyFullPrecision={false}
+        />
+      )}
 
       {/* B-ROLL MODE: Video layer with crossfade transitions */}
       {isBRollMode && (

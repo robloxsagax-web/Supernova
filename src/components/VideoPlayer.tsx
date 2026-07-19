@@ -16,6 +16,11 @@ const FPS = 30;
 // CORS-open ambient music from a reliable public source
 const BACKGROUND_MUSIC_URL = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
 
+// Loading timeout constants
+const PREPARING_VIDEO_TIMEOUT_MS = 20000; // 20 seconds
+const B_ROLL_NOTE_DISMISS_TIMEOUT_MS = 35000; // 35 seconds
+const CANVAS_CHECK_INTERVAL_MS = 500; // 500ms
+
 /**
  * Client-side script cleaner - mirrors server-side logic
  */
@@ -116,13 +121,17 @@ export function VideoPlayer() {
   const totalFrames = duration * FPS;
   
   // Memoize inputProps to prevent unnecessary Player re-renders
-  // voiceoverUrl defaults to empty string to prevent Html5Audio errors
+  // Ensure voiceoverUrl is always a valid string or undefined, never null (causes Html5Audio crash)
+  const safeVoiceoverUrl = typeof voiceoverUrl === 'string' && voiceoverUrl.length > 0 
+    ? voiceoverUrl 
+    : undefined;
+  
   const inputProps = useMemo(() => ({
     script,
     product,
     settings: { ratio, duration, captionStyle, brandPalette },
     brandPalette: brandPaletteObject,
-    voiceoverUrl: voiceoverUrl || '',
+    voiceoverUrl: safeVoiceoverUrl,
     backgroundMusicUrl: BACKGROUND_MUSIC_URL,
     generationType,
     bRollConfig: bRollConfig || undefined,
@@ -135,7 +144,7 @@ export function VideoPlayer() {
     captionStyle, 
     brandPalette, 
     brandPaletteObject, 
-    voiceoverUrl, 
+    safeVoiceoverUrl, 
     generationType, 
     bRollConfig, 
     productImages
