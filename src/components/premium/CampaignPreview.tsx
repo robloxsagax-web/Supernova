@@ -147,7 +147,7 @@ export function CampaignPreview() {
                   initial={{ x: -10, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ delay: idx * 0.1 }}
-                  className="flex items-start gap-4 pb-6 last:pb-0"
+                  className="flex items-start gap-4 pb-10 last:pb-0"
                 >
                   {/* Icon circle */}
                   <motion.div
