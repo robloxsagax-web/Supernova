@@ -6,8 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '@/lib/store';
 import { useAuth } from '@/lib/auth';
 import { AccessibilityPanel, useAccessibility, useApplyAccessibility } from '@/components/ui/accessibility-panel';
-import { CustomCursor, CursorTrail, useCursorVisibility } from '@/components/ui/cursor';
-import { useCursorMode } from '@/components/ui/cursor';
+import { useCursorVisibility } from '@/components/ui/cursor';
 import { 
   User, 
   Bell, 
@@ -331,8 +330,6 @@ export default function SettingsPage() {
 
   return (
     <>
-      <CursorTrail />
-      <CustomCursor mode={mode} />
       
       <div className="min-h-screen relative">
         <div className="fixed inset-0 pointer-events-none overflow-hidden">
