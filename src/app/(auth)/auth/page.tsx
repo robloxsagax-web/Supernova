@@ -20,95 +20,194 @@ import {
 import { useAuth } from '@/lib/auth';
 import { cn } from '@/lib/utils';
 
-// Premium Brand Logo
+// Premium Brand Logo - Custom SVG Supernova
 const SupernovaLogo = memo(function SupernovaLogo({ className }: { className?: string }) {
   return (
     <motion.div
       className={cn('relative', className)}
-      animate={{ rotate: 360 }}
-      transition={{ duration: 60, repeat: Infinity, ease: 'linear' }}
+      whileHover={{ scale: 1.05 }}
+      transition={{ type: 'spring', stiffness: 400, damping: 25 }}
     >
-      <div className="relative w-20 h-20">
-        {/* Outer glow ring */}
-        <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#5C3317] via-[#8B5A2B] to-[#FFDAB9] opacity-50 blur-sm" />
+      <svg
+        width="48"
+        height="48"
+        viewBox="0 0 48 48"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className="drop-shadow-lg"
+      >
+        {/* Outer energy ring */}
+        <circle
+          cx="24"
+          cy="24"
+          r="22"
+          stroke="url(#outerGradient)"
+          strokeWidth="1.5"
+          strokeOpacity="0.6"
+          strokeDasharray="4 2"
+          className="animate-[spin_20s_linear_infinite]"
+        />
         
-        {/* Main gradient circle */}
-        <div className="relative w-full h-full rounded-full bg-gradient-to-br from-[#5C3317] via-[#8B5A2B] to-[#FFDAB9] p-[3px]">
-          <div className="w-full h-full rounded-full bg-[#09090B] flex items-center justify-center">
-            {/* Core star */}
-            <motion.div
-              className="relative w-8 h-8"
-              animate={{ scale: [1, 1.1, 1] }}
-              transition={{ duration: 2, repeat: Infinity }}
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-[#FFDAB9] to-[#5C3317] rounded-full opacity-80 blur-[2px]" />
-              <div className="absolute inset-1 bg-[#09090B] rounded-full" />
-              <div className="absolute inset-2 bg-gradient-to-br from-[#FFDAB9] to-[#8B5A2B] rounded-full" />
-            </motion.div>
-          </div>
-        </div>
+        {/* Middle glow ring */}
+        <circle
+          cx="24"
+          cy="24"
+          r="18"
+          stroke="url(#middleGradient)"
+          strokeWidth="1"
+          strokeOpacity="0.4"
+        />
         
-        {/* Orbiting particles */}
-        {[0, 60, 120, 180, 240, 300].map((angle, i) => (
-          <motion.div
+        {/* Core gradient */}
+        <defs>
+          <radialGradient id="coreGradient" cx="0.3" cy="0.3" r="0.7">
+            <stop offset="0%" stopColor="#FFDAB9" />
+            <stop offset="50%" stopColor="#8B5A2B" />
+            <stop offset="100%" stopColor="#5C3317" />
+          </radialGradient>
+          <linearGradient id="outerGradient" x1="0" y1="0" x2="48" y2="48">
+            <stop offset="0%" stopColor="#FFDAB9" />
+            <stop offset="100%" stopColor="#5C3317" />
+          </linearGradient>
+          <linearGradient id="middleGradient" x1="0" y1="0" x2="48" y2="48">
+            <stop offset="0%" stopColor="#8B5A2B" />
+            <stop offset="100%" stopColor="#5C3317" />
+          </linearGradient>
+        </defs>
+        
+        {/* Core circle with energy burst */}
+        <circle
+          cx="24"
+          cy="24"
+          r="12"
+          fill="url(#coreGradient)"
+        />
+        
+        {/* Inner dark core */}
+        <circle
+          cx="24"
+          cy="24"
+          r="7"
+          fill="#09090B"
+        />
+        
+        {/* AI spark - center light */}
+        <motion.circle
+          cx="24"
+          cy="24"
+          r="4"
+          fill="#FFDAB9"
+          animate={{ opacity: [0.6, 1, 0.6], scale: [0.9, 1.1, 0.9] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+        />
+        
+        {/* Energy rays */}
+        {[0, 45, 90, 135, 180, 225, 270, 315].map((angle, i) => (
+          <motion.line
             key={i}
-            className="absolute w-1.5 h-1.5 rounded-full bg-[#FFDAB9]"
-            style={{
-              top: '50%',
-              left: '50%',
-              x: Math.cos((angle * Math.PI) / 180) * 36 - 3,
-              y: Math.sin((angle * Math.PI) / 180) * 36 - 3,
-            }}
-            animate={{ opacity: [0.3, 1, 0.3] }}
-            transition={{ duration: 2, delay: i * 0.2, repeat: Infinity }}
+            x1="24"
+            y1="24"
+            x2={24 + Math.cos((angle * Math.PI) / 180) * 16}
+            y2={24 + Math.sin((angle * Math.PI) / 180) * 16}
+            stroke="#FFDAB9"
+            strokeWidth="1"
+            strokeOpacity="0.3"
+            initial={{ opacity: 0.1 }}
+            animate={{ opacity: [0.1, 0.5, 0.1] }}
+            transition={{ duration: 1.5, delay: i * 0.1, repeat: Infinity }}
           />
         ))}
-      </div>
+        
+        {/* Orbital accent dots */}
+        {[0, 120, 240].map((angle, i) => (
+          <motion.circle
+            key={i}
+            cx={24 + Math.cos((angle * Math.PI) / 180) * 20}
+            cy={24 + Math.sin((angle * Math.PI) / 180) * 20}
+            r="1.5"
+            fill="#FFDAB9"
+            animate={{ opacity: [0.2, 0.8, 0.2], scale: [0.8, 1.2, 0.8] }}
+            transition={{ duration: 2, delay: i * 0.3, repeat: Infinity }}
+          />
+        ))}
+      </svg>
     </motion.div>
   );
 });
 
-// Feature Card Component
+// Premium Feature Card Component
 const FeatureCard = memo(function FeatureCard({ 
   icon: Icon, 
   title, 
   description, 
-  color 
+  color,
+  index
 }: { 
   icon: React.ElementType; 
   title: string; 
   description: string; 
   color: string;
+  index?: number;
 }) {
   return (
     <motion.div
-      className="relative p-4 rounded-2xl overflow-hidden group"
+      className="relative p-5 rounded-2xl overflow-hidden group cursor-pointer"
       style={{
-        background: 'rgba(255, 218, 185, 0.05)',
-        border: '1px solid rgba(255, 218, 185, 0.1)',
-        backdropFilter: 'blur(16px)',
+        background: 'rgba(17, 17, 17, 0.5)',
+        border: '1px solid rgba(255, 218, 185, 0.08)',
+        backdropFilter: 'blur(20px)',
       }}
-      whileHover={{ scale: 1.02, y: -2 }}
-      transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.3 + (index || 0) * 0.08, duration: 0.4 }}
+      whileHover={{ 
+        scale: 1.02, 
+        y: -4,
+        borderColor: `${color}40`
+      }}
     >
-      {/* Glow on hover */}
+      {/* Subtle glow on hover */}
       <motion.div
-        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
         style={{
-          background: `radial-gradient(circle at 50% 0%, ${color}20 0%, transparent 70%)`,
+          background: `radial-gradient(ellipse at 50% 0%, ${color}15 0%, transparent 60%)`,
         }}
       />
       
-      <div className="relative z-10 flex items-start gap-3">
+      {/* Accent line on hover */}
+      <motion.div
+        className="absolute bottom-0 left-4 right-4 h-px opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+        style={{
+          background: `linear-gradient(90deg, transparent, ${color}, transparent)`,
+        }}
+      />
+      
+      <div className="relative z-10 flex items-start gap-4">
+        {/* Icon container with glow */}
         <div 
-          className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-          style={{ background: `${color}20` }}
+          className="relative w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden"
+          style={{ 
+            background: `linear-gradient(135deg, ${color}25 0%, ${color}10 100%)`,
+            boxShadow: `0 0 20px ${color}15`
+          }}
         >
-          <Icon className="w-5 h-5" style={{ color }} />
+          {/* Inner glow effect */}
+          <div 
+            className="absolute inset-0 opacity-50"
+            style={{
+              background: `radial-gradient(circle at 30% 30%, ${color}40 0%, transparent 60%)`
+            }}
+          />
+          <Icon 
+            className="w-5 h-5 relative z-10" 
+            style={{ color }} 
+            strokeWidth={1.75} 
+          />
         </div>
-        <div>
-          <h4 className="text-sm font-semibold text-white mb-1">{title}</h4>
-          <p className="text-xs text-[rgba(255,255,255,0.5)]">{description}</p>
+        
+        <div className="flex-1 min-w-0">
+          <h4 className="text-sm font-semibold text-white mb-1.5 tracking-tight">{title}</h4>
+          <p className="text-xs text-[rgba(255,255,255,0.45)] leading-relaxed">{description}</p>
         </div>
       </div>
     </motion.div>
@@ -126,14 +225,14 @@ const StatsCounter = memo(function StatsCounter({
   return (
     <div className="text-center px-4">
       <motion.div
-        className="text-2xl font-bold bg-gradient-to-r from-[#FFDAB9] to-[#5C3317] bg-clip-text text-transparent"
+        className="text-2xl font-bold bg-gradient-to-r from-[#FFDAB9] to-[#8B5A2B] bg-clip-text text-transparent"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
       >
         {value}
       </motion.div>
-      <div className="text-xs text-[rgba(255,255,255,0.4)] mt-1">{label}</div>
+      <div className="text-xs text-[rgba(255,255,255,0.4)] mt-1.5 tracking-wide">{label}</div>
     </div>
   );
 });
@@ -272,14 +371,14 @@ const PremiumButton = memo(function PremiumButton({
   );
 });
 
-// Features data
+// Features data with premium descriptions
 const FEATURES = [
-  { icon: Video, title: 'AI Video Studio', description: 'Professional advertisements', color: '#FF6B00' },
-  { icon: ImageIcon, title: 'Image Generation', description: 'High-converting creatives', color: '#22C55E' },
-  { icon: Brain, title: 'Marketing Intelligence', description: 'Competitor research', color: '#8B5CF6' },
-  { icon: Rocket, title: 'Campaign Automation', description: 'One-click execution', color: '#F59E0B' },
-  { icon: BarChart3, title: 'Performance Analytics', description: 'Track campaign growth', color: '#3B82F6' },
-  { icon: Cloud, title: 'Cloud Projects', description: 'Secure asset management', color: '#06B6D4' },
+  { icon: Video, title: 'AI Video Studio', description: 'Professional-grade video generation', color: '#FF6B00' },
+  { icon: ImageIcon, title: 'Image Generation', description: 'High-converting visual creatives', color: '#22C55E' },
+  { icon: Brain, title: 'Marketing Intelligence', description: 'Deep competitor & audience insights', color: '#8B5CF6' },
+  { icon: Rocket, title: 'Campaign Automation', description: 'One-click multi-channel execution', color: '#F59E0B' },
+  { icon: BarChart3, title: 'Performance Analytics', description: 'Real-time campaign tracking', color: '#3B82F6' },
+  { icon: Cloud, title: 'Cloud Projects', description: 'Secure asset management & sync', color: '#06B6D4' },
 ];
 
 function AuthPageContent() {
@@ -452,16 +551,16 @@ function AuthPageContent() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="flex items-center gap-4 mb-8"
+            className="flex items-center gap-4 mb-10"
           >
             <SupernovaLogo />
             <div>
               <h1 className="text-4xl font-bold tracking-tight">
-                <span className="bg-gradient-to-r from-[#5C3317] via-[#8B5A2B] to-[#FFDAB9] bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-[#FFDAB9] via-[#8B5A2B] to-[#FFDAB9] bg-clip-text text-transparent">
                   SUPERNOVA
                 </span>
               </h1>
-              <p className="text-sm text-[rgba(255,255,255,0.5)] mt-1">AI Marketing Agent Platform</p>
+              <p className="text-sm text-[rgba(255,255,255,0.45)] mt-1 tracking-wide">AI Marketing Agent Platform</p>
             </div>
           </motion.div>
 
@@ -470,15 +569,15 @@ function AuthPageContent() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="mb-8"
+            className="mb-10"
           >
-            <h2 className="text-5xl font-bold leading-tight mb-4">
+            <h2 className="text-5xl font-bold leading-tight mb-4 tracking-tight">
               <span className="text-white">Transform ideas into </span>
-              <span className="bg-gradient-to-r from-[#FFDAB9] to-[#5C3317] bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-[#FFDAB9] to-[#8B5A2B] bg-clip-text text-transparent">
                 high-converting campaigns
               </span>
             </h2>
-            <p className="text-lg text-[rgba(255,255,255,0.6)] leading-relaxed max-w-xl">
+            <p className="text-base text-[rgba(255,255,255,0.55)] leading-relaxed max-w-lg">
               Generate stunning videos, create image ads, research competitors, write persuasive copy. 
               All powered by autonomous AI agents.
             </p>
@@ -489,17 +588,10 @@ function AuthPageContent() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="grid grid-cols-2 gap-3 mb-10"
+            className="grid grid-cols-2 gap-4 mb-10"
           >
             {FEATURES.map((feature, index) => (
-              <motion.div
-                key={feature.title}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 + index * 0.05 }}
-              >
-                <FeatureCard {...feature} />
-              </motion.div>
+              <FeatureCard key={feature.title} {...feature} index={index} />
             ))}
           </motion.div>
 
@@ -508,22 +600,22 @@ function AuthPageContent() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
-            className="flex items-center justify-between px-8 py-6 rounded-2xl"
+            className="flex items-center justify-between px-8 py-5 rounded-2xl"
             style={{
-              background: 'rgba(255, 218, 185, 0.05)',
-              border: '1px solid rgba(255, 218, 185, 0.1)',
-              backdropFilter: 'blur(16px)',
+              background: 'rgba(17, 17, 17, 0.6)',
+              border: '1px solid rgba(255, 218, 185, 0.08)',
+              backdropFilter: 'blur(20px)',
             }}
           >
-            <div className="w-px h-12 bg-gradient-to-b from-transparent via-[rgba(255,255,255,0.1)] to-transparent" />
+            <div className="w-px h-12 bg-gradient-to-b from-transparent via-[rgba(255,255,255,0.08)] to-transparent" />
             <StatsCounter value="10K+" label="Campaigns Created" />
-            <div className="w-px h-12 bg-gradient-to-b from-transparent via-[rgba(255,255,255,0.1)] to-transparent" />
+            <div className="w-px h-12 bg-gradient-to-b from-transparent via-[rgba(255,255,255,0.08)] to-transparent" />
             <StatsCounter value="99.2%" label="Success Rate" />
-            <div className="w-px h-12 bg-gradient-to-b from-transparent via-[rgba(255,255,255,0.1)] to-transparent" />
+            <div className="w-px h-12 bg-gradient-to-b from-transparent via-[rgba(255,255,255,0.08)] to-transparent" />
             <StatsCounter value="45s" label="Avg Render Time" />
-            <div className="w-px h-12 bg-gradient-to-b from-transparent via-[rgba(255,255,255,0.1)] to-transparent" />
+            <div className="w-px h-12 bg-gradient-to-b from-transparent via-[rgba(255,255,255,0.08)] to-transparent" />
             <StatsCounter value="24/7" label="AI Agent Online" />
-            <div className="w-px h-12 bg-gradient-to-b from-transparent via-[rgba(255,255,255,0.1)] to-transparent" />
+            <div className="w-px h-12 bg-gradient-to-b from-transparent via-[rgba(255,255,255,0.08)] to-transparent" />
           </motion.div>
         </div>
       </div>
