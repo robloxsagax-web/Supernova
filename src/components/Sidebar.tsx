@@ -347,15 +347,13 @@ export function Sidebar() {
                 isCollapsed && 'justify-center p-2'
               )}
             >
-              {/* Avatar with premium gradient */}
+              {/* Avatar with clean dark background */}
               <motion.div
                 whileHover={{ scale: 1.05 }}
                 className="relative flex-shrink-0 will-change-transform"
               >
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#5C3317] via-[#8B5A2B] to-[#FFDAB9] p-[2px]">
-                  <div className="w-full h-full rounded-[10px] bg-[#111111] flex items-center justify-center">
-                    <User className="w-5 h-5 text-[#FFDAB9]" />
-                  </div>
+                <div className="w-10 h-10 rounded-full bg-[#111111] flex items-center justify-center">
+                  <User className="w-5 h-5 text-white" />
                 </div>
                 
                 {/* Online status */}
