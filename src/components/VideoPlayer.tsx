@@ -106,10 +106,10 @@ export function VideoPlayer() {
     }
   };
   
-  // Handle View in Projects
-  const handleViewInProjects = async () => {
+  // Handle View in Gallery
+  const handleViewInGallery = async () => {
     await loadB2Campaigns();
-    router.push('/projects');
+    router.push('/gallery');
   };
   
   // Derived values
@@ -334,10 +334,10 @@ export function VideoPlayer() {
               </div>
             </div>
             <button
-              onClick={handleViewInProjects}
+              onClick={handleViewInGallery}
               className="w-full py-3 px-6 rounded-xl bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl"
             >
-              View in Projects
+              View in Gallery
               <ArrowRight className="w-4 h-4" />
             </button>
           </motion.div>
@@ -493,10 +493,10 @@ export function VideoPlayer() {
               </div>
             </div>
             <button
-              onClick={handleViewInProjects}
+              onClick={handleViewInGallery}
               className="w-full py-3 px-6 rounded-xl bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl"
             >
-              View in Projects
+              View in Gallery
               <ArrowRight className="w-4 h-4" />
             </button>
           </motion.div>

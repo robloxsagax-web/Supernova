@@ -580,7 +580,6 @@ export default function SettingsPage() {
                       { name: 'OpenAI', status: 'Configured' },
                       { name: 'Qwen', status: 'Configured' },
                       { name: 'ElevenLabs', status: 'Configured' },
-                      { name: 'Supabase', status: 'Connected' },
                       { name: 'Pexels', status: 'Configured' },
                       { name: 'JINA', status: 'Configured' },
                       { name: 'GROQ', status: 'Configured' },
@@ -595,7 +594,7 @@ export default function SettingsPage() {
                   </div>
                 </motion.div>
 
-                {/* Supabase Card */}
+                {/* Backblaze B2 Card */}
                 <motion.div
                   initial={{ y: 20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
@@ -609,30 +608,34 @@ export default function SettingsPage() {
                 >
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #5C3317 0%, #8B5A2B 100%)' }}>
-                        <Cloud className="w-5 h-5 text-[#FFDAB9]" />
+                      <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #F97316 0%, #FB923C 100%)' }}>
+                        <Cloud className="w-5 h-5 text-white" />
                       </div>
                       <div>
-                        <h3 className="text-base font-semibold text-white">Supabase</h3>
-                        <p className="text-sm text-[rgba(255,255,255,0.5)]">Database and authentication</p>
+                        <h3 className="text-base font-semibold text-white">Backblaze B2</h3>
+                        <p className="text-sm text-[rgba(255,255,255,0.5)]">Cloud Object Storage</p>
                       </div>
                     </div>
-                    <span className="text-xs px-3 py-1.5 rounded-full font-medium bg-[#22C55E]/20 text-[#22C55E] border border-[#22C55E]/30">
+                    <span className="text-xs px-3 py-1.5 rounded-full font-medium bg-[#F97316]/20 text-[#F97316] border border-[#F97316]/30">
                       Connected
                     </span>
                   </div>
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-2 gap-3">
                     <div className="p-3 rounded-lg text-center" style={{ background: 'rgba(255,255,255,0.03)' }}>
-                      <p className="text-[10px] text-[rgba(255,255,255,0.4)] mb-1">Storage</p>
+                      <p className="text-[10px] text-[rgba(255,255,255,0.4)] mb-1">Bucket</p>
+                      <p className="text-xs font-semibold text-[#F97316]">Supernova1231</p>
+                    </div>
+                    <div className="p-3 rounded-lg text-center" style={{ background: 'rgba(255,255,255,0.03)' }}>
+                      <p className="text-[10px] text-[rgba(255,255,255,0.4)] mb-1">Media Assets</p>
                       <p className="text-xs font-semibold text-[#22C55E]">Ready</p>
                     </div>
                     <div className="p-3 rounded-lg text-center" style={{ background: 'rgba(255,255,255,0.03)' }}>
-                      <p className="text-[10px] text-[rgba(255,255,255,0.4)] mb-1">Auth</p>
+                      <p className="text-[10px] text-[rgba(255,255,255,0.4)] mb-1">Campaign Storage</p>
                       <p className="text-xs font-semibold text-[#22C55E]">Ready</p>
                     </div>
                     <div className="p-3 rounded-lg text-center" style={{ background: 'rgba(255,255,255,0.03)' }}>
-                      <p className="text-[10px] text-[rgba(255,255,255,0.4)] mb-1">Database</p>
-                      <p className="text-xs font-semibold text-[#22C55E]">Ready</p>
+                      <p className="text-[10px] text-[rgba(255,255,255,0.4)] mb-1">Status</p>
+                      <p className="text-xs font-semibold text-[#22C55E]">Operational</p>
                     </div>
                   </div>
                 </motion.div>
