@@ -6,9 +6,8 @@
  * Optimizations:
  * - Throttled mousemove events
  * - Passive event listeners
- * - Reduced trail count
- * - Simplified animations
  * - GPU acceleration
+ * - Multiple cursor styles support
  */
 
 import { useEffect, useState, useCallback, useRef, memo } from 'react';
@@ -16,13 +15,13 @@ import { motion, useMotionValue, useSpring } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
 export type CursorMode = 'default' | 'edit' | 'pen' | 'crosshair' | 'grab' | 'pointer';
+export type CursorStyle = 'nova-glow' | 'orbit-ring' | 'energy-pulse';
 
 interface CustomCursorProps {
   mode?: CursorMode;
   className?: string;
 }
 
-// Memoize cursor styles to prevent recreation
 const cursorStyles: Record<CursorMode, { size: number; borderColor: string; backgroundColor: string }> = {
   default: { size: 16, borderColor: '#FFDAB9', backgroundColor: 'rgba(255, 218, 185, 0.1)' },
   edit: { size: 20, borderColor: '#5C3317', backgroundColor: 'rgba(92, 51, 23, 0.2)' },
@@ -51,11 +50,11 @@ export const CustomCursor = memo(function CustomCursor({
   const [isHovered, setIsHovered] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [cursorEnabled, setCursorEnabled] = useState(true);
+  const [cursorStyle, setCursorStyle] = useState<CursorStyle>('nova-glow');
 
   const cursorX = useMotionValue(-100);
   const cursorY = useMotionValue(-100);
 
-  // Use spring for smooth cursor movement
   const cursorXSpring = useSpring(cursorX, { damping: 25, stiffness: 700 });
   const cursorYSpring = useSpring(cursorY, { damping: 25, stiffness: 700 });
 
@@ -65,87 +64,110 @@ export const CustomCursor = memo(function CustomCursor({
   useEffect(() => {
     const checkCursorVisibility = () => {
       const stored = localStorage.getItem('supernova-cursor-enabled');
-      if (stored !== null) {
-        setCursorEnabled(stored === 'true');
-      }
+      if (stored !== null) setCursorEnabled(stored === 'true');
     };
+    
+    const checkCursorStyle = () => {
+      const stored = localStorage.getItem('supernova_cursor_style');
+      if (stored) setCursorStyle(stored as CursorStyle);
+    };
+    
     checkCursorVisibility();
+    checkCursorStyle();
 
-    const handleStorageChange = () => checkCursorVisibility();
+    const handleStorageChange = () => {
+      checkCursorVisibility();
+      checkCursorStyle();
+    };
+    
     window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('cursor-settings-changed', handleStorageChange);
 
-    // Throttled cursor movement for better performance
     const moveCursor = throttle((e: MouseEvent) => {
       cursorX.set(e.clientX);
       cursorY.set(e.clientY);
       if (!isVisible) setIsVisible(true);
-    }, 16); // ~60fps
+    }, 16);
 
-    const handleMouseEnter = () => setIsHovered(true);
-    const handleMouseLeave = () => setIsHovered(false);
-
-    // Passive event listener for better scroll performance
     window.addEventListener('mousemove', moveCursor, { passive: true });
-    
-    // Use event delegation instead of attaching to each element
-    const observer = new MutationObserver(() => {
-      const interactiveElements = document.querySelectorAll('button, a, input, textarea, [role="button"]');
-      interactiveElements.forEach(el => {
-        el.addEventListener('mouseenter', handleMouseEnter, { passive: true });
-        el.addEventListener('mouseleave', handleMouseLeave, { passive: true });
-      });
-    });
-
-    observer.observe(document.body, { childList: true, subtree: true });
-
-    // Initial attachment
-    const interactiveElements = document.querySelectorAll('button, a, input, textarea, [role="button"]');
-    interactiveElements.forEach(el => {
-      el.addEventListener('mouseenter', handleMouseEnter, { passive: true });
-      el.addEventListener('mouseleave', handleMouseLeave, { passive: true });
-    });
 
     return () => {
       window.removeEventListener('mousemove', moveCursor);
       window.removeEventListener('storage', handleStorageChange);
-      observer.disconnect();
+      window.removeEventListener('cursor-settings-changed', handleStorageChange);
     };
   }, [cursorX, cursorY, isVisible]);
 
   if (!cursorEnabled || !isVisible) return null;
 
+  // Orbit Ring cursor
+  if (cursorStyle === 'orbit-ring') {
+    return (
+      <motion.div
+        className={cn('fixed top-0 left-0 pointer-events-none z-[9999] will-change-transform', className)}
+        style={{ x: cursorXSpring, y: cursorYSpring }}
+        animate={{ rotate: 360 }}
+        transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+      >
+        <div className="relative -translate-x-1/2 -translate-y-1/2">
+          <div className="w-12 h-12 rounded-full border-2 border-[#FFDAB9]/40" />
+          <div className="absolute inset-2 rounded-full border border-[#8B5A2B]/50" />
+          <motion.div
+            className="absolute top-0 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-gradient-to-br from-[#FFDAB9] to-[#5C3317] shadow-[0_0_15px_rgba(255,218,185,0.8)]"
+            animate={{ scale: isHovered ? [1, 1.3, 1] : [1, 1.1, 1] }}
+            transition={{ duration: 1.5, repeat: Infinity }}
+          />
+        </div>
+      </motion.div>
+    );
+  }
+
+  // Energy Pulse cursor
+  if (cursorStyle === 'energy-pulse') {
+    return (
+      <motion.div
+        className={cn('fixed top-0 left-0 pointer-events-none z-[9999] will-change-transform', className)}
+        style={{ x: cursorXSpring, y: cursorYSpring }}
+        animate={{ scale }}
+        transition={{ type: 'spring', stiffness: 500, damping: 28 }}
+      >
+        <div className="relative -translate-x-1/2 -translate-y-1/2">
+          <motion.div
+            className="absolute inset-0 rounded-full border-2 border-[#FFDAB9]/20"
+            animate={{ scale: [1, 2], opacity: [0.5, 0] }}
+            transition={{ duration: 1.5, repeat: Infinity }}
+          />
+          <motion.div
+            className="absolute inset-0 rounded-full border border-[#8B5A2B]/30"
+            animate={{ scale: [1, 1.8], opacity: [0.3, 0] }}
+            transition={{ duration: 1.5, repeat: Infinity, delay: 0.3 }}
+          />
+          <div className="relative w-8 h-8 rounded-full bg-gradient-to-br from-[#FFDAB9] to-[#5C3317] shadow-[0_0_20px_rgba(255,218,185,0.6)]" />
+          <motion.div
+            className="absolute inset-[30%] rounded-full bg-white"
+            animate={{ opacity: isHovered ? [0.6, 1, 0.6] : [0.8, 1, 0.8] }}
+            transition={{ duration: 1, repeat: Infinity }}
+          />
+        </div>
+      </motion.div>
+    );
+  }
+
+  // Default: Nova Glow cursor
   return (
     <motion.div
       className={cn('fixed top-0 left-0 pointer-events-none z-[9999] mix-blend-difference will-change-transform', className)}
-      style={{
-        x: cursorXSpring,
-        y: cursorYSpring,
-        transform: 'translate3d(0, 0, 0)',
-      }}
+      style={{ x: cursorXSpring, y: cursorYSpring }}
       animate={{ scale, opacity: isVisible ? 1 : 0 }}
-      transition={{
-        scale: { type: 'spring', stiffness: 500, damping: 28 },
-        opacity: { duration: 0.2 },
-      }}
+      transition={{ scale: { type: 'spring', stiffness: 500, damping: 28 }, opacity: { duration: 0.2 } }}
     >
-      {/* Cursor Ring */}
-      <motion.div
-        className="relative will-change-transform"
-        style={{ width: style.size, height: style.size }}
-      >
-        {/* Outer Ring */}
+      <motion.div className="relative will-change-transform" style={{ width: style.size, height: style.size }}>
         <motion.div
           className="absolute inset-0 rounded-full border-2 will-change-transform"
-          style={{
-            borderColor: style.borderColor,
-            backgroundColor: style.backgroundColor,
-            transform: 'translate3d(0, 0, 0)',
-          }}
+          style={{ borderColor: style.borderColor, backgroundColor: style.backgroundColor }}
           animate={{ scale: isHovered ? [1, 1.2, 1] : 1 }}
           transition={{ duration: 0.3 }}
         />
-
-        {/* Inner Dot */}
         <motion.div
           className="absolute rounded-full bg-[#FFDAB9] will-change-transform"
           style={{
@@ -153,15 +175,20 @@ export const CustomCursor = memo(function CustomCursor({
             height: mode === 'crosshair' ? 2 : 4,
             top: '50%',
             left: '50%',
-            transform: 'translate(-50%, -50%) translate3d(0, 0, 0)',
+            transform: 'translate(-50%, -50%)',
           }}
+        />
+        <motion.div
+          className="absolute inset-0 rounded-full opacity-30 will-change-transform"
+          style={{ background: `radial-gradient(circle, ${style.borderColor} 0%, transparent 70%)`, filter: 'blur(4px)' }}
+          animate={{ scale: isHovered ? [1, 1.5, 1] : [1, 1.2, 1], opacity: isHovered ? [0.3, 0.6, 0.3] : [0.2, 0.4, 0.2] }}
+          transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
         />
       </motion.div>
     </motion.div>
   );
 });
 
-// Simplified cursor trail with reduced complexity
 export const CursorTrail = memo(function CursorTrail() {
   const [trails, setTrails] = useState<Array<{ x: number; y: number; id: number }>>([]);
   const [cursorEnabled, setCursorEnabled] = useState(true);
@@ -173,39 +200,34 @@ export const CursorTrail = memo(function CursorTrail() {
   useEffect(() => {
     const checkCursorVisibility = () => {
       const stored = localStorage.getItem('supernova-cursor-enabled');
-      if (stored !== null) {
-        setCursorEnabled(stored === 'true');
-      }
+      if (stored !== null) setCursorEnabled(stored === 'true');
     };
     checkCursorVisibility();
 
     const handleStorageChange = () => checkCursorVisibility();
     window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('cursor-settings-changed', handleStorageChange);
 
-    // Reduced trail count and throttled updates
     const moveCursor = throttle((e: MouseEvent) => {
       const now = Date.now();
-      // Only add trail point every 50ms max
       if (now - lastTrailTime.current > 50) {
         lastTrailTime.current = now;
         trailIdRef.current++;
-        
         setTrails(prev => {
           const newTrail = { x: e.clientX, y: e.clientY, id: trailIdRef.current };
-          // Reduced from 8 to 5 trails for better performance
           return [...prev, newTrail].slice(-5);
         });
       }
-      
       cursorX.set(e.clientX);
       cursorY.set(e.clientY);
     }, 16);
 
     window.addEventListener('mousemove', moveCursor, { passive: true });
-    
+
     return () => {
       window.removeEventListener('mousemove', moveCursor);
       window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('cursor-settings-changed', handleStorageChange);
     };
   }, [cursorX, cursorY]);
 
@@ -218,21 +240,13 @@ export const CursorTrail = memo(function CursorTrail() {
           key={trail.id}
           className="fixed pointer-events-none z-[9998] will-change-transform rounded-full"
           initial={{ opacity: 0.4, scale: 1 }}
-          animate={{
-            x: trail.x,
-            y: trail.y,
-            opacity: 0,
-            scale: 0.3,
-          }}
-          transition={{
-            duration: 0.6,
-            ease: 'easeOut',
-          }}
+          animate={{ x: trail.x, y: trail.y, opacity: 0, scale: 0.3 }}
+          transition={{ duration: 0.6, ease: 'easeOut' }}
           style={{
             width: 6 - index,
             height: 6 - index,
             backgroundColor: 'rgba(255, 218, 185, 0.25)',
-            transform: 'translate(-50%, -50%) translate3d(0, 0, 0)',
+            transform: 'translate(-50%, -50%)',
           }}
         />
       ))}
@@ -240,7 +254,6 @@ export const CursorTrail = memo(function CursorTrail() {
   );
 });
 
-// Hook to manage cursor mode globally
 export function useCursorMode() {
   const [mode, setMode] = useState<CursorMode>('default');
 
@@ -254,15 +267,12 @@ export function useCursorMode() {
   return { mode, setCursorMode };
 }
 
-// Hook to toggle cursor visibility
 export function useCursorVisibility() {
   const [isEnabled, setIsEnabled] = useState(true);
 
   useEffect(() => {
     const stored = localStorage.getItem('supernova-cursor-enabled');
-    if (stored !== null) {
-      setIsEnabled(stored === 'true');
-    }
+    if (stored !== null) setIsEnabled(stored === 'true');
   }, []);
 
   const toggleCursor = useCallback(() => {
@@ -270,6 +280,7 @@ export function useCursorVisibility() {
     setIsEnabled(newValue);
     localStorage.setItem('supernova-cursor-enabled', String(newValue));
     window.dispatchEvent(new Event('storage'));
+    window.dispatchEvent(new Event('cursor-settings-changed'));
   }, [isEnabled]);
 
   return { isEnabled, toggleCursor };
