@@ -147,9 +147,16 @@ export async function POST(request: Request) {
     if (!response.ok) {
       const errorText = await response.text();
       console.error('ElevenLabs API error:', response.status, errorText);
+      
+      // Return HTTP 200 with error info - never fail the pipeline
+      // Client can check response body for success field
       return NextResponse.json(
-        { error: `ElevenLabs API error: ${response.status} - ${errorText}` },
-        { status: response.status }
+        { 
+          success: false,
+          error: `Voiceover service error: ${response.status}`,
+          message: 'Voiceover generation failed. Video will continue without narration.'
+        },
+        { status: 200 }  // Always return 200 to not break the pipeline
       );
     }
 

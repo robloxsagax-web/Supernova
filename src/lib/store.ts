@@ -120,6 +120,7 @@ interface StoreState {
   deleteCampaignFromB2: (campaignId: string) => Promise<void>;
   clearB2Cache: () => void;
   resetSaveStatus: () => void;
+  retrySaveCampaign: () => Promise<void>;
 }
 
 export const useStore = create<StoreState>()(
@@ -344,6 +345,30 @@ export const useStore = create<StoreState>()(
 
       resetSaveStatus: () => {
         set({ b2SaveStatus: 'idle' as SaveStatus, b2SaveError: null });
+      },
+
+      retrySaveCampaign: async () => {
+        const state = get();
+        const { product } = state;
+        
+        if (!product) {
+          console.warn('[Store] Cannot retry save: no product');
+          return;
+        }
+
+        // Reset status and retry
+        set({ b2SaveStatus: 'idle' as SaveStatus, b2SaveError: null });
+        
+        // Small delay to allow UI to update
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        // Retry the save
+        try {
+          await get().autoSaveCampaign();
+        } catch (error) {
+          // Error already handled in autoSaveCampaign
+          console.error('[Store] Retry save failed:', error);
+        }
       },
     }),
     {

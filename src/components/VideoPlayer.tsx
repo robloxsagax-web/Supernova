@@ -214,12 +214,28 @@ export function VideoPlayer() {
           }),
         });
         
-        if (response.ok && mounted) {
-          const blob = await response.blob();
-          currentUrl = URL.createObjectURL(blob);
-          setVoiceoverUrl(currentUrl);
-          // Also save to store for campaign persistence
-          setNarration(currentUrl);
+        // Handle both success and graceful failure (returns 200 with success: false)
+        if (response.ok) {
+          const contentType = response.headers.get('content-type') || '';
+          
+          if (contentType.includes('audio/')) {
+            // Successful audio response
+            const blob = await response.blob();
+            currentUrl = URL.createObjectURL(blob);
+            setVoiceoverUrl(currentUrl);
+            // Also save to store for campaign persistence
+            setNarration(currentUrl);
+          } else {
+            // JSON response - likely an error fallback
+            const data = await response.json().catch(() => ({}));
+            if (data.message) {
+              console.log('[VideoPlayer] Voiceover unavailable:', data.message);
+            }
+            // Don't set error state - just continue without narration
+          }
+        } else {
+          // HTTP error - continue without narration
+          console.warn('[VideoPlayer] Voiceover request failed:', response.status);
         }
       } catch (error) {
         console.log('Voiceover generation failed:', error);

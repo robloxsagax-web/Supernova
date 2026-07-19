@@ -11,6 +11,33 @@ interface TimingLog {
   duration_ms: number;
 }
 
+// Type-safe request body interface
+interface UploadRequestBody {
+  campaignId: string;
+  productTitle: string;
+  productDescription: string;
+  prompt?: string;
+  aiProvider?: string;
+  generationTime?: number;
+  script?: string;
+  marketIntelligence?: Record<string, unknown>;
+  audience?: Record<string, unknown>;
+  competitorAnalysis?: Record<string, unknown>;
+  images?: string[];
+  video?: string;
+  audio?: string;
+}
+
+// Validate URL format
+function isValidUrl(urlString: string): boolean {
+  try {
+    new URL(urlString);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export async function POST(request: Request) {
   const startTime = Date.now();
   const requestId = `req_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
@@ -31,7 +58,7 @@ export async function POST(request: Request) {
     );
   }
 
-  let body: any;
+  let body: UploadRequestBody;
   try {
     body = await request.json();
     timingLog.push({ stage: 'parse_request', duration_ms: Date.now() - startTime });
@@ -58,8 +85,8 @@ export async function POST(request: Request) {
     audience, 
     competitorAnalysis, 
     images,
-    video,      // Base64 or URL of the final merged video
-    audio       // Base64 or URL of the narration audio
+    video,
+    audio
   } = body;
 
   if (!campaignId || !productTitle) {
@@ -140,8 +167,21 @@ export async function POST(request: Request) {
     if (images && Array.isArray(images)) {
       const imageUploadPromises = images.map(async (imageUrl: string, i: number) => {
         const filename = `image-${i + 1}.png`;
+        
+        // Validate URL before attempting fetch
+        if (!imageUrl || !isValidUrl(imageUrl)) {
+          console.warn(`[Upload] Invalid image URL: ${imageUrl}`);
+          return { success: false };
+        }
+        
         try {
           const response = await fetch(imageUrl);
+          
+          if (!response.ok) {
+            console.error(`[Upload] Failed to fetch image ${filename}: ${response.status}`);
+            return { success: false };
+          }
+          
           const blob = await response.blob();
           
           const formData = new FormData();

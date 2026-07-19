@@ -115,6 +115,28 @@ export function MarketIntelligence() {
       }
 
       const data = await response.json();
+      
+      // Validate required fields exist before setting
+      if (!data || typeof data !== 'object') {
+        throw new Error('Invalid response: data is not an object');
+      }
+      
+      // Check for required market intelligence fields
+      const requiredFields = ['target_audience', 'competitors', 'marketing_angles'];
+      const missingFields = requiredFields.filter(field => !data[field]);
+      
+      if (missingFields.length > 0) {
+        console.warn(`[MarketIntelligence] Missing fields: ${missingFields.join(', ')}, using fallback`);
+        // Use fallback structure
+        data.target_audience = data.target_audience || { age: '25-45', gender: 'mixed', income: 'middle-class', interests: [], pain_points: [], buying_motivation: [] };
+        data.competitors = data.competitors || [];
+        data.marketing_angles = data.marketing_angles || [];
+        data.emotional_hooks = data.emotional_hooks || [];
+        data.recommended_platforms = data.recommended_platforms || [];
+        data.campaign_strategy = data.campaign_strategy || { primary: 'Highlight value', secondary: 'Build trust', cta: 'Buy now' };
+        data.confidence_score = data.confidence_score || 50;
+      }
+      
       setMarketIntelligence(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong');

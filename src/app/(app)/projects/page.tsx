@@ -66,9 +66,14 @@ export default function ProjectsPage() {
     campaigns.sort((a, b) => {
       switch (sortBy) {
         case 'newest':
-          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+          // Safely parse dates, falling back to 0 for invalid dates
+          const newestTimeA = new Date(a.created_at).getTime() || 0;
+          const newestTimeB = new Date(b.created_at).getTime() || 0;
+          return newestTimeB - newestTimeA;
         case 'oldest':
-          return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+          const oldestTimeA = new Date(a.created_at).getTime() || 0;
+          const oldestTimeB = new Date(b.created_at).getTime() || 0;
+          return oldestTimeA - oldestTimeB;
         case 'title':
           return (a.product_title || '').localeCompare(b.product_title || '');
         default:

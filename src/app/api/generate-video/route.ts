@@ -2,7 +2,9 @@ import { NextResponse } from 'next/server';
 
 const PEXELS_VIDEO_URL = 'https://api.pexels.com/videos/search';
 const PEXELS_PHOTO_URL = 'https://api.pexels.com/v1/search';
-const PEXELS_API_KEY = 'Hx7oUDboB3bkjIlprNiGwO13l1eDRzBg9WfXotQm8aMLwq96WCAv06hg';
+
+// API key must be set via environment variable - never hardcode
+const PEXELS_API_KEY = process.env.PEXELS_API_KEY;
 
 interface BRollClip {
   id: number;
@@ -23,6 +25,15 @@ export async function POST(request: Request) {
 
     if (!script) {
       return NextResponse.json({ error: 'Script is required' }, { status: 400 });
+    }
+
+    // Validate Pexels API key is configured
+    if (!PEXELS_API_KEY) {
+      console.error('[VIDEO] PEXELS_API_KEY environment variable not set');
+      return NextResponse.json(
+        { error: 'Video service not configured. Please contact support.' },
+        { status: 500 }
+      );
     }
 
     // Use videoSettings ratio if available, fallback to product settings
