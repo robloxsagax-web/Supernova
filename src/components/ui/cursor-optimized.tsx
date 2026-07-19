@@ -100,54 +100,64 @@ export const CustomCursor = memo(function CustomCursor({
 
   if (!cursorEnabled || !isVisible) return null;
 
-  // Orbit Ring cursor
+  // Orbit Ring cursor - small ball orbits the cursor
   if (cursorStyle === 'orbit-ring') {
     return (
       <motion.div
         className={cn('fixed top-0 left-0 pointer-events-none z-[9999] will-change-transform', className)}
         style={{ x: cursorXSpring, y: cursorYSpring }}
-        animate={{ rotate: 360 }}
-        transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
       >
         <div className="relative -translate-x-1/2 -translate-y-1/2">
-          <div className="w-12 h-12 rounded-full border-2 border-[#FFDAB9]/40" />
-          <div className="absolute inset-2 rounded-full border border-[#8B5A2B]/50" />
+          {/* Static ring */}
+          <div className="w-10 h-10 rounded-full border border-[#FFDAB9]/30" />
+          {/* Inner ring */}
+          <div className="absolute inset-1 rounded-full border border-[#8B5A2B]/30" />
+          {/* Center dot - static cursor position */}
+          <div className="absolute inset-[35%] rounded-full bg-gradient-to-br from-[#FFDAB9] to-[#5C3317] shadow-[0_0_10px_rgba(255,218,185,0.5)]" />
+          {/* Orbiting ball - this circles around */}
           <motion.div
-            className="absolute top-0 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-gradient-to-br from-[#FFDAB9] to-[#5C3317] shadow-[0_0_15px_rgba(255,218,185,0.8)]"
-            animate={{ scale: isHovered ? [1, 1.3, 1] : [1, 1.1, 1] }}
-            transition={{ duration: 1.5, repeat: Infinity }}
+            className="absolute w-2.5 h-2.5 rounded-full bg-gradient-to-br from-[#FFDAB9] to-[#5C3317] shadow-[0_0_8px_rgba(255,218,185,0.8)]"
+            animate={{ 
+              x: [0, 18, 0, -18, 0],
+              y: [-18, 0, 18, 0, -18]
+            }}
+            transition={{ 
+              duration: 2, 
+              repeat: Infinity, 
+              ease: 'linear' 
+            }}
+            style={{ top: '50%', left: '50%', marginTop: -5, marginLeft: -5 }}
           />
         </div>
       </motion.div>
     );
   }
 
-  // Energy Pulse cursor
+  // Energy Pulse cursor - sleek modern cursor with pulse effect
   if (cursorStyle === 'energy-pulse') {
     return (
       <motion.div
         className={cn('fixed top-0 left-0 pointer-events-none z-[9999] will-change-transform', className)}
         style={{ x: cursorXSpring, y: cursorYSpring }}
-        animate={{ scale }}
-        transition={{ type: 'spring', stiffness: 500, damping: 28 }}
       >
         <div className="relative -translate-x-1/2 -translate-y-1/2">
+          {/* Expanding pulse rings from center */}
           <motion.div
-            className="absolute inset-0 rounded-full border-2 border-[#FFDAB9]/20"
-            animate={{ scale: [1, 2], opacity: [0.5, 0] }}
-            transition={{ duration: 1.5, repeat: Infinity }}
+            className="absolute rounded-full border border-[#FFDAB9]/40"
+            style={{ top: '50%', left: '50%', width: 8, height: 8, marginTop: -4, marginLeft: -4 }}
+            animate={{ scale: [1, 8], opacity: [0.6, 0] }}
+            transition={{ duration: 1.2, repeat: Infinity, ease: 'easeOut' }}
           />
           <motion.div
-            className="absolute inset-0 rounded-full border border-[#8B5A2B]/30"
-            animate={{ scale: [1, 1.8], opacity: [0.3, 0] }}
-            transition={{ duration: 1.5, repeat: Infinity, delay: 0.3 }}
+            className="absolute rounded-full border border-[#FFDAB9]/30"
+            style={{ top: '50%', left: '50%', width: 8, height: 8, marginTop: -4, marginLeft: -4 }}
+            animate={{ scale: [1, 10], opacity: [0.4, 0] }}
+            transition={{ duration: 1.2, repeat: Infinity, ease: 'easeOut', delay: 0.4 }}
           />
-          <div className="relative w-8 h-8 rounded-full bg-gradient-to-br from-[#FFDAB9] to-[#5C3317] shadow-[0_0_20px_rgba(255,218,185,0.6)]" />
-          <motion.div
-            className="absolute inset-[30%] rounded-full bg-white"
-            animate={{ opacity: isHovered ? [0.6, 1, 0.6] : [0.8, 1, 0.8] }}
-            transition={{ duration: 1, repeat: Infinity }}
-          />
+          {/* Main cursor dot */}
+          <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[#FFDAB9] to-[#5C3317] shadow-[0_0_15px_rgba(255,218,185,0.6)]" />
+          {/* Inner glow */}
+          <div className="absolute inset-[25%] rounded-full bg-white/80 shadow-[0_0_8px_rgba(255,255,255,0.5)]" />
         </div>
       </motion.div>
     );
