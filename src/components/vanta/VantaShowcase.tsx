@@ -1132,7 +1132,7 @@ export const VantaShowcase: React.FC<{
       {typeof backgroundMusicUrl === 'string' && backgroundMusicUrl.length > 0 && (
         <Audio
           src={backgroundMusicUrl}
-          volume={isBRoll ? 0.08 : 0.12}
+          volume={isBRoll ? 0.08 : 0.05}
           loop={true}
           onlyFullPrecision={false}
         />
