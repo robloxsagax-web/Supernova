@@ -26,7 +26,14 @@ import {
   AlertTriangle,
   Check,
   X,
-  Trash2
+  Trash2,
+  Activity,
+  Server,
+  HardDrive,
+  Globe,
+  EyeOff,
+  Type,
+  Gauge
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AIModelsSection, ExternalServicesSection } from '@/components/ui/IntegrationsPanel';
@@ -368,91 +375,110 @@ export default function SettingsPage() {
           </motion.div>
 
           <div className="space-y-8">
-            {/* General Section */}
+            {/* Workspace Intelligence Section */}
             <section>
+              {/* Premium Workspace Summary Card */}
               <motion.div
                 initial={{ y: -10, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.1 }}
+                transition={{ delay: 0.05 }}
                 className="flex items-center gap-3 mb-4"
               >
-                <div className="w-8 h-8 rounded-lg bg-[rgba(255,218,185,0.1)] flex items-center justify-center">
-                  <Sparkles className="w-4 h-4 text-[#FFDAB9]" />
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#5C3317]/40 to-[#8B5A2B]/20 flex items-center justify-center border border-[rgba(255,218,185,0.15)]">
+                  <Activity className="w-4 h-4 text-[#FFDAB9]" />
                 </div>
                 <h2 className="text-lg font-semibold text-white uppercase tracking-wider">
-                  General
+                  Workspace Intelligence
                 </h2>
               </motion.div>
               
               <div className="space-y-3">
-                <SettingCard 
-                  icon={User} 
-                  title="Account" 
-                  description="Profile information and account settings" 
-                  delay={0.1}
-                />
-                
-                {/* AI Engine Card */}
+                {/* Workspace Health Summary */}
                 <motion.div
                   initial={{ y: 20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.15, duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
-                  className="w-full p-5 rounded-2xl text-left transition-all duration-300 group relative overflow-hidden"
+                  transition={{ delay: 0.1, duration: 0.4 }}
+                  className="p-5 rounded-2xl relative overflow-hidden"
                   style={{
                     background: 'rgba(17, 17, 17, 0.6)',
                     backdropFilter: 'blur(24px)',
                     border: '1px solid rgba(255, 218, 185, 0.08)',
                   }}
                 >
-                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-r from-[#5C3317]/10 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-br from-[#5C3317]/5 via-transparent to-transparent" />
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-[#FFDAB9]/5 rounded-full blur-3xl" />
                   
-                  <div className="relative z-10 flex items-start gap-4">
-                    <motion.div
-                      whileHover={{ scale: 1.1, rotate: 5 }}
-                      className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
-                      style={{
-                        background: 'linear-gradient(135deg, #5C3317 0%, #8B5A2B 100%)',
-                        boxShadow: '0 4px 15px rgba(92, 51, 23, 0.3)',
-                      }}
-                    >
-                      <Sparkles className="w-6 h-6 text-[#FFDAB9]" />
-                    </motion.div>
-                    
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="text-base font-semibold text-white group-hover:text-[#FFDAB9] transition-colors">
-                          AI Engine
-                        </h3>
-                        <span className="flex items-center gap-1.5">
-                          <span className="w-2 h-2 rounded-full bg-[#22C55E] animate-pulse" />
-                          <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold uppercase" style={{ background: 'rgba(34, 197, 94, 0.2)', color: '#22C55E' }}>
-                            6 Active
-                          </span>
-                        </span>
+                  <div className="relative z-10">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="w-4 h-4 text-[#FFDAB9]" />
+                        <p className="text-xs text-[rgba(255,255,255,0.4)] uppercase tracking-wider">Your AI marketing workspace is configured and operating normally.</p>
                       </div>
-                      <p className="text-sm text-[rgba(255,255,255,0.5)] mb-2">All AI services connected and operational</p>
-                      <p className="text-xs text-[rgba(255,218,185,0.6)] tracking-wide">
-                        OpenRouter · ElevenLabs · JINA · Pexels · B2 · Genblaze
-                      </p>
+                      <span className="flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-[#22C55E] animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
+                        <span className="text-[10px] text-[#22C55E] font-medium">Healthy</span>
+                      </span>
+                    </div>
+                    
+                    <div className="grid grid-cols-4 gap-3">
+                      <div className="p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.03)' }}>
+                        <div className="flex items-center gap-2 mb-1">
+                          <Server className="w-3 h-3 text-[rgba(255,218,185,0.6)]" />
+                          <p className="text-[10px] text-[rgba(255,255,255,0.4)]">AI Models</p>
+                        </div>
+                        <p className="text-lg font-bold text-[#FFDAB9]">8</p>
+                        <p className="text-[10px] text-[rgba(255,255,255,0.3)]">Active</p>
+                      </div>
+                      <div className="p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.03)' }}>
+                        <div className="flex items-center gap-2 mb-1">
+                          <Globe className="w-3 h-3 text-[rgba(255,218,185,0.6)]" />
+                          <p className="text-[10px] text-[rgba(255,255,255,0.4)]">Media</p>
+                        </div>
+                        <p className="text-lg font-bold text-[#FFDAB9]">7</p>
+                        <p className="text-[10px] text-[rgba(255,255,255,0.3)]">Connected</p>
+                      </div>
+                      <div className="p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.03)' }}>
+                        <div className="flex items-center gap-2 mb-1">
+                          <HardDrive className="w-3 h-3 text-[rgba(255,218,185,0.6)]" />
+                          <p className="text-[10px] text-[rgba(255,255,255,0.4)]">Storage</p>
+                        </div>
+                        <p className="text-lg font-bold text-[#FFDAB9]">B2</p>
+                        <p className="text-[10px] text-[rgba(255,255,255,0.3)]">Backblaze</p>
+                      </div>
+                      <div className="p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.03)' }}>
+                        <div className="flex items-center gap-2 mb-1">
+                          <Zap className="w-3 h-3 text-[rgba(255,218,185,0.6)]" />
+                          <p className="text-[10px] text-[rgba(255,255,255,0.4)]">Pipeline</p>
+                        </div>
+                        <p className="text-lg font-bold text-[#22C55E]">Live</p>
+                        <p className="text-[10px] text-[rgba(255,255,255,0.3)]">Operational</p>
+                      </div>
                     </div>
                   </div>
                 </motion.div>
+                
+                <SettingCard 
+                  icon={User} 
+                  title="Account" 
+                  description="Profile information and workspace access" 
+                  delay={0.15}
+                />
               </div>
             </section>
 
-            {/* Appearance Section */}
+            {/* Interface Experience Section */}
             <section>
               <motion.div
                 initial={{ y: -10, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.15 }}
+                transition={{ delay: 0.2 }}
                 className="flex items-center gap-3 mb-4"
               >
-                <div className="w-8 h-8 rounded-lg bg-[rgba(255,218,185,0.1)] flex items-center justify-center">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#5C3317]/30 to-[#8B5A2B]/10 flex items-center justify-center border border-[rgba(255,218,185,0.1)]">
                   <Palette className="w-4 h-4 text-[#FFDAB9]" />
                 </div>
                 <h2 className="text-lg font-semibold text-white uppercase tracking-wider">
-                  Appearance
+                  Interface Experience
                 </h2>
               </motion.div>
               
@@ -463,66 +489,101 @@ export default function SettingsPage() {
                   description="Always dark for optimal viewing"
                   badge="Active"
                   badgeColor="#22C55E"
-                  delay={0.15}
-                />
-                <SettingCard 
-                  icon={MousePointer2} 
-                  title="Custom Cursor" 
-                  description="Enable animated custom cursor"
-                  badge={cursorEnabled ? "Enabled" : "Disabled"}
-                  badgeColor={cursorEnabled ? "#22C55E" : undefined}
-                  onClick={toggleCursor}
                   delay={0.2}
                 />
                 
-                {/* Brand Colors */}
+                {/* Brand Identity */}
                 <motion.div
                   initial={{ y: 20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ delay: 0.25 }}
-                  className="p-5 rounded-2xl"
+                  className="p-5 rounded-2xl relative overflow-hidden"
                   style={{
                     background: 'rgba(17, 17, 17, 0.6)',
                     backdropFilter: 'blur(24px)',
                     border: '1px solid rgba(255, 218, 185, 0.08)',
                   }}
                 >
-                  <p className="text-sm font-semibold text-white mb-3">Supernova Signature Theme</p>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div 
-                      className="p-4 rounded-xl flex flex-col items-center justify-center gap-2"
-                      style={{ background: 'rgba(92, 51, 23, 0.3)' }}
-                    >
-                      <div className="w-8 h-8 rounded-full shadow-lg" style={{ background: '#5C3317' }} />
-                      <span className="text-xs text-white font-medium">Maroon</span>
-                      <span className="text-[10px] text-[rgba(255,255,255,0.4)] font-mono">#5C3317</span>
+                  <div className="absolute inset-0 bg-gradient-to-br from-[#5C3317]/5 via-transparent to-transparent" />
+                  
+                  <div className="relative z-10">
+                    <div className="flex items-center gap-2 mb-4">
+                      <Sparkles className="w-4 h-4 text-[#FFDAB9]" />
+                      <p className="text-sm font-semibold text-white">Brand Identity</p>
                     </div>
-                    <div 
-                      className="p-4 rounded-xl flex flex-col items-center justify-center gap-2"
-                      style={{ background: 'rgba(255, 218, 185, 0.2)' }}
-                    >
-                      <div className="w-8 h-8 rounded-full shadow-lg" style={{ background: '#FFDAB9' }} />
-                      <span className="text-xs text-white font-medium">Peach Puff</span>
-                      <span className="text-[10px] text-[rgba(255,255,255,0.4)] font-mono">#FFDAB9</span>
+                    
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.02)' }}>
+                        <div className="flex items-center gap-3">
+                          <div className="w-6 h-6 rounded-full shadow-lg shadow-[#5C3317]/30" style={{ background: '#5C3317' }} />
+                          <div>
+                            <p className="text-sm text-white font-medium">Primary Accent</p>
+                            <p className="text-[10px] text-[rgba(255,255,255,0.4)] font-mono">#5C3317 • Maroon</p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center justify-between p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.02)' }}>
+                        <div className="flex items-center gap-3">
+                          <div className="w-6 h-6 rounded-full shadow-lg shadow-[#FFDAB9]/20" style={{ background: '#FFDAB9' }} />
+                          <div>
+                            <p className="text-sm text-white font-medium">Secondary Accent</p>
+                            <p className="text-[10px] text-[rgba(255,255,255,0.4)] font-mono">#FFDAB9 • Peach Puff</p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center justify-between p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.02)' }}>
+                        <div>
+                          <p className="text-sm text-white font-medium">Visual Language</p>
+                          <p className="text-[10px] text-[rgba(255,255,255,0.4)]">Premium Glass</p>
+                        </div>
+                        <div className="flex gap-1">
+                          <div className="w-6 h-6 rounded-lg" style={{ background: 'rgba(17, 17, 17, 0.8)' }} />
+                          <div className="w-6 h-6 rounded-lg border border-[rgba(255,218,185,0.2)]" style={{ background: 'rgba(17, 17, 17, 0.4)' }} />
+                          <div className="w-6 h-6 rounded-lg" style={{ background: 'rgba(255, 218, 185, 0.1)' }} />
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center justify-between p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.02)' }}>
+                        <div>
+                          <p className="text-sm text-white font-medium">Theme Engine</p>
+                          <p className="text-[10px] text-[rgba(255,255,255,0.4)]">Supernova Signature</p>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-[#22C55E] animate-pulse" />
+                          <span className="text-[10px] text-[#22C55E] font-medium">Active</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </motion.div>
+                
+                <SettingCard 
+                  icon={MousePointer2} 
+                  title="Custom Cursor" 
+                  description="Advanced personalization option for enhanced interactions"
+                  badge={cursorEnabled ? "Enabled" : "Disabled"}
+                  badgeColor={cursorEnabled ? "#22C55E" : undefined}
+                  onClick={toggleCursor}
+                  delay={0.3}
+                />
               </div>
             </section>
 
-            {/* Accessibility Section */}
+            {/* Inclusive Experience Section */}
             <section>
               <motion.div
                 initial={{ y: -10, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.3 }}
+                transition={{ delay: 0.35 }}
                 className="flex items-center gap-3 mb-4"
               >
-                <div className="w-8 h-8 rounded-lg bg-[rgba(255,218,185,0.1)] flex items-center justify-center">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#5C3317]/30 to-[#8B5A2B]/10 flex items-center justify-center border border-[rgba(255,218,185,0.1)]">
                   <Accessibility className="w-4 h-4 text-[#FFDAB9]" />
                 </div>
                 <h2 className="text-lg font-semibold text-white uppercase tracking-wider">
-                  Accessibility
+                  Inclusive Experience
                 </h2>
               </motion.div>
               
@@ -530,42 +591,59 @@ export default function SettingsPage() {
                 <SettingCard 
                   icon={Accessibility} 
                   title="Accessibility Settings" 
-                  description="High contrast, font size, reduced motion, color blind modes"
+                  description="High contrast, font size, reduced motion, and color blind modes"
                   onClick={() => setShowAccessibility(true)}
-                  delay={0.3}
+                  delay={0.35}
                 />
                 
-                {/* Quick Settings Preview */}
+                {/* Current Accessibility Profile */}
                 <motion.div
                   initial={{ y: 20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.35 }}
-                  className="p-5 rounded-2xl"
+                  transition={{ delay: 0.4 }}
+                  className="p-5 rounded-2xl relative overflow-hidden"
                   style={{
                     background: 'rgba(17, 17, 17, 0.6)',
                     backdropFilter: 'blur(24px)',
                     border: '1px solid rgba(255, 218, 185, 0.08)',
                   }}
                 >
-                  <p className="text-xs text-[rgba(255,255,255,0.4)] uppercase tracking-wider mb-4">Current Settings</p>
-                  <div className="grid grid-cols-3 gap-3">
-                    <div className="p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.03)' }}>
-                      <p className="text-[10px] text-[rgba(255,255,255,0.4)] mb-1">Contrast</p>
-                      <p className="text-sm font-semibold text-white">
-                        {settings.highContrast ? 'High' : 'Normal'}
-                      </p>
+                  <div className="absolute inset-0 bg-gradient-to-br from-[#5C3317]/5 via-transparent to-transparent" />
+                  
+                  <div className="relative z-10">
+                    <div className="flex items-center gap-2 mb-4">
+                      <Gauge className="w-4 h-4 text-[#FFDAB9]" />
+                      <p className="text-xs text-[rgba(255,255,255,0.4)] uppercase tracking-wider">Current Accessibility Profile</p>
                     </div>
-                    <div className="p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.03)' }}>
-                      <p className="text-[10px] text-[rgba(255,255,255,0.4)] mb-1">Font Size</p>
-                      <p className="text-sm font-semibold text-white capitalize">
-                        {settings.fontSize}
-                      </p>
-                    </div>
-                    <div className="p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.03)' }}>
-                      <p className="text-[10px] text-[rgba(255,255,255,0.4)] mb-1">Motion</p>
-                      <p className="text-sm font-semibold text-white">
-                        {settings.reducedMotion ? 'Reduced' : 'Full'}
-                      </p>
+                    
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.03)' }}>
+                        <div className="flex items-center gap-2 mb-1">
+                          <Eye className="w-3 h-3 text-[rgba(255,218,185,0.5)]" />
+                          <p className="text-[10px] text-[rgba(255,255,255,0.4)]">Contrast</p>
+                        </div>
+                        <p className="text-sm font-semibold text-white">
+                          {settings.highContrast ? 'High' : 'Normal'}
+                        </p>
+                      </div>
+                      <div className="p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.03)' }}>
+                        <div className="flex items-center gap-2 mb-1">
+                          <Type className="w-3 h-3 text-[rgba(255,218,185,0.5)]" />
+                          <p className="text-[10px] text-[rgba(255,255,255,0.4)]">Font Size</p>
+                        </div>
+                        <p className="text-sm font-semibold text-white capitalize">
+                          {settings.fontSize}
+                        </p>
+                      </div>
+                      <div className="p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.03)' }}>
+                        <div className="flex items-center gap-2 mb-1">
+                          <Zap className="w-3 h-3 text-[rgba(255,218,185,0.5)]" />
+                          <p className="text-[10px] text-[rgba(255,255,255,0.4)]">Motion</p>
+                        </div>
+                        <p className="text-sm font-semibold text-white">
+                          {settings.reducedMotion ? 'Reduced' : 'Full'}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </motion.div>
