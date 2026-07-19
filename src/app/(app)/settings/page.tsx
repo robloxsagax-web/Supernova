@@ -150,6 +150,132 @@ const ToggleSwitch = memo(function ToggleSwitch({ enabled, onChange, label }: To
   );
 });
 
+// Cursor Style Card Component
+const CursorStyleCard = memo(function CursorStyleCard({ 
+  name, 
+  description, 
+  isSelected, 
+  delay = 0 
+}: { 
+  name: string; 
+  description: string; 
+  isSelected: boolean; 
+  delay?: number;
+}) {
+  return (
+    <motion.div
+      initial={{ y: 20, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ delay, duration: 0.4 }}
+      whileHover={{ scale: 1.02, y: -2 }}
+      className={cn(
+        'relative p-4 rounded-xl cursor-pointer transition-all duration-300 overflow-hidden',
+        isSelected 
+          ? 'border-2 shadow-[0_0_20px_rgba(92,51,23,0.3)]' 
+          : 'border border-[rgba(255,255,255,0.08)] hover:border-[rgba(255,218,185,0.2)]'
+      )}
+      style={{
+        background: isSelected 
+          ? 'rgba(92, 51, 23, 0.2)' 
+          : 'rgba(255, 255, 255, 0.03)',
+        borderColor: isSelected ? '#5C3317' : undefined,
+      }}
+    >
+      {/* Glow effect for selected */}
+      {isSelected && (
+        <div className="absolute inset-0 bg-gradient-to-br from-[#5C3317]/10 to-transparent pointer-events-none" />
+      )}
+      
+      <div className="relative z-10">
+        {/* Preview Animation */}
+        <div className="h-16 flex items-center justify-center mb-3">
+          <CursorPreview type={name.toLowerCase().replace(' ', '-')} />
+        </div>
+        
+        {/* Selection indicator */}
+        {isSelected && (
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            className="absolute top-2 right-2 w-5 h-5 rounded-full bg-[#22C55E] flex items-center justify-center"
+          >
+            <Check className="w-3 h-3 text-white" />
+          </motion.div>
+        )}
+        
+        <p className="text-sm font-semibold text-white text-center mb-1">{name}</p>
+        <p className="text-[10px] text-[rgba(255,255,255,0.4)] text-center">{description}</p>
+      </div>
+    </motion.div>
+  );
+});
+
+// Cursor Preview Animation Component
+function CursorPreview({ type }: { type: string }) {
+  if (type === 'nova-glow') {
+    return (
+      <motion.div
+        className="relative w-8 h-8"
+        animate={{ scale: [1, 1.1, 1] }}
+        transition={{ duration: 2, repeat: Infinity }}
+      >
+        <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#FFDAB9] to-[#5C3317] opacity-30 blur-sm" />
+        <motion.div
+          className="absolute inset-1 rounded-full bg-gradient-to-br from-[#FFDAB9] to-[#8B5A2B]"
+          animate={{ opacity: [0.8, 1, 0.8], scale: [0.9, 1.1, 0.9] }}
+          transition={{ duration: 1.5, repeat: Infinity }}
+        />
+        <div className="absolute inset-2 rounded-full bg-[#FFDAB9]" />
+        <motion.div
+          className="absolute w-2 h-2 bg-white rounded-full"
+          animate={{ opacity: [0.5, 1, 0.5], scale: [0.8, 1.2, 0.8] }}
+          transition={{ duration: 1, repeat: Infinity }}
+        />
+      </motion.div>
+    );
+  }
+  
+  if (type === 'orbit-ring') {
+    return (
+      <motion.div
+        className="relative w-10 h-10"
+        animate={{ rotate: 360 }}
+        transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+      >
+        <div className="absolute inset-0 rounded-full border-2 border-[#FFDAB9]/50" />
+        <div className="absolute inset-1 rounded-full border border-[#8B5A2B]/50" />
+        <motion.div
+          className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-gradient-to-br from-[#FFDAB9] to-[#5C3317] shadow-[0_0_10px_rgba(255,218,185,0.5)]"
+          animate={{ scale: [1, 1.2, 1] }}
+          transition={{ duration: 1.5, repeat: Infinity }}
+        />
+      </motion.div>
+    );
+  }
+  
+  // Energy Pulse
+  return (
+    <div className="relative w-10 h-10">
+      <motion.div
+        className="absolute inset-0 rounded-full border-2 border-[#FFDAB9]/30"
+        animate={{ scale: [1, 1.5, 1], opacity: [0.5, 0, 0.5] }}
+        transition={{ duration: 2, repeat: Infinity }}
+      />
+      <motion.div
+        className="absolute inset-1 rounded-full border border-[#8B5A2B]/40"
+        animate={{ scale: [1, 1.3, 1], opacity: [0.4, 0, 0.4] }}
+        transition={{ duration: 2, repeat: Infinity, delay: 0.3 }}
+      />
+      <div className="absolute inset-2 rounded-full bg-gradient-to-br from-[#FFDAB9] to-[#5C3317] shadow-[0_0_15px_rgba(255,218,185,0.4)]" />
+      <motion.div
+        className="absolute inset-[30%] rounded-full bg-white"
+        animate={{ opacity: [0.6, 1, 0.6] }}
+        transition={{ duration: 1, repeat: Infinity }}
+      />
+    </div>
+  );
+}
+
 // Toast Component
 function Toast({ message, type, onClose }: { message: string; type: 'success' | 'error'; onClose: () => void }) {
   useEffect(() => {
@@ -558,20 +684,10 @@ export default function SettingsPage() {
                     </div>
                   </div>
                 </motion.div>
-                
-                <SettingCard 
-                  icon={MousePointer2} 
-                  title="Custom Cursor" 
-                  description="Advanced personalization option for enhanced interactions"
-                  badge={cursorEnabled ? "Enabled" : "Disabled"}
-                  badgeColor={cursorEnabled ? "#22C55E" : undefined}
-                  onClick={toggleCursor}
-                  delay={0.3}
-                />
               </div>
             </section>
 
-            {/* Inclusive Experience Section */}
+            {/* Cursor Personalization Section */}
             <section>
               <motion.div
                 initial={{ y: -10, opacity: 0 }}
@@ -579,28 +695,20 @@ export default function SettingsPage() {
                 transition={{ delay: 0.35 }}
                 className="flex items-center gap-3 mb-4"
               >
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#5C3317]/30 to-[#8B5A2B]/10 flex items-center justify-center border border-[rgba(255,218,185,0.1)]">
-                  <Accessibility className="w-4 h-4 text-[#FFDAB9]" />
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#5C3317]/40 to-[#8B5A2B]/20 flex items-center justify-center border border-[rgba(255,218,185,0.15)]">
+                  <MousePointer2 className="w-4 h-4 text-[#FFDAB9]" />
                 </div>
                 <h2 className="text-lg font-semibold text-white uppercase tracking-wider">
-                  Inclusive Experience
+                  Cursor Engine
                 </h2>
               </motion.div>
               
               <div className="space-y-3">
-                <SettingCard 
-                  icon={Accessibility} 
-                  title="Accessibility Settings" 
-                  description="High contrast, font size, reduced motion, and color blind modes"
-                  onClick={() => setShowAccessibility(true)}
-                  delay={0.35}
-                />
-                
-                {/* Current Accessibility Profile */}
+                {/* Cursor Toggle Card */}
                 <motion.div
                   initial={{ y: 20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.4 }}
+                  transition={{ delay: 0.35, duration: 0.4 }}
                   className="p-5 rounded-2xl relative overflow-hidden"
                   style={{
                     background: 'rgba(17, 17, 17, 0.6)',
@@ -610,43 +718,76 @@ export default function SettingsPage() {
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-[#5C3317]/5 via-transparent to-transparent" />
                   
-                  <div className="relative z-10">
-                    <div className="flex items-center gap-2 mb-4">
-                      <Gauge className="w-4 h-4 text-[#FFDAB9]" />
-                      <p className="text-xs text-[rgba(255,255,255,0.4)] uppercase tracking-wider">Current Accessibility Profile</p>
-                    </div>
-                    
-                    <div className="grid grid-cols-3 gap-3">
-                      <div className="p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.03)' }}>
-                        <div className="flex items-center gap-2 mb-1">
-                          <Eye className="w-3 h-3 text-[rgba(255,218,185,0.5)]" />
-                          <p className="text-[10px] text-[rgba(255,255,255,0.4)]">Contrast</p>
-                        </div>
-                        <p className="text-sm font-semibold text-white">
-                          {settings.highContrast ? 'High' : 'Normal'}
-                        </p>
-                      </div>
-                      <div className="p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.03)' }}>
-                        <div className="flex items-center gap-2 mb-1">
-                          <Type className="w-3 h-3 text-[rgba(255,218,185,0.5)]" />
-                          <p className="text-[10px] text-[rgba(255,255,255,0.4)]">Font Size</p>
-                        </div>
-                        <p className="text-sm font-semibold text-white capitalize">
-                          {settings.fontSize}
-                        </p>
-                      </div>
-                      <div className="p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.03)' }}>
-                        <div className="flex items-center gap-2 mb-1">
-                          <Zap className="w-3 h-3 text-[rgba(255,218,185,0.5)]" />
-                          <p className="text-[10px] text-[rgba(255,255,255,0.4)]">Motion</p>
-                        </div>
-                        <p className="text-sm font-semibold text-white">
-                          {settings.reducedMotion ? 'Reduced' : 'Full'}
-                        </p>
+                  <div className="relative z-10 flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <motion.div
+                        whileHover={{ scale: 1.1, rotate: 5 }}
+                        className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
+                        style={{
+                          background: 'linear-gradient(135deg, #5C3317 0%, #8B5A2B 100%)',
+                          boxShadow: '0 4px 15px rgba(92, 51, 23, 0.3)',
+                        }}
+                      >
+                        <MousePointer2 className="w-6 h-6 text-[#FFDAB9]" />
+                      </motion.div>
+                      <div>
+                        <h3 className="text-base font-semibold text-white mb-1">Custom Cursor</h3>
+                        <p className="text-sm text-[rgba(255,255,255,0.5)]">Enable animated custom cursor across the application</p>
                       </div>
                     </div>
+                    <ToggleSwitch enabled={cursorEnabled} onChange={toggleCursor} />
                   </div>
                 </motion.div>
+                
+                {/* Cursor Style Selection */}
+                {cursorEnabled && (
+                  <motion.div
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.4 }}
+                    className="p-5 rounded-2xl relative overflow-hidden"
+                    style={{
+                      background: 'rgba(17, 17, 17, 0.6)',
+                      backdropFilter: 'blur(24px)',
+                      border: '1px solid rgba(255, 218, 185, 0.08)',
+                    }}
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-br from-[#5C3317]/5 via-transparent to-transparent" />
+                    
+                    <div className="relative z-10">
+                      <div className="flex items-center gap-2 mb-4">
+                        <Sparkles className="w-4 h-4 text-[#FFDAB9]" />
+                        <p className="text-sm font-semibold text-white">Cursor Style</p>
+                      </div>
+                      
+                      <div className="grid grid-cols-3 gap-3">
+                        {/* Nova Glow */}
+                        <CursorStyleCard
+                          name="Nova Glow"
+                          description="Animated spark cursor"
+                          isSelected={true}
+                          delay={0.4}
+                        />
+                        
+                        {/* Orbit Ring */}
+                        <CursorStyleCard
+                          name="Orbit Ring"
+                          description="Smooth circular ring"
+                          isSelected={false}
+                          delay={0.45}
+                        />
+                        
+                        {/* Energy Pulse */}
+                        <CursorStyleCard
+                          name="Energy Pulse"
+                          description="Modern glowing cursor"
+                          isSelected={false}
+                          delay={0.5}
+                        />
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
               </div>
             </section>
 
