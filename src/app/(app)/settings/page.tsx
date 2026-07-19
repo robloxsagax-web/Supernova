@@ -241,7 +241,6 @@ export default function SettingsPage() {
   const [showAccessibility, setShowAccessibility] = useState(false);
   const { settings, updateSettings } = useAccessibility();
   useApplyAccessibility(settings);
-  const { mode, setCursorMode } = useCursorMode();
   const { isEnabled: cursorEnabled, toggleCursor } = useCursorVisibility();
   
   // Settings state - loaded from localStorage
