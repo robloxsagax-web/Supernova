@@ -155,21 +155,25 @@ const CursorStyleCard = memo(function CursorStyleCard({
   name, 
   description, 
   isSelected, 
+  onClick,
   delay = 0 
 }: { 
   name: string; 
   description: string; 
   isSelected: boolean; 
+  onClick?: () => void;
   delay?: number;
 }) {
   return (
-    <motion.div
+    <motion.button
       initial={{ y: 20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ delay, duration: 0.4 }}
       whileHover={{ scale: 1.02, y: -2 }}
+      whileTap={{ scale: 0.98 }}
+      onClick={onClick}
       className={cn(
-        'relative p-4 rounded-xl cursor-pointer transition-all duration-300 overflow-hidden',
+        'relative w-full p-4 rounded-xl cursor-pointer transition-all duration-300 overflow-hidden',
         isSelected 
           ? 'border-2 shadow-[0_0_20px_rgba(92,51,23,0.3)]' 
           : 'border border-[rgba(255,255,255,0.08)] hover:border-[rgba(255,218,185,0.2)]'
@@ -206,7 +210,7 @@ const CursorStyleCard = memo(function CursorStyleCard({
         <p className="text-sm font-semibold text-white text-center mb-1">{name}</p>
         <p className="text-[10px] text-[rgba(255,255,255,0.4)] text-center">{description}</p>
       </div>
-    </motion.div>
+    </motion.button>
   );
 });
 
@@ -375,6 +379,12 @@ export default function SettingsPage() {
   const { settings, updateSettings } = useAccessibility();
   useApplyAccessibility(settings);
   const { isEnabled: cursorEnabled, toggleCursor } = useCursorVisibility();
+  
+  // Cursor style state
+  const [cursorStyle, setCursorStyle] = useState(() => {
+    if (typeof window === 'undefined') return 'nova-glow';
+    return localStorage.getItem('supernova_cursor_style') || 'nova-glow';
+  });
   
   // Settings state - loaded from localStorage
   const [notifications, setNotifications] = useState(() => {
@@ -765,7 +775,11 @@ export default function SettingsPage() {
                         <CursorStyleCard
                           name="Nova Glow"
                           description="Animated spark cursor"
-                          isSelected={true}
+                          isSelected={cursorStyle === 'nova-glow'}
+                          onClick={() => {
+                            setCursorStyle('nova-glow');
+                            localStorage.setItem('supernova_cursor_style', 'nova-glow');
+                          }}
                           delay={0.4}
                         />
                         
@@ -773,7 +787,11 @@ export default function SettingsPage() {
                         <CursorStyleCard
                           name="Orbit Ring"
                           description="Smooth circular ring"
-                          isSelected={false}
+                          isSelected={cursorStyle === 'orbit-ring'}
+                          onClick={() => {
+                            setCursorStyle('orbit-ring');
+                            localStorage.setItem('supernova_cursor_style', 'orbit-ring');
+                          }}
                           delay={0.45}
                         />
                         
@@ -781,7 +799,11 @@ export default function SettingsPage() {
                         <CursorStyleCard
                           name="Energy Pulse"
                           description="Modern glowing cursor"
-                          isSelected={false}
+                          isSelected={cursorStyle === 'energy-pulse'}
+                          onClick={() => {
+                            setCursorStyle('energy-pulse');
+                            localStorage.setItem('supernova_cursor_style', 'energy-pulse');
+                          }}
                           delay={0.5}
                         />
                       </div>
