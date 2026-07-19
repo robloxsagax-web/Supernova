@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, lazy, Suspense, memo } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '@/lib/store';
@@ -9,9 +9,7 @@ import { UrlInputForm } from '@/components/UrlInputForm';
 import { ProductPreview } from '@/components/ProductPreview';
 import { ScriptPreview } from '@/components/ScriptPreview';
 import { MarketIntelligence } from '@/components/MarketIntelligence';
-import { VideoPlayer } from '@/components/VideoPlayer';
 import { Loader } from '@/components/Loader';
-import { AIAdStudio } from '@/components/AIAdStudio';
 import { 
   Sparkles, 
   ArrowRight, 
@@ -24,6 +22,19 @@ import {
 } from 'lucide-react';
 import { PremiumStepper } from '@/components/premium/PremiumStepper';
 import { CampaignPreview } from '@/components/premium/CampaignPreview';
+
+// Lazy load heavy components - only load when actually needed
+const VideoPlayer = lazy(() => import('@/components/VideoPlayer').then(mod => ({ default: mod.VideoPlayer })));
+const AIAdStudio = lazy(() => import('@/components/AIAdStudio').then(mod => ({ default: mod.AIAdStudio })));
+
+// Loading fallback for lazy components
+function LazyLoader() {
+  return (
+    <div className="flex items-center justify-center py-12">
+      <div className="w-8 h-8 rounded-full border-2 border-[#5C3317] border-t-[#FFDAB9] animate-spin" />
+    </div>
+  );
+}
 
 const loadingMessages: Record<'url' | 'product' | 'script' | 'marketIntelligence' | 'video', string> = {
   url: 'Analyzing product page...',
@@ -183,8 +194,12 @@ export default function CreatePage() {
                   {step === 'marketIntelligence' && <MarketIntelligence />}
                   {step === 'video' && (
                     <div className="space-y-8">
-                      <VideoPlayer />
-                      <AIAdStudio />
+                      <Suspense fallback={<LazyLoader />}>
+                        <VideoPlayer />
+                      </Suspense>
+                      <Suspense fallback={<LazyLoader />}>
+                        <AIAdStudio />
+                      </Suspense>
                     </div>
                   )}
                 </motion.div>

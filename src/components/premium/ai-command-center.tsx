@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { useState } from 'react';
+import { useState, useCallback, useMemo, memo } from 'react';
 import { cn } from '@/lib/utils';
 import { 
   BrainIcon, 
@@ -18,7 +18,27 @@ import {
 /**
  * Premium AI Command Center
  * Central input for the marketing agent with quick actions
+ * Performance optimized with memoization
  */
+
+// Memoized quick action icons
+const QuickActionIcon = memo(function QuickActionIcon({ 
+  Icon, 
+  isSelected 
+}: { 
+  Icon: React.ElementType; 
+  isSelected: boolean 
+}) {
+  return (
+    <Icon 
+      size={24} 
+      className={cn(
+        'mb-2 transition-colors',
+        isSelected ? 'text-[#FFDAB9]' : 'text-[rgba(255,218,185,0.6)]'
+      )} 
+    />
+  );
+});
 
 interface AICommandCenterProps {
   onSubmit: (url: string) => void;
@@ -26,23 +46,33 @@ interface AICommandCenterProps {
   className?: string;
 }
 
-export function AICommandCenter({ onSubmit, isLoading = false, className }: AICommandCenterProps) {
+export const AICommandCenter = memo(function AICommandCenter({ 
+  onSubmit, 
+  isLoading = false, 
+  className 
+}: AICommandCenterProps) {
   const [url, setUrl] = useState('');
   const [selectedAction, setSelectedAction] = useState<string | null>(null);
 
-  const quickActions = [
+  const quickActions = useMemo(() => [
     { id: 'video', icon: VideoIcon, label: 'Generate Video Ads', description: 'Create viral video content' },
     { id: 'image', icon: ImageIcon, label: 'Generate Image Ads', description: 'Design stunning visuals' },
     { id: 'copy', icon: CopyIcon, label: 'Marketing Copy', description: 'Write compelling copy' },
     { id: 'strategy', icon: StrategyIcon, label: 'Campaign Strategy', description: 'Build your roadmap' },
-  ];
+  ], []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault();
     if (url.trim()) {
       onSubmit(url.trim());
     }
-  };
+  }, [url, onSubmit]);
+
+  const handleActionClick = useCallback((actionId: string) => {
+    setSelectedAction(actionId);
+  }, []);
+
+  const isSubmitDisabled = !url.trim() || isLoading;
 
   return (
     <section className={cn('relative', className)}>
@@ -169,7 +199,7 @@ export function AICommandCenter({ onSubmit, isLoading = false, className }: AICo
                   transition={{ delay: 0.3 + index * 0.1 }}
                   whileHover={{ scale: 1.02, y: -2 }}
                   whileTap={{ scale: 0.98 }}
-                  onClick={() => setSelectedAction(action.id)}
+                  onClick={() => handleActionClick(action.id)}
                   className={cn(
                     'p-4 rounded-2xl text-left transition-all backdrop-blur-xl',
                     selectedAction === action.id
@@ -177,13 +207,7 @@ export function AICommandCenter({ onSubmit, isLoading = false, className }: AICo
                       : 'bg-white/5 border border-[rgba(255,255,255,0.08)] hover:border-[rgba(255,218,185,0.2)]'
                   )}
                 >
-                  <action.icon 
-                    size={24} 
-                    className={cn(
-                      'mb-2 transition-colors',
-                      selectedAction === action.id ? 'text-[#FFDAB9]' : 'text-[rgba(255,218,185,0.6)]'
-                    )} 
-                  />
+                  <QuickActionIcon Icon={action.icon} isSelected={selectedAction === action.id} />
                   <p className={cn(
                     'text-sm font-medium transition-colors',
                     selectedAction === action.id ? 'text-white' : 'text-[rgba(255,255,255,0.75)]'
@@ -201,4 +225,6 @@ export function AICommandCenter({ onSubmit, isLoading = false, className }: AICo
       </motion.div>
     </section>
   );
-}
+});
+
+export default AICommandCenter;
