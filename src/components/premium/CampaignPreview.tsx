@@ -88,12 +88,12 @@ export function CampaignPreview() {
   const contentType = getContentTypeLabel(generationType);
 
   return (
-    <div className="h-full flex flex-col">
-      {/* Header */}
+    <div className="h-full flex flex-col overflow-hidden">
+      {/* Header - stays fixed at top */}
       <motion.div
         initial={{ y: -10, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="mb-6"
+        className="flex-shrink-0 mb-4"
       >
         <div className="flex items-center gap-2 mb-2">
           <div className="w-2 h-2 rounded-full bg-[#22C55E] animate-pulse" />
@@ -106,7 +106,9 @@ export function CampaignPreview() {
         </h3>
       </motion.div>
 
-      {/* Workflow Pipeline */}
+      {/* Scrollable Content Container */}
+      <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-[rgba(255,218,185,0.2)] scrollbar-track-transparent hover:scrollbar-thumb-[rgba(255,218,185,0.3)] transition-colors min-h-0">
+        {/* Workflow Pipeline */}
       <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -339,13 +341,14 @@ export function CampaignPreview() {
           ))}
         </div>
       </motion.div>
+      </div>
 
       {/* Footer hint */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.5 }}
-        className="mt-6 text-center"
+        className="flex-shrink-0 mt-4 text-center"
       >
         <p className="text-xs text-[rgba(255,255,255,0.3)]">
           Hover over steps for details

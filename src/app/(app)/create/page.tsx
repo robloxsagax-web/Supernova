@@ -198,9 +198,11 @@ export default function CreatePage() {
           initial={{ x: 50, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.3 }}
-          className="hidden xl:block w-80 sticky top-0 h-screen p-6"
+          className="hidden xl:block w-80 sticky top-0 h-screen overflow-hidden p-6"
         >
-          <CampaignPreview />
+          <div className="h-full flex flex-col">
+            <CampaignPreview />
+          </div>
         </motion.aside>
       </div>
     </main>
