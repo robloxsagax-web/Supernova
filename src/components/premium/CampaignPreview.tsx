@@ -88,7 +88,7 @@ export function CampaignPreview() {
   const contentType = getContentTypeLabel(generationType);
 
   return (
-    <div className="h-full flex flex-col overflow-hidden">
+    <div className="h-full flex flex-col">
       {/* Header - stays fixed at top */}
       <motion.div
         initial={{ y: -10, opacity: 0 }}
@@ -106,8 +106,8 @@ export function CampaignPreview() {
         </h3>
       </motion.div>
 
-      {/* Scrollable Content Container */}
-      <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-[rgba(255,218,185,0.2)] scrollbar-track-transparent hover:scrollbar-thumb-[rgba(255,218,185,0.3)] transition-colors min-h-0">
+      {/* Scrollable Content Container - flex: 1 1 0% with overflow-y: auto */}
+      <div className="flex-1 overflow-y-auto min-h-0" style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,218,185,0.2) transparent' }}>
         {/* Workflow Pipeline */}
       <motion.div
         initial={{ y: 20, opacity: 0 }}

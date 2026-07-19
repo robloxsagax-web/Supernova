@@ -74,7 +74,7 @@ export default function CreatePage() {
   }
 
   return (
-    <main className="min-h-screen relative">
+    <main className="h-screen overflow-hidden relative">
       {/* Background ambient effects */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         {/* Top gradient glow */}
@@ -82,10 +82,10 @@ export default function CreatePage() {
         <div className="absolute top-0 right-1/4 w-[400px] h-[400px] bg-[#FFDAB9]/5 rounded-full blur-[120px]" />
       </div>
 
-      {/* Main Content Grid */}
-      <div className="relative z-10 flex">
-        {/* Left/Center Content Area */}
-        <div className="flex-1 min-h-screen">
+      {/* Main Content Grid - Full height with flex */}
+      <div className="relative z-10 flex h-full">
+        {/* Left/Center Content Area - Scrollable */}
+        <div className="flex-1 overflow-y-auto">
           <div className="max-w-4xl mx-auto px-8 py-12">
             {/* Premium Hero Header */}
             <motion.div 
@@ -198,7 +198,7 @@ export default function CreatePage() {
           initial={{ x: 50, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.3 }}
-          className="hidden xl:block w-80 sticky top-0 h-screen overflow-hidden p-6"
+          className="hidden xl:block w-80 flex-shrink-0 h-full overflow-hidden p-6"
         >
           <div className="h-full flex flex-col">
             <CampaignPreview />
