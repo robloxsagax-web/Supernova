@@ -191,14 +191,29 @@ export function AccessibilityPanel({ isOpen, onClose, onSettingsChange }: Access
                 </div>
                 <button
                   onClick={onClose}
-                  className="w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 glass-button"
+                  className="w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 glass-button relative"
                   style={{
                     background: 'rgba(255, 255, 255, 0.05)',
                     border: '1px solid rgba(255, 255, 255, 0.1)',
                     boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)',
                   }}
                 >
-                  <X className="w-5 h-5 text-white" />
+                  {/* Bold Red X Cross */}
+                  <svg 
+                    width="20" 
+                    height="20" 
+                    viewBox="0 0 24 24" 
+                    fill="none" 
+                    className="absolute"
+                  >
+                    <path 
+                      d="M18 6L6 18M6 6L18 18" 
+                      stroke="#EF4444" 
+                      strokeWidth="3" 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round"
+                    />
+                  </svg>
                 </button>
               </div>
 
