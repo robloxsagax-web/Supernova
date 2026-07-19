@@ -1,18 +1,17 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { 
   Accessibility, 
   Sun, 
-  Moon, 
   Type, 
   Gauge, 
   Eye, 
-  Sparkles,
-  X,
-  Check
+  Copy,
+  Check,
+  X
 } from 'lucide-react';
 
 interface AccessibilitySettings {
@@ -35,12 +34,63 @@ const defaultSettings: AccessibilitySettings = {
   colorBlindMode: 'none',
 };
 
+// Toast notification component
+function Toast({ message, onClose }: { message: string; onClose: () => void }) {
+  useEffect(() => {
+    const timer = setTimeout(onClose, 2000);
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -10, scale: 0.95 }}
+      className="fixed bottom-6 right-6 z-[200] px-4 py-3 rounded-xl bg-[#111111] border border-[#22C55E]/30 shadow-lg flex items-center gap-2"
+    >
+      <Check className="w-4 h-4 text-[#22C55E]" />
+      <span className="text-sm text-white">{message}</span>
+    </motion.div>
+  );
+}
+
+// Copy button component
+function CopyButton({ text, onCopied }: { text: string; onCopied: (text: string) => void }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      onCopied(text);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  };
+
+  return (
+    <button
+      onClick={handleCopy}
+      className={cn(
+        'p-1.5 rounded-lg transition-all duration-200',
+        'hover:bg-white/10 active:scale-95',
+        copied ? 'text-[#22C55E]' : 'text-[rgba(255,255,255,0.4)] hover:text-white'
+      )}
+      title="Copy hex code"
+    >
+      {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+    </button>
+  );
+}
+
 export function AccessibilityPanel({ isOpen, onClose, onSettingsChange }: AccessibilityPanelProps) {
   const [settings, setSettings] = useState<AccessibilitySettings>(defaultSettings);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
+  // Load settings from localStorage on mount
   useEffect(() => {
-    // Load settings from localStorage
-    const saved = localStorage.getItem('accessibility-settings');
+    const saved = localStorage.getItem('supernova-accessibility-settings');
     if (saved) {
       const parsed = JSON.parse(saved);
       setSettings(parsed);
@@ -48,24 +98,53 @@ export function AccessibilityPanel({ isOpen, onClose, onSettingsChange }: Access
     }
   }, [onSettingsChange]);
 
-  const updateSettings = (updates: Partial<AccessibilitySettings>) => {
+  const updateSettings = useCallback((updates: Partial<AccessibilitySettings>) => {
     const newSettings = { ...settings, ...updates };
     setSettings(newSettings);
-    localStorage.setItem('accessibility-settings', JSON.stringify(newSettings));
+    localStorage.setItem('supernova-accessibility-settings', JSON.stringify(newSettings));
     onSettingsChange(newSettings);
-  };
+  }, [settings, onSettingsChange]);
+
+  const handleResetDefaults = useCallback(() => {
+    setSettings(defaultSettings);
+    localStorage.setItem('supernova-accessibility-settings', JSON.stringify(defaultSettings));
+    onSettingsChange(defaultSettings);
+    setToastMessage('Settings reset to defaults');
+  }, [onSettingsChange]);
 
   const fontSizeLabels = {
     small: 'Small',
     medium: 'Medium',
     large: 'Large',
-    'extra-large': 'Extra Large',
+    'extra-large': 'XL',
   };
+
+  const colorBlindModes = [
+    { value: 'none', label: 'None' },
+    { value: 'protanopia', label: 'Protanopia' },
+    { value: 'deuteranopia', label: 'Deuteranopia' },
+    { value: 'tritanopia', label: 'Tritanopia' },
+  ] as const;
 
   return (
     <AnimatePresence>
       {isOpen && (
         <>
+          {/* SVG Filters for Color Blindness */}
+          <svg className="color-blind-filters" aria-hidden="true">
+            <defs>
+              <filter id="protanopia-filter">
+                <feColorMatrix type="matrix" values="0.567, 0.433, 0, 0, 0  0.558, 0.442, 0, 0, 0  0, 0.242, 0.758, 0, 0  0, 0, 0, 1, 0"/>
+              </filter>
+              <filter id="deuteranopia-filter">
+                <feColorMatrix type="matrix" values="0.625, 0.375, 0, 0, 0  0.7, 0.3, 0, 0, 0  0, 0.3, 0.7, 0, 0  0, 0, 0, 1, 0"/>
+              </filter>
+              <filter id="tritanopia-filter">
+                <feColorMatrix type="matrix" values="0.95, 0.05, 0, 0, 0  0, 0.433, 0.567, 0, 0  0, 0.475, 0.525, 0, 0  0, 0, 0, 1, 0"/>
+              </filter>
+            </defs>
+          </svg>
+
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -81,13 +160,21 @@ export function AccessibilityPanel({ isOpen, onClose, onSettingsChange }: Access
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: '100%', opacity: 0 }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed right-0 top-0 h-screen w-full max-w-md glass-panel z-50 overflow-y-auto"
+            className="fixed right-0 top-0 h-screen w-full max-w-md z-50 overflow-y-auto"
+            style={{
+              background: 'rgba(17, 17, 17, 0.95)',
+              backdropFilter: 'blur(24px)',
+              borderLeft: '1px solid rgba(255, 218, 185, 0.08)',
+            }}
           >
             <div className="p-6 space-y-6">
               {/* Header */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#5C3317] to-[#8B5A2B] flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{
+                    background: 'linear-gradient(135deg, #5C3317 0%, #8B5A2B 100%)',
+                    boxShadow: '0 4px 15px rgba(92, 51, 23, 0.3)',
+                  }}>
                     <Accessibility className="w-6 h-6 text-[#FFDAB9]" />
                   </div>
                   <div>
@@ -97,16 +184,17 @@ export function AccessibilityPanel({ isOpen, onClose, onSettingsChange }: Access
                 </div>
                 <button
                   onClick={onClose}
-                  className="w-10 h-10 rounded-lg glass-button flex items-center justify-center hover:bg-white/10 transition-colors"
+                  className="w-10 h-10 rounded-lg flex items-center justify-center hover:bg-white/10 transition-colors"
+                  style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
                 >
                   <X className="w-5 h-5 text-white" />
                 </button>
               </div>
 
               {/* High Contrast Mode */}
-              <div className="space-y-3">
+              <div className="space-y-3 p-4 rounded-2xl" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-[rgba(92,51,23,0.3)] flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: 'rgba(92,51,23,0.3)' }}>
                     <Sun className="w-5 h-5 text-[#FFDAB9]" />
                   </div>
                   <div className="flex-1">
@@ -122,9 +210,9 @@ export function AccessibilityPanel({ isOpen, onClose, onSettingsChange }: Access
               </div>
 
               {/* Font Size */}
-              <div className="space-y-3">
+              <div className="space-y-3 p-4 rounded-2xl" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-[rgba(92,51,23,0.3)] flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: 'rgba(92,51,23,0.3)' }}>
                     <Type className="w-5 h-5 text-[#FFDAB9]" />
                   </div>
                   <div className="flex-1">
@@ -138,11 +226,15 @@ export function AccessibilityPanel({ isOpen, onClose, onSettingsChange }: Access
                       key={size}
                       onClick={() => updateSettings({ fontSize: size })}
                       className={cn(
-                        'px-3 py-2 rounded-lg text-sm font-medium transition-all',
+                        'px-3 py-2.5 rounded-lg text-sm font-medium transition-all',
                         settings.fontSize === size
-                          ? 'bg-gradient-to-br from-[#5C3317] to-[#8B5A2B] text-[#FFDAB9] shadow-lg'
-                          : 'glass-button text-white hover:bg-white/10'
+                          ? 'text-white shadow-lg'
+                          : 'text-[rgba(255,255,255,0.7)] hover:bg-white/10'
                       )}
+                      style={settings.fontSize === size ? {
+                        background: 'linear-gradient(135deg, #5C3317 0%, #8B5A2B 100%)',
+                        boxShadow: '0 4px 15px rgba(92, 51, 23, 0.3)',
+                      } : {}}
                     >
                       {fontSizeLabels[size]}
                     </button>
@@ -151,9 +243,9 @@ export function AccessibilityPanel({ isOpen, onClose, onSettingsChange }: Access
               </div>
 
               {/* Reduced Motion */}
-              <div className="space-y-3">
+              <div className="space-y-3 p-4 rounded-2xl" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-[rgba(92,51,23,0.3)] flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: 'rgba(92,51,23,0.3)' }}>
                     <Gauge className="w-5 h-5 text-[#FFDAB9]" />
                   </div>
                   <div className="flex-1">
@@ -169,9 +261,9 @@ export function AccessibilityPanel({ isOpen, onClose, onSettingsChange }: Access
               </div>
 
               {/* Color Blind Mode */}
-              <div className="space-y-3">
+              <div className="space-y-3 p-4 rounded-2xl" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-[rgba(92,51,23,0.3)] flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: 'rgba(92,51,23,0.3)' }}>
                     <Eye className="w-5 h-5 text-[#FFDAB9]" />
                   </div>
                   <div className="flex-1">
@@ -180,23 +272,20 @@ export function AccessibilityPanel({ isOpen, onClose, onSettingsChange }: Access
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
-                  {[
-                    { value: 'none', label: 'None' },
-                    { value: 'protanopia', label: 'Protanopia' },
-                    { value: 'deuteranopia', label: 'Deuteranopia' },
-                    { value: 'tritanopia', label: 'Tritanopia' },
-                  ].map((option) => (
+                  {colorBlindModes.map((option) => (
                     <button
                       key={option.value}
-                      onClick={() => updateSettings({ 
-                        colorBlindMode: option.value as AccessibilitySettings['colorBlindMode'] 
-                      })}
+                      onClick={() => updateSettings({ colorBlindMode: option.value })}
                       className={cn(
-                        'px-4 py-2 rounded-lg text-sm font-medium transition-all',
+                        'px-4 py-2.5 rounded-lg text-sm font-medium transition-all',
                         settings.colorBlindMode === option.value
-                          ? 'bg-gradient-to-br from-[#5C3317] to-[#8B5A2B] text-[#FFDAB9] shadow-lg'
-                          : 'glass-button text-white hover:bg-white/10'
+                          ? 'text-white shadow-lg'
+                          : 'text-[rgba(255,255,255,0.7)] hover:bg-white/10'
                       )}
+                      style={settings.colorBlindMode === option.value ? {
+                        background: 'linear-gradient(135deg, #5C3317 0%, #8B5A2B 100%)',
+                        boxShadow: '0 4px 15px rgba(92, 51, 23, 0.3)',
+                      } : {}}
                     >
                       {option.label}
                     </button>
@@ -204,38 +293,62 @@ export function AccessibilityPanel({ isOpen, onClose, onSettingsChange }: Access
                 </div>
               </div>
 
-              {/* Reset Button */}
-              <button
-                onClick={() => {
-                  setSettings(defaultSettings);
-                  localStorage.removeItem('accessibility-settings');
-                  onSettingsChange(defaultSettings);
-                }}
-                className="w-full py-3 rounded-xl glass-button text-white hover:bg-white/10 transition-all font-medium"
-              >
-                Reset to Defaults
-              </button>
-
-              {/* Brand Colors Preview */}
-              <div className="space-y-3 pt-4 border-t border-border">
+              {/* Brand Colors */}
+              <div className="space-y-3 p-4 rounded-2xl" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
                 <h3 className="font-semibold text-white">Brand Colors</h3>
                 <div className="flex gap-3">
                   <div className="flex-1 space-y-2">
-                    <div className="h-16 rounded-lg bg-[#5C3317] flex items-center justify-center">
-                      <span className="text-[#FFDAB9] text-xs font-medium">Maroon</span>
+                    <motion.div 
+                      whileHover={{ scale: 1.05 }}
+                      className="h-16 rounded-xl flex items-center justify-center relative group cursor-pointer"
+                      style={{ background: '#5C3317' }}
+                    >
+                      <span className="text-[#FFDAB9] text-sm font-medium">Maroon</span>
+                      <div className="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <CopyButton text="#5C3317" onCopied={(text) => setToastMessage(`Copied ${text}`)} />
+                      </div>
+                    </motion.div>
+                    <div className="flex items-center justify-center gap-1">
+                      <code className="text-xs text-[rgba(255,255,255,0.65)]">#5C3317</code>
+                      <CopyButton text="#5C3317" onCopied={(text) => setToastMessage(`Copied ${text}`)} />
                     </div>
-                    <p className="text-xs text-center text-[rgba(255,255,255,0.65)]">#5C3317</p>
                   </div>
                   <div className="flex-1 space-y-2">
-                    <div className="h-16 rounded-lg bg-[#FFDAB9] flex items-center justify-center">
-                      <span className="text-[#5C3317] text-xs font-medium">Peach Puff</span>
+                    <motion.div 
+                      whileHover={{ scale: 1.05 }}
+                      className="h-16 rounded-xl flex items-center justify-center relative group cursor-pointer"
+                      style={{ background: '#FFDAB9' }}
+                    >
+                      <span className="text-[#5C3317] text-sm font-medium">Peach Puff</span>
+                      <div className="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <CopyButton text="#FFDAB9" onCopied={(text) => setToastMessage(`Copied ${text}`)} />
+                      </div>
+                    </motion.div>
+                    <div className="flex items-center justify-center gap-1">
+                      <code className="text-xs text-[rgba(255,255,255,0.65)]">#FFDAB9</code>
+                      <CopyButton text="#FFDAB9" onCopied={(text) => setToastMessage(`Copied ${text}`)} />
                     </div>
-                    <p className="text-xs text-center text-[rgba(255,255,255,0.65)]">#FFDAB9</p>
                   </div>
                 </div>
               </div>
+
+              {/* Reset Button */}
+              <button
+                onClick={handleResetDefaults}
+                className="w-full py-3 rounded-xl text-white hover:bg-white/10 transition-all font-medium"
+                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
+              >
+                Reset to Defaults
+              </button>
             </div>
           </motion.div>
+
+          {/* Toast */}
+          <AnimatePresence>
+            {toastMessage && (
+              <Toast message={toastMessage} onClose={() => setToastMessage(null)} />
+            )}
+          </AnimatePresence>
         </>
       )}
     </AnimatePresence>
@@ -254,18 +367,19 @@ function Toggle({ enabled, onChange, label }: ToggleProps) {
     <div className="flex items-center gap-3">
       <button
         onClick={() => onChange(!enabled)}
-        className={cn(
-          'relative inline-flex h-8 w-14 items-center rounded-full transition-colors',
-          enabled
-            ? 'bg-gradient-to-r from-[#5C3317] to-[#8B5A2B]'
-            : 'bg-white/10'
-        )}
+        className="relative inline-flex h-8 w-14 items-center rounded-full transition-colors"
+        style={{
+          background: enabled 
+            ? 'linear-gradient(135deg, #5C3317 0%, #8B5A2B 100%)' 
+            : 'rgba(255,255,255,0.1)',
+          boxShadow: enabled ? '0 0 15px rgba(92, 51, 23, 0.4)' : 'none',
+        }}
+        aria-pressed={enabled}
       >
         <motion.div
-          className={cn(
-            'inline-flex h-6 w-6 items-center justify-center rounded-full bg-white shadow-lg',
-            enabled ? 'translate-x-7' : 'translate-x-1'
-          )}
+          className="absolute inline-flex h-6 w-6 items-center justify-center rounded-full shadow-lg"
+          style={{ background: '#FFFFFF', left: enabled ? 'calc(100% - 28px)' : '2px' }}
+          animate={{ left: enabled ? 'calc(100% - 28px)' : '2px' }}
           transition={{ type: 'spring', stiffness: 500, damping: 30 }}
         >
           {enabled && <Check className="w-4 h-4 text-[#5C3317]" />}
@@ -281,7 +395,7 @@ export function useAccessibility() {
   const [settings, setSettings] = useState<AccessibilitySettings>(defaultSettings);
 
   useEffect(() => {
-    const saved = localStorage.getItem('accessibility-settings');
+    const saved = localStorage.getItem('supernova-accessibility-settings');
     if (saved) {
       setSettings(JSON.parse(saved));
     }
@@ -290,7 +404,7 @@ export function useAccessibility() {
   const updateSettings = (updates: Partial<AccessibilitySettings>) => {
     const newSettings = { ...settings, ...updates };
     setSettings(newSettings);
-    localStorage.setItem('accessibility-settings', JSON.stringify(newSettings));
+    localStorage.setItem('supernova-accessibility-settings', JSON.stringify(newSettings));
   };
 
   return { settings, updateSettings };
@@ -301,14 +415,9 @@ export function useApplyAccessibility(settings: AccessibilitySettings) {
   useEffect(() => {
     const root = document.documentElement;
     
-    // Font size
-    const fontSizes = {
-      small: '14px',
-      medium: '16px',
-      large: '18px',
-      'extra-large': '20px',
-    };
-    root.style.setProperty('--base-font-size', fontSizes[settings.fontSize]);
+    // Apply font size class
+    root.classList.remove('font-size-small', 'font-size-medium', 'font-size-large', 'font-size-extra-large');
+    root.classList.add(`font-size-${settings.fontSize}`);
 
     // High contrast
     if (settings.highContrast) {

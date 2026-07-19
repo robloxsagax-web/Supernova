@@ -1151,3 +1151,193 @@
     transform: translateX(100%);
   }
 }
+
+/* ============================================
+   ACCESSIBILITY STYLES
+   ============================================ */
+
+/* Font Size Scaling */
+:root {
+  --base-font-size: 16px;
+  --scale-factor: 1;
+}
+
+.font-size-small { font-size: 14px !important; }
+.font-size-small h1 { font-size: 1.75rem !important; }
+.font-size-small h2 { font-size: 1.5rem !important; }
+.font-size-small h3 { font-size: 1.25rem !important; }
+.font-size-small p, .font-size-small span, .font-size-small div { font-size: 14px !important; }
+.font-size-small button { font-size: 14px !important; }
+
+.font-size-medium { font-size: 16px !important; }
+.font-size-medium h1 { font-size: 2rem !important; }
+.font-size-medium h2 { font-size: 1.75rem !important; }
+.font-size-medium h3 { font-size: 1.5rem !important; }
+
+.font-size-large { font-size: 18px !important; }
+.font-size-large h1 { font-size: 2.25rem !important; }
+.font-size-large h2 { font-size: 2rem !important; }
+.font-size-large h3 { font-size: 1.75rem !important; }
+.font-size-large p, .font-size-large span, .font-size-large div { font-size: 18px !important; }
+.font-size-large button { font-size: 18px !important; }
+
+.font-size-extra-large { font-size: 20px !important; }
+.font-size-extra-large h1 { font-size: 2.5rem !important; }
+.font-size-extra-large h2 { font-size: 2.25rem !important; }
+.font-size-extra-large h3 { font-size: 2rem !important; }
+.font-size-extra-large p, .font-size-extra-large span, .font-size-extra-large div { font-size: 20px !important; }
+.font-size-extra-large button { font-size: 20px !important; }
+
+/* High Contrast Mode */
+.high-contrast {
+  --text-primary: #FFFFFF !important;
+  --text-secondary: #FFFFFF !important;
+  --text-muted: #CCCCCC !important;
+  --card-border: rgba(255, 255, 255, 0.4) !important;
+  --card-border-hover: rgba(255, 255, 255, 0.6) !important;
+  --glass-border: rgba(255, 255, 255, 0.3) !important;
+  --glass-border-hover: rgba(255, 255, 255, 0.5) !important;
+}
+
+.high-contrast .glass-panel,
+.high-contrast [class*="glass"] {
+  border-width: 2px !important;
+  border-color: rgba(255, 255, 255, 0.4) !important;
+}
+
+.high-contrast button,
+.high-contrast .bg-gradient-to-r {
+  border: 2px solid currentColor !important;
+}
+
+.high-contrast .text-\[rgba\(255\,
+.high-contrast p,
+.high-contrast span:not(.bg-\[),
+.high-contrast div:not([class*="bg-"]) {
+  color: #FFFFFF !important;
+}
+
+/* Reduced Motion */
+.reduced-motion,
+.reduced-motion * {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+
+.reduced-motion [class*="animate-"] {
+  animation: none !important;
+}
+
+.reduced-motion .animate-pulse {
+  animation: none !important;
+}
+
+.reduced-motion .animate-spin {
+  animation: none !important;
+}
+
+.reduced-motion [data-animate] {
+  animation: none !important;
+}
+
+.reduced-motion framer-motion-div,
+.reduced-motion [style*="animation"] {
+  animation: none !important;
+  transition: none !important;
+}
+
+/* Color Blind Modes */
+
+/* Protanopia (Red-blind) */
+[data-color-blind="protanopia"] {
+  filter: url(#protanopia-filter);
+}
+
+[data-color-blind="protanopia"] .bg-gradient-to-br,
+[data-color-blind="protanopia"] .bg-gradient-to-r {
+  filter: saturate(1.2) brightness(1.1);
+}
+
+[data-color-blind="protanopia"] .text-\[\#FFDAB9\] {
+  color: #FFE4B5 !important;
+}
+
+/* Deuteranopia (Green-blind) */
+[data-color-blind="deuteranopia"] {
+  filter: url(#deuteranopia-filter);
+}
+
+[data-color-blind="deuteranopia"] .bg-gradient-to-br,
+[data-color-blind="deuteranopia"] .bg-gradient-to-r {
+  filter: saturate(1.2) hue-rotate(30deg);
+}
+
+[data-color-blind="deuteranopia"] .text-\[\#FFDAB9\] {
+  color: #FFA07A !important;
+}
+
+/* Tritanopia (Blue-blind) */
+[data-color-blind="tritanopia"] {
+  filter: url(#tritanopia-filter);
+}
+
+[data-color-blind="tritanopia"] .bg-gradient-to-br,
+[data-color-blind="tritanopia"] .bg-gradient-to-r {
+  filter: saturate(1.1);
+}
+
+[data-color-blind="tritanopia"] .text-\[\#FFDAB9\] {
+  color: #FFDAB9 !important;
+}
+
+/* Preserve orange/maroon branding in color blind modes */
+[data-color-blind="protanopia"] [style*="#5C3317"],
+[data-color-blind="protanopia"] [style*="#8B5A2B"],
+[data-color-blind="deuteranopia"] [style*="#5C3317"],
+[data-color-blind="deuteranopia"] [style*="#8B5A2B"],
+[data-color-blind="tritanopia"] [style*="#5C3317"],
+[data-color-blind="tritanopia"] [style*="#8B5A2B"] {
+  filter: none !important;
+}
+
+/* SVG Filters for Color Blindness */
+.color-blind-filters {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+/* Focus Styles for Accessibility */
+:focus-visible {
+  outline: 2px solid #FFDAB9 !important;
+  outline-offset: 2px !important;
+}
+
+.reduced-motion :focus-visible {
+  transition: none !important;
+}
+
+/* Skip Link */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  z-index: 9999;
+}
+
+.skip-link:focus {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: auto;
+  height: auto;
+  padding: 1rem;
+  background: #5C3317;
+  color: #FFDAB9;
+  z-index: 9999;
+}

@@ -30,6 +30,7 @@ import {
   Trash2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { AIModelsSection, ExternalServicesSection } from '@/components/ui/IntegrationsPanel';
 
 // Storage keys
 const STORAGE_KEYS = {
@@ -538,12 +539,12 @@ export default function SettingsPage() {
             </section>
 
             {/* Integrations Section */}
-            <section>
+            <section className="space-y-8">
               <motion.div
                 initial={{ y: -10, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.4 }}
-                className="flex items-center gap-3 mb-4"
+                className="flex items-center gap-3 mb-6"
               >
                 <div className="w-8 h-8 rounded-lg bg-[rgba(255,218,185,0.1)] flex items-center justify-center">
                   <Key className="w-4 h-4 text-[#FFDAB9]" />
@@ -553,92 +554,21 @@ export default function SettingsPage() {
                 </h2>
               </motion.div>
               
-              <div className="space-y-3">
-                {/* API Keys Card */}
-                <motion.div
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.4 }}
-                  className="p-5 rounded-2xl"
-                  style={{
-                    background: 'rgba(17, 17, 17, 0.6)',
-                    backdropFilter: 'blur(24px)',
-                    border: '1px solid rgba(255, 218, 185, 0.08)',
-                  }}
-                >
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #5C3317 0%, #8B5A2B 100%)' }}>
-                      <Key className="w-5 h-5 text-[#FFDAB9]" />
-                    </div>
-                    <div>
-                      <h3 className="text-base font-semibold text-white">API Keys</h3>
-                      <p className="text-sm text-[rgba(255,255,255,0.5)]">Manage your API credentials</p>
-                    </div>
+              {/* AI Models Section */}
+              <AIModelsSection />
+              
+              {/* External Services Section */}
+              <div>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'rgba(92,51,23,0.3)' }}>
+                    <Cloud className="w-4 h-4 text-[#FFDAB9]" />
                   </div>
-                  <div className="space-y-2">
-                    {[
-                      { name: 'OpenAI', status: 'Configured' },
-                      { name: 'Qwen', status: 'Configured' },
-                      { name: 'ElevenLabs', status: 'Configured' },
-                      { name: 'Pexels', status: 'Configured' },
-                      { name: 'JINA', status: 'Configured' },
-                      { name: 'GROQ', status: 'Configured' },
-                    ].map((api) => (
-                      <div key={api.name} className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-[rgba(255,255,255,0.02)] transition-colors">
-                        <span className="text-sm text-[rgba(255,255,255,0.7)]">{api.name}</span>
-                        <span className="text-xs px-2.5 py-1 rounded-full font-medium bg-[#22C55E]/20 text-[#22C55E] border border-[#22C55E]/30">
-                          {api.status}
-                        </span>
-                      </div>
-                    ))}
+                  <div>
+                    <h3 className="text-lg font-semibold text-white">External Services</h3>
+                    <p className="text-sm text-[rgba(255,255,255,0.5)]">Connected external platforms and APIs</p>
                   </div>
-                </motion.div>
-
-                {/* Backblaze B2 Card */}
-                <motion.div
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.45 }}
-                  className="p-5 rounded-2xl"
-                  style={{
-                    background: 'rgba(17, 17, 17, 0.6)',
-                    backdropFilter: 'blur(24px)',
-                    border: '1px solid rgba(255, 218, 185, 0.08)',
-                  }}
-                >
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #F97316 0%, #FB923C 100%)' }}>
-                        <Cloud className="w-5 h-5 text-white" />
-                      </div>
-                      <div>
-                        <h3 className="text-base font-semibold text-white">Backblaze B2</h3>
-                        <p className="text-sm text-[rgba(255,255,255,0.5)]">Cloud Object Storage</p>
-                      </div>
-                    </div>
-                    <span className="text-xs px-3 py-1.5 rounded-full font-medium bg-[#F97316]/20 text-[#F97316] border border-[#F97316]/30">
-                      Connected
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="p-3 rounded-lg text-center" style={{ background: 'rgba(255,255,255,0.03)' }}>
-                      <p className="text-[10px] text-[rgba(255,255,255,0.4)] mb-1">Bucket</p>
-                      <p className="text-xs font-semibold text-[#F97316]">Supernova1231</p>
-                    </div>
-                    <div className="p-3 rounded-lg text-center" style={{ background: 'rgba(255,255,255,0.03)' }}>
-                      <p className="text-[10px] text-[rgba(255,255,255,0.4)] mb-1">Media Assets</p>
-                      <p className="text-xs font-semibold text-[#22C55E]">Ready</p>
-                    </div>
-                    <div className="p-3 rounded-lg text-center" style={{ background: 'rgba(255,255,255,0.03)' }}>
-                      <p className="text-[10px] text-[rgba(255,255,255,0.4)] mb-1">Campaign Storage</p>
-                      <p className="text-xs font-semibold text-[#22C55E]">Ready</p>
-                    </div>
-                    <div className="p-3 rounded-lg text-center" style={{ background: 'rgba(255,255,255,0.03)' }}>
-                      <p className="text-[10px] text-[rgba(255,255,255,0.4)] mb-1">Status</p>
-                      <p className="text-xs font-semibold text-[#22C55E]">Operational</p>
-                    </div>
-                  </div>
-                </motion.div>
+                </div>
+                <ExternalServicesSection />
               </div>
             </section>
 
