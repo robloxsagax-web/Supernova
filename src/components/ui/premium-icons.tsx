@@ -357,36 +357,14 @@ export const SparkleIcon = ({ size = 24, className, ...props }: IconProps) => (
 
 // Supernova Logo - The brand mark
 export const SupernovaLogo = ({ size = 24, className, ...props }: IconProps) => (
-  <svg
-    viewBox="0 0 48 48"
+  <img
+    src="/Logo.png"
+    alt="Supernova Logo"
     width={size}
     height={size}
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
     className={className}
     {...props}
-  >
-    <defs>
-      <radialGradient id="novaGrad" cx="50%" cy="50%" r="50%">
-        <stop offset="0%" stopColor="#FFDAB9" stopOpacity="1" />
-        <stop offset="50%" stopColor="#8B5A2B" stopOpacity="0.8" />
-        <stop offset="100%" stopColor="#5C3317" stopOpacity="0.6" />
-      </radialGradient>
-      <filter id="novaGlow">
-        <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-        <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
-      </filter>
-    </defs>
-    {/* Outer glow ring */}
-    <circle cx="24" cy="24" r="22" fill="none" stroke="url(#novaGrad)" strokeWidth="0.5" opacity="0.3" filter="url(#novaGlow)" />
-    <circle cx="24" cy="24" r="18" fill="none" stroke="url(#novaGrad)" strokeWidth="0.5" opacity="0.5" />
-    {/* Star burst */}
-    <path d="M24 2L26 20L44 22L26 24L24 42L22 24L4 22L22 20L24 2Z" fill="url(#novaGrad)" filter="url(#novaGlow)" />
-    {/* Inner glow */}
-    <circle cx="24" cy="24" r="8" fill="url(#novaGrad)" />
-    <circle cx="24" cy="24" r="4" fill="#FFDAB9" opacity="0.9" />
-    <circle cx="24" cy="24" r="2" fill="#FFFFFF" />
-  </svg>
+  />
 );
 
 // URL/Link Icon - Connected nodes
