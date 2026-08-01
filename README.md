@@ -467,6 +467,7 @@ Supernova/
 | [Backblaze B2](docs/BACKBLAZE_B2.md) | Cloud storage setup |
 | [Project Structure](docs/PROJECT_STRUCTURE.md) | Codebase overview |
 | [Acknowledgments](ACKNOWLEDGMENTS.md) | Credits and acknowledgments |
+| [Performance](PERFORMANCE.md) | Production optimizations |
 
 ---
 
