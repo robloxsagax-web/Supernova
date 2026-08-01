@@ -468,6 +468,7 @@ Supernova/
 | [Project Structure](docs/PROJECT_STRUCTURE.md) | Codebase overview |
 | [Acknowledgments](ACKNOWLEDGMENTS.md) | Credits and acknowledgments |
 | [Performance](PERFORMANCE.md) | Production optimizations |
+| [Security](SECURITY.md) | Security practices |
 
 ---
 
