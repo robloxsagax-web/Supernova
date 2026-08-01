@@ -466,6 +466,7 @@ Supernova/
 | [Genblaze Integration](docs/GENBLAZE.md) | AI orchestration |
 | [Backblaze B2](docs/BACKBLAZE_B2.md) | Cloud storage setup |
 | [Project Structure](docs/PROJECT_STRUCTURE.md) | Codebase overview |
+| [Acknowledgments](ACKNOWLEDGMENTS.md) | Credits and acknowledgments |
 
 ---
 
@@ -573,6 +574,16 @@ This project is part of a larger Supernova ecosystem:
 | **[Supernova Landing](https://github.com/robloxsagax-web/supernova-landing)** | Marketing Website | [landing-supernova](https://landing-supernova.vercel.app) |
 | **[Supernova Pitch Deck](https://github.com/robloxsagax-web/supernova-pitch-deck)** | Official Presentation | [pitch-deck.supernova](https://pitch-deck-supernova.vercel.app) |
 | **[Supernova Journal](https://github.com/robloxsagax-web/supernova-journal)** | Engineering Blog | [journal-supernova](https://journal-supernova.vercel.app) |
+
+---
+
+## Acknowledgments
+
+This project would not have been possible without the amazing open-source community, the teams behind Genblaze, Backblaze B2, and the many technologies that power Supernova.
+
+For full credits and acknowledgments, see:
+
+**ACKNOWLEDGMENTS.md**
 
 ---
 
