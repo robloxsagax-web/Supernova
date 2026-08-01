@@ -29,10 +29,22 @@ Supernova
 
 ---
 
-> 🏆 **Hackathon‑Born AI Innovation**
->
-> Supernova demonstrates autonomous AI marketing powered by Genblaze with persistent enterprise asset storage using Backblaze B2.
+## 🏆 TL;DR for Judges
 
+**Supernova turns any product URL into a complete marketing campaign in minutes.**
+
+| Quick Fact | Detail |
+|------------|--------|
+| **Built For** | STEMist Hacks IV (July 31 - August 2, 2026) |
+| **Tech Stack** | Next.js, FastAPI, Genblaze, Backblaze B2 |
+| **Lines of Code** | 24,848 |
+| **Components** | 68 React Components |
+| **Deployments** | 5 (App, Landing, Journal, Pitch Deck, GitHub) |
+| **Built By** | Solo developer on a Chromebook |
+
+**Try It Now:** [https://appsupernova.vercel.app/auth](https://appsupernova.vercel.app/auth)
+
+**Read on for full details ↓**
 ---
 
 ## Live Experience
