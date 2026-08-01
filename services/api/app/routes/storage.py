@@ -17,7 +17,7 @@ from app.repo.b2_storage import (
     get_storage, 
     CampaignMetadata, 
     CAMPAIGN_PREFIX, 
-    CAMPAIGN_PREFIX,
+    CAMPAIGNS_PREFIX,
     METADATA_FILE,
     metadata_key,
     data_key,

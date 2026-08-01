@@ -74,7 +74,7 @@ def audio_key(campaign_id: str, filename: str) -> str:
     return f"{campaign_folder(campaign_id)}{AUDIO_PREFIX}{filename}"
 
 # Backward compatibility alias
-CAMPAIGN_PREFIX_ALIAS = CAMPAIGN_PREFIX  # Note: typo in original, kept for compatibility
+CAMPAIGNS_PREFIX = CAMPAIGN_PREFIX
 
 # Log config at module load
 logger.info("=" * 60)
@@ -470,7 +470,7 @@ class B2Storage:
 
     def list_campaigns(
         self,
-        prefix: str = CAMPAIGN_PREFIX,
+        prefix: str = CAMPAIGNS_PREFIX,
         max_keys: int = 100
     ) -> List[str]:
         """List all campaign IDs.
@@ -499,8 +499,8 @@ class B2Storage:
                 for obj in response['CommonPrefixes']:
                     # Extract campaign ID from prefix like "campaigns/{id}/"
                     full_prefix = obj['Prefix']
-                    if full_prefix.startswith(CAMPAIGN_PREFIX):
-                        rest = full_prefix[len(CAMPAIGN_PREFIX):]
+                    if full_prefix.startswith(CAMPAIGNS_PREFIX):
+                        rest = full_prefix[len(CAMPAIGNS_PREFIX):]
                         campaign_id = rest.rstrip('/')
                         if campaign_id:
                             campaign_ids.append(campaign_id)
@@ -529,7 +529,7 @@ class B2Storage:
         if not self.is_available():
             raise ValueError("B2 storage not configured")
 
-        prefix = f"{CAMPAIGN_PREFIX}{campaign_id}/"
+        prefix = f"{CAMPAIGNS_PREFIX}{campaign_id}/"
         if prefix_filter:
             prefix = f"{prefix}{prefix_filter}"
 
@@ -597,7 +597,7 @@ class B2Storage:
         if not self.is_available():
             raise ValueError("B2 storage not configured")
 
-        prefix = f"{CAMPAIGN_PREFIX}{campaign_id}/"
+        prefix = f"{CAMPAIGNS_PREFIX}{campaign_id}/"
 
         try:
             client = self._get_client()
