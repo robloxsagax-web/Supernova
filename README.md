@@ -466,9 +466,13 @@ Supernova/
 | [Genblaze Integration](docs/GENBLAZE.md) | AI orchestration |
 | [Backblaze B2](docs/BACKBLAZE_B2.md) | Cloud storage setup |
 | [Project Structure](docs/PROJECT_STRUCTURE.md) | Codebase overview |
-| [Acknowledgments](ACKNOWLEDGMENTS.md) | Credits and acknowledgments |
 | [Performance](PERFORMANCE.md) | Production optimizations |
 | [Security](SECURITY.md) | Security practices |
+| [Troubleshooting](TROUBLESHOOTING.md) | Common issues and fixes |
+| [FAQ](FAQ.md) | Frequently asked questions |
+| [Changelog](CHANGELOG.md) | Version history |
+| [Code of Conduct](CODE_OF_CONDUCT.md) | Community guidelines |
+| [Acknowledgments](ACKNOWLEDGMENTS.md) | Credits and acknowledgments |
 
 ---
 
