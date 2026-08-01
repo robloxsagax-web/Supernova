@@ -1,0 +1,10 @@
+# Procfile for Railway deployment
+# DO NOT include startup command - Railway uses the Start Command in dashboard settings
+#
+# To configure Railway:
+# 1. Set Root Directory to: services/api
+# 2. Leave Build Command EMPTY
+# 3. Set Start Command to:
+#    python -m uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}
+#
+# The ${PORT:-8000} syntax uses PORT from Railway env, or defaults to 8000 locally
