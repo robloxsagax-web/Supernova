@@ -59,6 +59,12 @@ Supernova
 Clone → Install → Configure .env → Run Backend → Run Frontend → Generate Campaign → View Gallery → Download Assets
 ```
 
+## 🏆 Built For STEMist Hacks IV
+
+**Supernova was built during STEMist Hacks IV (July 31 - August 2, 2026).**
+
+All code was written during the hackathon period. The core was developed in a private repository, then polished and pushed to this public repo on the first day of the hackathon.
+
 **Try the entire workflow in under one minute!!**
 
 ---
