@@ -59,7 +59,7 @@ Supernova
 Clone → Install → Configure .env → Run Backend → Run Frontend → Generate Campaign → View Gallery → Download Assets
 ```
 
-**Try the entire workflow in under one minute!**
+**Try the entire workflow in under one minute!!**
 
 ---
 
