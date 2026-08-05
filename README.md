@@ -45,6 +45,7 @@ Supernova
 **Try It Now:** [https://appsupernova.vercel.app/auth](https://appsupernova.vercel.app/auth)
 
 **Read on for full details ↓**
+
 ---
 
 ## Live Experience
@@ -71,12 +72,6 @@ Supernova
 Clone → Install → Configure .env → Run Backend → Run Frontend → Generate Campaign → View Gallery → Download Assets
 ```
 
-## 🏆 Built For STEMist Hacks IV
-
-**Supernova was built during STEMist Hacks IV (July 31 - August 2, 2026).**
-
-All code was written during the hackathon period. The core was developed in a private repository, then polished and pushed to this public repo on the first day of the hackathon.
-
 **Try the entire workflow in under one minute!!**
 
 ---
@@ -88,7 +83,7 @@ All code was written during the hackathon period. The core was developed in a pr
 | **Frontend** | Next.js 15 + React 19 |
 | **Backend** | FastAPI + Python |
 | **API Endpoints** | 11 Routes |
-| **Components** | Dozens of Components |
+| **Components** | 68 Components |
 | **AI Providers** | OpenRouter + Groq |
 | **Storage** | Backblaze B2 |
 | **Authentication** | Supabase Auth |
