@@ -35,7 +35,7 @@ Supernova
 
 | Quick Fact | Detail |
 |------------|--------|
-| **Built For** | STEMist Hacks IV (July 31 - August 2, 2026) |
+| **Built For** | Backblaze Generative Media Hackathon |
 | **Tech Stack** | Next.js, FastAPI, Genblaze, Backblaze B2 |
 | **Codebase Size** | Many lines of code — built during the hackathon |
 | **Components** | Dozens of React Components |
